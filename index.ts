@@ -237,7 +237,7 @@ const startUpMod = {
 };
 
 client.on("ready", () => {
-    startUpMod.initialize("L: I'M AWAKE! AWOOO~");
+    startUpMod.initialize(`Looking cursed. Also I'M AWAKE! AWOOO~`);
 
     //Catch up on missed level-ups
     if (!(channels.level instanceof DiscordJS.TextChannel)) {
@@ -263,25 +263,40 @@ client.on("ready", () => {
 });
 
 client.on("guildMemberAdd", (member) => {
-    const invite_channel = channels.tinkering;
+    const invite_channel = <DiscordJS.TextChannel>channels.tinkering;
     server.fetchInvites()
     .then(invs => {
-        let inv_string = invs.reduce((curr, invite) => {
-            const old_invite = invites.get(invite.code);
-            if (!old_invite) {
-                return curr + `:warning: Found unexpected invite code ${invite.code}`;
-            }
+        let inv_string = invites.reduce((curr, old_invite) => {
+            const new_invite = invs.get(old_invite.code);
             const old_uses = old_invite.uses || 0;
-            const new_uses = invite.uses || 0;
-            if (old_uses + 1 === new_uses) {
-                return curr + `${member} **joined**; Invited by ${invite.inviter} (**${new_uses}** invites on code **${invite.code}**)`;
+            let new_uses = 0;
+            let expired = false;
+            if (new_invite && new_invite.uses) {
+                new_uses = new_invite.uses;
+            }
+            else { //the invite is gone because it expired because its last use was used up
+                if (old_invite.maxUses && old_invite.uses === old_invite.maxUses - 1) {
+                    new_uses = old_invite.maxUses;
+                    expired = true;
+                }
+            }
+            if (new_uses > old_uses) {
+                const inviter_guildmember = old_invite.inviter ? server.members.cache.get(old_invite.inviter.id) : undefined;
+                const inviter_has_left = inviter_guildmember === undefined;
+                const inviter_is_recent = inviter_guildmember ? (new Date().getTime() - (inviter_guildmember.joinedTimestamp || 0) < 1000 * 60 * 60 * 24) : false;
+                const invitee_is_new = new Date().getTime() - (client.users.cache.get(member.id)?.createdTimestamp || 0) < 1000 * 60 * 60 * 24;
+                curr += `${invitee_is_new ? ":warning: New account " : ""}${member}(${member.user?.username}#${member.user?.discriminator}) **joined**; Invited by\n${inviter_is_recent ? ":warning: recent member " : ""}${old_invite.inviter}(${old_invite.inviter?.username}#${old_invite.inviter?.discriminator}) ${inviter_has_left ? "who already left " : ""}(**${new_uses}** invite(s) on ${expired ? "expired " : ""}code **${old_invite.code}**)\n`;
+            }
+            if (new_uses > old_uses + 1) {
+                curr += `Sorry, I missed ${new_uses - old_uses - 1} join(s) invited by ${old_invite.inviter}, should be people below this message.\n`;
             }
             return curr;
         }, "");
         if (inv_string === "") {
-            inv_string = `I can't figure out how ${member} joined the server.`;
+            inv_string = `I can't figure out how ${member} joined the server.\n`;
         }
-        util.sendTextMessage(invite_channel, new DiscordJS.MessageEmbed().setDescription(inv_string));
+        invite_channel.send(new DiscordJS.MessageEmbed().setDescription(inv_string));
+        invites = invs;
     });
     fnct.serverStats(['users', 'online', 'new']);
 });
@@ -299,7 +314,7 @@ client.on("guildUpdate", (oldGuild, newGuild) => {
 });
 
 client.on('messageReactionAdd', (messagereaction, user) => {
-    if (user instanceof DiscordJS.User) {
+    if (user instanceof DiscordJS.User && messagereaction) {
         fnct.approveChar(messagereaction.message, messagereaction.emoji, user);
     }
 });
@@ -358,6 +373,10 @@ client.on("message", (message: DiscordJS.Message) => {
     }
     if (message.channel.guild.id !== server.id) return; // Ignore non-main servers
     if (lockdown) return;
+
+    if (message.content === "_Lilli") {
+        process.exit(0);
+    }
 
     if (debug) {
         return;
@@ -848,6 +867,9 @@ const cmd: Cmd = {
         }
     },
     'cn': function (message) {
+        if (debug) {
+            return;
+        }
         if (message && !util.isStaff(message)) {
             return;
         }
