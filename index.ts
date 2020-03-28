@@ -264,6 +264,9 @@ client.on("ready", () => {
 
 client.on("guildMemberAdd", (member) => {
     const invite_channel = <DiscordJS.TextChannel>channels.tinkering;
+    const invitee_is_new = new Date().getTime() - (client.users.cache.get(member.id)?.createdTimestamp || 0) < 1000 * 60 * 60 * 24;
+    const invitee_str = `${member}${invitee_is_new ? `(:warning: new account from ${util.time(new Date().getTime() - (member.joinedTimestamp || 0))} ago)` : ""}` +
+    `(${member.user?.username}#${member.user?.discriminator})`;
     server.fetchInvites()
     .then(invs => {
         let inv_string = invites.reduce((curr, old_invite) => {
@@ -279,13 +282,15 @@ client.on("guildMemberAdd", (member) => {
                     new_uses = old_invite.maxUses;
                     expired = true;
                 }
+                else { //the invite expired for other reasons such as time
+                }
             }
             if (new_uses > old_uses) {
                 const inviter_guildmember = old_invite.inviter ? server.members.cache.get(old_invite.inviter.id) : undefined;
                 const inviter_has_left = inviter_guildmember === undefined;
                 const inviter_is_recent = inviter_guildmember ? (new Date().getTime() - (inviter_guildmember.joinedTimestamp || 0) < 1000 * 60 * 60 * 24) : false;
-                const invitee_is_new = new Date().getTime() - (client.users.cache.get(member.id)?.createdTimestamp || 0) < 1000 * 60 * 60 * 24;
-                curr += `${invitee_is_new ? ":warning: New account " : ""}${member}(${member.user?.username}#${member.user?.discriminator}) **joined**; Invited by\n${inviter_is_recent ? ":warning: recent member " : ""}${old_invite.inviter}(${old_invite.inviter?.username}#${old_invite.inviter?.discriminator}) ${inviter_has_left ? "who already left " : ""}(**${new_uses}** invite(s) on ${expired ? "expired " : ""}code **${old_invite.code}**)\n`;
+                curr += `${invitee_str} **joined**; Invited by\n${inviter_is_recent ? ":warning: recent member " : ""}${old_invite.inviter}(${old_invite.inviter?.username}#${old_invite.inviter?.discriminator}) ` +
+                    `${inviter_has_left ? "who already left " : ""}(**${new_uses}** invite(s) on ${expired ? "expired " : ""}code **${old_invite.code}**)\n`;
             }
             if (new_uses > old_uses + 1) {
                 curr += `Sorry, I missed ${new_uses - old_uses - 1} join(s) invited by ${old_invite.inviter}, should be people below this message.\n`;
@@ -293,7 +298,7 @@ client.on("guildMemberAdd", (member) => {
             return curr;
         }, "");
         if (inv_string === "") {
-            inv_string = `I can't figure out how ${member} joined the server.\n`;
+            inv_string = `I can't figure out how ${invitee_str} joined the server.`;
         }
         invite_channel.send(new DiscordJS.MessageEmbed().setDescription(inv_string));
         invites = invs;
