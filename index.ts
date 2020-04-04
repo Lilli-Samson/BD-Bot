@@ -262,46 +262,68 @@ client.on("ready", () => {
         });
 });
 
-client.on("guildMemberAdd", (member) => {
-    const invite_channel = <DiscordJS.TextChannel>channels.tinkering;
+const process_member_join = (member: DiscordJS.GuildMember | DiscordJS.PartialGuildMember, invs: DiscordJS.Collection<string, DiscordJS.Invite>) => {
     const invitee_is_new = new Date().getTime() - (client.users.cache.get(member.id)?.createdTimestamp || 0) < 1000 * 60 * 60 * 24;
-    const invitee_str = `${member}${invitee_is_new ? `(:warning: new account from ${util.time(new Date().getTime() - (member.joinedTimestamp || 0))} ago)` : ""}` +
-    `(${member.user?.username}#${member.user?.discriminator})`;
+    const invitee_str = `${member}` +
+        `(${member.user?.username}#${member.user?.discriminator})` +
+        `${invitee_is_new ? `(:warning: new account from ${util.time(new Date().getTime() - (member.joinedTimestamp || 0))} ago)` : ""}`;
+    return invites.reduce((curr, old_invite) => {
+        const new_invite = invs.get(old_invite.code);
+        const old_uses = old_invite.uses || 0;
+        let new_uses = 0;
+        let expired = false;
+        if (new_invite && new_invite.uses) {
+            new_uses = new_invite.uses;
+        }
+        else { //the invite is gone because it expired because its last use was used up
+            if (old_invite.maxUses && old_invite.uses === old_invite.maxUses - 1) {
+                new_uses = old_invite.maxUses;
+                expired = true;
+            }
+            else { //the invite expired for other reasons such as time
+            }
+        }
+        if (new_uses > old_uses) {
+            const inviter_guildmember = old_invite.inviter ? server.members.cache.get(old_invite.inviter.id) : undefined;
+            const inviter_has_left = inviter_guildmember === undefined;
+            const inviter_is_recent = inviter_guildmember ? (new Date().getTime() - (inviter_guildmember.joinedTimestamp || 0) < 1000 * 60 * 60 * 24) : false;
+            const inviter_age = util.time(new Date().getTime() - (inviter_guildmember?.joinedTimestamp || 0));
+            console.log(inviter_guildmember?.joinedTimestamp)
+            const inviter_recent_string = inviter_is_recent ? `(:warning: who joined ${inviter_age} ago) ` : "";
+            curr += `${invitee_str} **joined**; Invited by\n` +
+                `${old_invite.inviter} ` + `(${old_invite.inviter?.username}#${old_invite.inviter?.discriminator}) ` + inviter_recent_string +
+                `${inviter_has_left ? "who already left " : ""}(**${new_uses}** invite(s) on ${expired ? "expired " : ""}code **${old_invite.code}**)\n`;
+        }
+        if (new_uses > old_uses + 1) {
+            curr += `Sorry, I missed ${new_uses - old_uses - 1} join(s) invited by ${old_invite.inviter}, should be people below this message.\n`;
+        }
+        return curr;
+    }, "");
+}
+
+client.on("guildMemberAdd", (member) => {
+    if (member.guild?.id !== server.id) { //ignore non-main servers
+        return;
+    }
+    const invite_channel = <DiscordJS.TextChannel>channels.tinkering;
     server.fetchInvites()
     .then(invs => {
-        let inv_string = invites.reduce((curr, old_invite) => {
-            const new_invite = invs.get(old_invite.code);
-            const old_uses = old_invite.uses || 0;
-            let new_uses = 0;
-            let expired = false;
-            if (new_invite && new_invite.uses) {
-                new_uses = new_invite.uses;
-            }
-            else { //the invite is gone because it expired because its last use was used up
-                if (old_invite.maxUses && old_invite.uses === old_invite.maxUses - 1) {
-                    new_uses = old_invite.maxUses;
-                    expired = true;
-                }
-                else { //the invite expired for other reasons such as time
-                }
-            }
-            if (new_uses > old_uses) {
-                const inviter_guildmember = old_invite.inviter ? server.members.cache.get(old_invite.inviter.id) : undefined;
-                const inviter_has_left = inviter_guildmember === undefined;
-                const inviter_is_recent = inviter_guildmember ? (new Date().getTime() - (inviter_guildmember.joinedTimestamp || 0) < 1000 * 60 * 60 * 24) : false;
-                curr += `${invitee_str} **joined**; Invited by\n${inviter_is_recent ? ":warning: recent member " : ""}${old_invite.inviter}(${old_invite.inviter?.username}#${old_invite.inviter?.discriminator}) ` +
-                    `${inviter_has_left ? "who already left " : ""}(**${new_uses}** invite(s) on ${expired ? "expired " : ""}code **${old_invite.code}**)\n`;
-            }
-            if (new_uses > old_uses + 1) {
-                curr += `Sorry, I missed ${new_uses - old_uses - 1} join(s) invited by ${old_invite.inviter}, should be people below this message.\n`;
-            }
-            return curr;
-        }, "");
+        const inv_string = process_member_join(member, invs);
         if (inv_string === "") {
-            inv_string = `I can't figure out how ${invitee_str} joined the server.`;
+            setTimeout(() => {
+                server.fetchInvites()
+                .then(invs => {
+                    const invitee_str = `${member}(${member.user?.username}#${member.user?.discriminator})`;
+                    const inv_string = process_member_join(member, invs) || `I can't figure out how ${invitee_str} joined the server.`;
+                    invite_channel.send(new DiscordJS.MessageEmbed().setDescription(inv_string));
+                    invites = invs;
+                });
+            }, 1000);
         }
-        invite_channel.send(new DiscordJS.MessageEmbed().setDescription(inv_string));
-        invites = invs;
+        else {
+            invite_channel.send(new DiscordJS.MessageEmbed().setDescription(inv_string));
+            invites = invs;
+        }
     });
     fnct.serverStats(['users', 'online', 'new']);
 });
