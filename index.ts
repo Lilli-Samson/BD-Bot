@@ -54,7 +54,7 @@ let channels = <Str_to_Channel>{
     'lfp-long': "📰lfp-long-term-plot",
     'lfp-vc': "🎤lfp-vc",
     'lfp-sfw': "🌺lfp-sfw",
-    'nsfw-general': "🔞nsfw-general",
+    'nsfw-general': "🔞general",
     'nsfw-media': "👅nsfw-media",
     'tinkering': "tinkering",
     'authentication-logs': "🎫authentication-logs",
@@ -266,7 +266,7 @@ const process_member_join = (member: DiscordJS.GuildMember | DiscordJS.PartialGu
     const invitee_is_new = new Date().getTime() - (client.users.cache.get(member.id)?.createdTimestamp || 0) < 1000 * 60 * 60 * 24;
     const invitee_str = `${member}` +
         `(${member.user?.username}#${member.user?.discriminator})` +
-        `${invitee_is_new ? `(:warning: new account from ${util.time(new Date().getTime() - (member.joinedTimestamp || 0))} ago)` : ""}`;
+        `${invitee_is_new ? `(:warning: new account from ${util.time(new Date().getTime() - (member.user?.createdTimestamp || 0))} ago)` : ""}`;
     return invites.reduce((curr, old_invite) => {
         const new_invite = invs.get(old_invite.code);
         const old_uses = old_invite.uses || 0;
@@ -288,7 +288,6 @@ const process_member_join = (member: DiscordJS.GuildMember | DiscordJS.PartialGu
             const inviter_has_left = inviter_guildmember === undefined;
             const inviter_is_recent = inviter_guildmember ? (new Date().getTime() - (inviter_guildmember.joinedTimestamp || 0) < 1000 * 60 * 60 * 24) : false;
             const inviter_age = util.time(new Date().getTime() - (inviter_guildmember?.joinedTimestamp || 0));
-            console.log(inviter_guildmember?.joinedTimestamp)
             const inviter_recent_string = inviter_is_recent ? `(:warning: who joined ${inviter_age} ago) ` : "";
             curr += `${invitee_str} **joined**; Invited by\n` +
                 `${old_invite.inviter} ` + `(${old_invite.inviter?.username}#${old_invite.inviter?.discriminator}) ` + inviter_recent_string +
@@ -1428,23 +1427,19 @@ const util = {
         const d = ~~time % 365;
         time /= 365;
         const y = ~~time;
-        let str = "";
         if (y) {
-            str = `${y}y`;
+            return `${y}y ${d}d`;
         }
         if (d) {
-            str += ` ${d}d`;
+            return `${d}d ${h}h`;
         }
         if (h) {
-            str += ` ${h}h`;
+            return `${h}h ${m}m`;
         }
         if (m) {
-            str += ` ${m}m`;
+            return `${m}m ${s}s`;
         }
-        if (s) {
-            str += ` ${s}s`;
-        }
-        return str.trim();
+        return `${s}s`;
     },
 };
 
