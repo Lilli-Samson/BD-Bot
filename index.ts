@@ -405,7 +405,7 @@ client.on("message", (message: DiscordJS.Message) => {
     }
 
     if (debug) {
-        return;
+        //return;
     }
 
     // Prefix as first character -> command
@@ -1067,6 +1067,27 @@ const cmd: Cmd = {
             }).catch(error => util.sendTextMessage(message.channel, `Invalid user ID: <@${snowflake}>`));
         });
     },
+    'announce': function (message) {
+        const bg_cultleader_id = "594872022404694027";
+        const bd_cultleader_id = "539584042949935136";
+        const command_length = "_announce ".length;
+        if (!message) {
+            return;
+        }
+        const member = server.members.cache.get(message.author.id);
+        if (!member) {
+            return;
+        }
+        if (!member.roles.cache.has(bg_cultleader_id) && !member.roles.cache.has(bd_cultleader_id) && !util.isStaff(message)) {
+            util.sendTextMessage(message.channel, `${message.author} Good announcement! :clap:`);
+            return;
+        }
+        console.log(`Has bg_cultleader_id: ${member.roles.cache.has(bg_cultleader_id)}\n` +
+        `Has bd_cultleader_id: ${member.roles.cache.has(bd_cultleader_id)}\n` +
+        `Is staff: ${util.isStaff(message)}`)
+        util.sendTextMessage(message.channel, message.content.slice(command_length));
+        message.delete({reason: "Announcement"});
+    }
 };
 
 const fnct = {
