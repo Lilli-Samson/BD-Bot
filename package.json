@@ -4,7 +4,7 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc --pretty -p .",
-    "start": "node index.js"
+    "start": "tsc --pretty -p . && node index.js"
   },
   "dependencies": {
     "@types/node-schedule": "^1.3.0",
