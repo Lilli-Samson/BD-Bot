@@ -404,13 +404,15 @@ client.on("message", (message: DiscordJS.Message) => {
         process.exit(0);
     }
 
-    if (debug) {
-        return;
-    }
-
     // Prefix as first character -> command
     if (_.isEqual(message.content.indexOf(prefix), 0)) {
-        cmd.call(message);
+        if (message.content.startsWith("_banish") || message.content.startsWith("_unbanish")) {
+            cmd.call(message);
+        }
+    }
+
+    if (debug) {
+        return;
     }
 
     if (lfpChannels.includes(message.channel)) {
@@ -1067,6 +1069,94 @@ const cmd: Cmd = {
             }).catch(error => util.sendTextMessage(message.channel, `Invalid user ID: <@${snowflake}>`));
         });
     },
+    'banish': function (message) { //banish ID|Mention Channel|ChannelID|CategoryID|"Prefix"+
+        if (!message) {
+            return;
+        }
+        if (!util.isStaff(message)) {
+            util.sendTextMessage(message.channel, `${message.author} has been banished to the shadow realm!`);
+            return;
+        }
+        let channels: string[] = []; //the channels to set permissions for
+        let target: string = ""; //the member ID to set permissions for
+        let error: string = ""; //errors that occured
+        const snowflakes = (message.content.match(/\d+/g) || [message.author.id]).filter(match => match.length > 15);
+        snowflakes.forEach(snowflake => {
+            if (server.members.cache.has(snowflake)) {
+                if (target) { //duplicate target user, bad
+                    error += "Too many members specified\n";
+                    return;
+                }
+                target = snowflake;
+                return;
+            }
+            const channel = server.channels.cache.get(snowflake)
+            if (channel) {
+                if (channel.type === "category") {
+                    channels = channels.concat((<DiscordJS.CategoryChannel>channel).children.keyArray());
+                    return;
+                }
+                channels.push(snowflake);
+                return;
+            }
+            error += "Unknown ID: " + snowflake + "\n";
+        });
+        const prefix_matches = message.content.match(/"[^"]*"/g);
+        if (prefix_matches) {
+            prefix_matches.forEach(prefix_match => {
+                prefix_match = prefix_match.slice(1, -1); //remove the "
+                let matchcount = 0;
+                server.channels.cache.forEach(channel => {
+                    if (channel.name.startsWith(prefix_match)) {
+                        channels.push(channel.id);
+                        matchcount++;
+                    }
+                });
+                if (matchcount === 0) {
+                    error += `No channels match ${prefix_match}\n`
+                }
+            });
+        }
+        if (error) {
+            util.sendTextMessage(message.channel, error);
+            return;
+        }
+        const summary = channels.reduce((current, snowflake) => {
+            const channel = server.channels.cache.get(snowflake);
+            if (!channel) {
+                return `${current} Invalid channel ${snowflake}`
+            }
+            channel.updateOverwrite(target, {VIEW_CHANNEL: false}, `${message.author.username}#${message.author.discriminator} banished ${server.members.cache.get(target)?.user.username} from ${channel.name}`);
+            return `${current} <#${snowflake}>`;
+        }, "")
+        util.sendTextMessage(message.channel, new DiscordJS.MessageEmbed().setDescription(`Banished <@${target}> from ${summary}`));
+    },
+    'unbanish': function (message) { //MemberID* - removes the user-specific permissions from all channels
+        if (!message) {
+            return;
+        }
+        if (!util.isStaff(message)) {
+            util.sendTextMessage(message.channel, `${message.author} There is no escape.`);
+            return;
+        }
+        const snowflakes = (message.content.match(/\d+/g) || [message.author.id]).filter(match => match.length > 15);
+        snowflakes.forEach(snowflake => {
+            const cleared_channels = server.channels.cache.reduce((current, channel) => {
+                let permissions = channel.permissionOverwrites;
+                if (permissions.delete(snowflake)) {
+                    channel.overwritePermissions(permissions);
+                    return `${current} ${channel}`;
+                }
+                return current;
+            }, "");
+            if (cleared_channels === "") {
+                util.sendTextMessage(message.channel, new DiscordJS.MessageEmbed().setDescription(`There are no permissions specific to <@${snowflake}> in any channels.`));
+            }
+            else {
+                util.sendTextMessage(message.channel, new DiscordJS.MessageEmbed().setDescription(`Cleared permissions of <@${snowflake}> in channels${cleared_channels}.`));
+            }
+        });
+    }
 };
 
 const fnct = {
@@ -1175,6 +1265,17 @@ process.on("unhandledRejection", (error) => {
     throw error; // Following best practices re-throw error and let the process exit with error code
 });
 
+const split_text_message = (message: string) => {
+    let message_pieces;
+    try {
+        //try splitting after newlines
+        message_pieces = DiscordJS.Util.splitMessage(message);
+    } catch (error) {
+        //fall back to splitting after spaces
+        message_pieces = DiscordJS.Util.splitMessage(message, {char: ' '});
+    }
+    return Array.isArray(message_pieces) ? message_pieces : [message_pieces]; //always return an array
+};
 
 const util = {
     'sendTextMessage': function (channel: DiscordJS.TextChannel | DiscordJS.DMChannel | DiscordJS.NewsChannel | string, message: DiscordJS.MessageEmbed | string) {
@@ -1182,16 +1283,27 @@ const util = {
             util.log(`Failed sending message to channel ${channel} because it wasn't resolved.`, "generic", util.logLevel.ERROR);
             return;
         }
+        const content = typeof message === "string" ? message : (message.description || "");
         try {
-            if (channel) {
-                channel.startTyping();
-                setTimeout(function(){
-                    channel.send(message);
-                    channel.stopTyping(true);
-                }, 1500);
+            if (!channel) {
+                return;
             }
+            channel.startTyping();
+            const message_pieces = split_text_message(content);
+            setTimeout(function(){
+                _.forEach(message_pieces, message_piece => {
+                    if (typeof message === "string") {
+                        channel.send(message_piece);
+                    }
+                    else {
+                        channel.send(new DiscordJS.MessageEmbed(message).setDescription(message_piece));
+                    }
+                });
+                channel.stopTyping();
+            }, 500);
         } catch (e) {
-            this.log('Failed to send message: ' + message, this.logLevel.ERROR);
+            this.log('Failed to send message: ' + content.slice(1970), this.logLevel.ERROR);
+            channel.stopTyping();
         }
     },
 
@@ -1199,7 +1311,7 @@ const util = {
         if (!message) {
             console.log("Didn't get a message");
         }
-        return message.author.lastMessage?.member?.roles.cache.find(role => _.isEqual(role.name, this.roles.STAFF) || _.isEqual(role.name, this.roles.TRIALMOD)) !== null || message.author === AsheN;
+        return message.author.lastMessage?.member?.roles.cache.find(role => _.isEqual(role.name, this.roles.STAFF) || _.isEqual(role.name, this.roles.TRIALMOD)) !== undefined || message.author === AsheN;
     },
 
     'isUserStaff': function (user: DiscordJS.User) {
