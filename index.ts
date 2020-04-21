@@ -59,6 +59,7 @@ let channels = <Str_to_Channel>{
     'tinkering': "tinkering",
     'authentication-logs': "🎫authentication-logs",
     'paranoia-plaza': "🙈ashs-paranoia-plaza",
+    'invites': "⚠invite-log",
 };
 
 let roles = <Str_to_Role>{
@@ -304,7 +305,7 @@ client.on("guildMemberAdd", (member) => {
     if (member.guild?.id !== server.id) { //ignore non-main servers
         return;
     }
-    const invite_channel = <DiscordJS.TextChannel>channels.tinkering;
+    const invite_channel = <DiscordJS.TextChannel>channels.invites;
     server.fetchInvites()
     .then(invs => {
         const inv_string = process_member_join(member, invs);
