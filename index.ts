@@ -61,11 +61,13 @@ let channels: Str_to_Channel = {
     'tinkering': "tinkering",
     'authentication-logs': "🎫authentication-logs",
     'paranoia-plaza': "🙈ashs-paranoia-plaza",
+    'invites': "⚠invite-log",
 };
 let roles: Str_to_Role = {
     "No_Ping": "DONT PING⛔",
     "Newcomer": "Newcomer",
-    "CustomRoles": "--Custom Roles--"
+    "CustomRoles": "--Custom Roles--",
+    "NSFW": "NSFW",
 };
 let emojis: Str_to_Emoji = {
     "bancat": "bancat",
@@ -84,6 +86,7 @@ let ping_violation_reaction_emoji = emojis.pingangry;
 const level_up_module = "Level roles";
 const link_regex = /((https?|ftp):\/\/|www\.)(\w.+\w\W?)/g; //source: https://support.discordapp.com/hc/en-us/community/posts/360036244152-Change-in-text-link-detection-RegEx
 let mediaTextonlyMessageCounter = 0;
+let invites: DiscordJS.Collection<string, DiscordJS.Invite>;
 
 const dbMod = {
     'warnUser': function (member: DiscordJS.User, level: number, warner: DiscordJS.GuildMember, reason?: string) {
@@ -237,6 +240,9 @@ const startUpMod = {
             lfpChannels.push(<DiscordJS.TextChannel>channels["lfp-trans"]);
             lfpChannels.push(<DiscordJS.TextChannel>channels["lfp-vanilla"]);
 
+            server.fetchInvites()
+            .then(invs => invites = invs);
+
             cmd.cn();
             this.startSchedules();
 
@@ -282,7 +288,68 @@ client.on("ready", () => {
     });
 });
 
+const process_member_join = (member: DiscordJS.GuildMember | DiscordJS.PartialGuildMember, invs: DiscordJS.Collection<string, DiscordJS.Invite>) => {
+    const invitee_is_new = new Date().getTime() - (client.users.cache.get(member.id)?.createdTimestamp || 0) < 1000 * 60 * 60 * 24;
+    const invitee_str = `${member}` +
+        `(${member.user?.username}#${member.user?.discriminator})` +
+        `${invitee_is_new ? `(:warning: new account from ${util.time(new Date().getTime() - (member.user?.createdTimestamp || 0))} ago)` : ""}`;
+    return invites.reduce((curr, old_invite) => {
+        const new_invite = invs.get(old_invite.code);
+        const old_uses = old_invite.uses || 0;
+        let new_uses = 0;
+        let expired = false;
+        if (new_invite && new_invite.uses) {
+            new_uses = new_invite.uses;
+        }
+        else { //the invite is gone because it expired because its last use was used up
+            if (old_invite.maxUses && old_invite.uses === old_invite.maxUses - 1) {
+                new_uses = old_invite.maxUses;
+                expired = true;
+            }
+            else { //the invite expired for other reasons such as time
+            }
+        }
+        if (new_uses > old_uses) {
+            const inviter_guildmember = old_invite.inviter ? server.members.cache.get(old_invite.inviter.id) : undefined;
+            const inviter_has_left = inviter_guildmember === undefined;
+            const inviter_is_recent = inviter_guildmember ? (new Date().getTime() - (inviter_guildmember.joinedTimestamp || 0) < 1000 * 60 * 60 * 24) : false;
+            const inviter_age = util.time(new Date().getTime() - (inviter_guildmember?.joinedTimestamp || 0));
+            const inviter_recent_string = inviter_is_recent ? `(:warning: who joined ${inviter_age} ago) ` : "";
+            curr += `${invitee_str} **joined**; Invited by\n` +
+                `${old_invite.inviter} ` + `(${old_invite.inviter?.username}#${old_invite.inviter?.discriminator}) ` + inviter_recent_string +
+                `${inviter_has_left ? "who already left " : ""}(**${new_uses}** invite(s) on ${expired ? "expired " : ""}code **${old_invite.code}**)\n`;
+        }
+        if (new_uses > old_uses + 1) {
+            curr += `Sorry, I missed ${new_uses - old_uses - 1} join(s) invited by ${old_invite.inviter}, should be people below this message.\n`;
+        }
+        return curr;
+    }, "");
+}
+
 client.on("guildMemberAdd", (member) => {
+    if (member.guild?.id !== server.id) { //ignore non-main servers
+        return;
+    }
+    const invite_channel = <DiscordJS.TextChannel>channels.invites;
+    server.fetchInvites()
+    .then(invs => {
+        const inv_string = process_member_join(member, invs);
+        if (inv_string === "") {
+            setTimeout(() => {
+                server.fetchInvites()
+                .then(invs => {
+                    const invitee_str = `${member}(${member.user?.username}#${member.user?.discriminator})`;
+                    const inv_string = process_member_join(member, invs) || `I can't figure out how ${invitee_str} joined the server.`;
+                    invite_channel.send(new DiscordJS.MessageEmbed().setDescription(inv_string));
+                    invites = invs;
+                });
+            }, 1000);
+        }
+        else {
+            invite_channel.send(new DiscordJS.MessageEmbed().setDescription(inv_string));
+            invites = invs;
+        }
+    });
     fnct.serverStats(['users', 'online', 'new']);
 });
 
@@ -486,41 +553,6 @@ client.on("message", (message) => {
                 });
             return;
         }
-    }
-
-    // be paranoid about newcomers who invite people
-    if (_.isEqual(message.channel.id, channels.tinkering.id)) {
-        const invite_regex = /<@\d+> \*\*joined\*\*; Invited by \*\*.*\*\* \(\*\*\d+\*\* invites\)/g;
-        if (!message.content.match(invite_regex)) { //not an invite message
-            return;
-        }
-        const before_name = "> **joined**; Invited by **";
-        const after_name = "** (**";
-        const name_start_pos = message.content.indexOf(before_name) + before_name.length;
-        const name_end_pos = message.content.indexOf(after_name);
-        const name = message.content.substr(name_start_pos, name_end_pos - name_start_pos);
-        if (name === "[!d] DISBOARD" || name === "AsheN") { //Can't be paranoid about people joining via their invites. Or can we? :tinfoilhat:
-            return;
-        }
-        const before_invites = before_name + name + "** (**";
-        const after_invites = "** invites)";
-        const before_invites_pos = message.content.indexOf(before_invites) + before_invites.length;
-        const after_invites_pos = message.content.indexOf(after_invites);
-        const invites = parseInt(message.content.substr(before_invites_pos, after_invites_pos - before_invites_pos));
-        const members = server.members.cache.filter(member => member.displayName === name);
-        if (members.size === 0) {
-            //Didn't find the user. This happens when the inviter left or Invite Manager didn't notice that someone changed their Discord name.
-            util.sendTextMessage(channels.tinkering, `Failed figuring out who **${name}** is.`);
-            return;
-        }
-        const inferred_members_text = members.reduce((member, result) => `${member} ${result}`, "").trim();
-        util.sendTextMessage(channels.tinkering, new DiscordJS.MessageEmbed().setDescription(`Invited by ${inferred_members_text}`));
-        //warn if any of the potentials are newer than 1 day
-        const newcomer_member = members.find(member => (member.joinedTimestamp || 0) > new Date().getTime() - 1000*60*60*24);
-        if (newcomer_member) {
-            util.sendTextMessage(channels["paranoia-plaza"], new DiscordJS.MessageEmbed().setDescription(`:warning: Got invite number ${invites} for ${message.mentions.members?.first()} from recent member ${members.size === 1 ? "" : "one of "}${inferred_members_text}.`));
-        }
-        return;
     }
 
     //copy new account joins from auth log to paranoia plaza
@@ -1547,10 +1579,10 @@ const cmd: Cmd = {
         util.sendTempTextMessage(message.channel, 'That didn\'t work out... maybe try `_roles who <roleID>` or `_roles usage` or `_roles usage list`');
     },
     'roles usage': function (message, args) { //list all the roles and their usage; args can only be "list"
-    if (!message) {
-        return;
-    }
-    let sortOrder = "";
+        if (!message) {
+            return;
+        }
+        let sortOrder = "";
         if (args && _.isEqual(args[0], "list")) {
             sortOrder = "list";
         }
@@ -1621,6 +1653,25 @@ const cmd: Cmd = {
     },
     'stop typing': function (message) {
         message?.channel.stopTyping(true);
+    },
+    'raid': async function(message) {
+        if (message && !util.isStaff(message)) {
+            util.sendTextMessage(message.channel, `Call the mods!`);
+            return;
+        }
+        if (typeof roles.NSFW === "string") {
+            util.log(`Failed resolving NSFW role`, "Raid", util.logLevel.ERROR);
+            return;
+        }
+        await roles.NSFW.setPermissions(roles.NSFW.permissions.bitfield & ~DiscordJS.Permissions.FLAGS.CREATE_INSTANT_INVITE, "Raid");
+        server.fetchInvites()
+        .then(invs => {
+            invs.forEach(inv => {
+                inv.delete("Raid");
+            });
+        });
+        message?.react('✅');
+        util.log(`Disabled invite creation and deleted invites`, "Raid", util.logLevel.WARN);
     },
     'help': function (message) {
         if (!message) {

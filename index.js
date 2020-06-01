@@ -57,11 +57,13 @@ let channels = {
     'tinkering': "tinkering",
     'authentication-logs': "🎫authentication-logs",
     'paranoia-plaza': "🙈ashs-paranoia-plaza",
+    'invites': "⚠invite-log",
 };
 let roles = {
     "No_Ping": "DONT PING⛔",
     "Newcomer": "Newcomer",
-    "CustomRoles": "--Custom Roles--"
+    "CustomRoles": "--Custom Roles--",
+    "NSFW": "NSFW",
 };
 let emojis = {
     "bancat": "bancat",
@@ -77,6 +79,7 @@ let ping_violation_reaction_emoji = emojis.pingangry;
 const level_up_module = "Level roles";
 const link_regex = /((https?|ftp):\/\/|www\.)(\w.+\w\W?)/g; //source: https://support.discordapp.com/hc/en-us/community/posts/360036244152-Change-in-text-link-detection-RegEx
 let mediaTextonlyMessageCounter = 0;
+let invites;
 const dbMod = {
     'warnUser': function (member, level, warner, reason) {
         util.log(`Calling DB Module`, 'DB/warnUser', util.logLevel.INFO);
@@ -216,6 +219,8 @@ const startUpMod = {
             lfpChannels.push(channels["lfp-vc"]);
             lfpChannels.push(channels["lfp-trans"]);
             lfpChannels.push(channels["lfp-vanilla"]);
+            server.fetchInvites()
+                .then(invs => invites = invs);
             cmd.cn();
             this.startSchedules();
         }
@@ -260,7 +265,71 @@ client.on("ready", () => {
         util.log(`Failed reading old messages from ${channels.level} because of ${error}`, level_up_module, util.logLevel.ERROR);
     });
 });
+const process_member_join = (member, invs) => {
+    var _a, _b, _c, _d;
+    const invitee_is_new = new Date().getTime() - (((_a = client.users.cache.get(member.id)) === null || _a === void 0 ? void 0 : _a.createdTimestamp) || 0) < 1000 * 60 * 60 * 24;
+    const invitee_str = `${member}` +
+        `(${(_b = member.user) === null || _b === void 0 ? void 0 : _b.username}#${(_c = member.user) === null || _c === void 0 ? void 0 : _c.discriminator})` +
+        `${invitee_is_new ? `(:warning: new account from ${util.time(new Date().getTime() - (((_d = member.user) === null || _d === void 0 ? void 0 : _d.createdTimestamp) || 0))} ago)` : ""}`;
+    return invites.reduce((curr, old_invite) => {
+        var _a, _b, _c;
+        const new_invite = invs.get(old_invite.code);
+        const old_uses = old_invite.uses || 0;
+        let new_uses = 0;
+        let expired = false;
+        if (new_invite && new_invite.uses) {
+            new_uses = new_invite.uses;
+        }
+        else { //the invite is gone because it expired because its last use was used up
+            if (old_invite.maxUses && old_invite.uses === old_invite.maxUses - 1) {
+                new_uses = old_invite.maxUses;
+                expired = true;
+            }
+            else { //the invite expired for other reasons such as time
+            }
+        }
+        if (new_uses > old_uses) {
+            const inviter_guildmember = old_invite.inviter ? server.members.cache.get(old_invite.inviter.id) : undefined;
+            const inviter_has_left = inviter_guildmember === undefined;
+            const inviter_is_recent = inviter_guildmember ? (new Date().getTime() - (inviter_guildmember.joinedTimestamp || 0) < 1000 * 60 * 60 * 24) : false;
+            const inviter_age = util.time(new Date().getTime() - (((_a = inviter_guildmember) === null || _a === void 0 ? void 0 : _a.joinedTimestamp) || 0));
+            const inviter_recent_string = inviter_is_recent ? `(:warning: who joined ${inviter_age} ago) ` : "";
+            curr += `${invitee_str} **joined**; Invited by\n` +
+                `${old_invite.inviter} ` + `(${(_b = old_invite.inviter) === null || _b === void 0 ? void 0 : _b.username}#${(_c = old_invite.inviter) === null || _c === void 0 ? void 0 : _c.discriminator}) ` + inviter_recent_string +
+                `${inviter_has_left ? "who already left " : ""}(**${new_uses}** invite(s) on ${expired ? "expired " : ""}code **${old_invite.code}**)\n`;
+        }
+        if (new_uses > old_uses + 1) {
+            curr += `Sorry, I missed ${new_uses - old_uses - 1} join(s) invited by ${old_invite.inviter}, should be people below this message.\n`;
+        }
+        return curr;
+    }, "");
+};
 client.on("guildMemberAdd", (member) => {
+    var _a;
+    if (((_a = member.guild) === null || _a === void 0 ? void 0 : _a.id) !== server.id) { //ignore non-main servers
+        return;
+    }
+    const invite_channel = channels.invites;
+    server.fetchInvites()
+        .then(invs => {
+        const inv_string = process_member_join(member, invs);
+        if (inv_string === "") {
+            setTimeout(() => {
+                server.fetchInvites()
+                    .then(invs => {
+                    var _a, _b;
+                    const invitee_str = `${member}(${(_a = member.user) === null || _a === void 0 ? void 0 : _a.username}#${(_b = member.user) === null || _b === void 0 ? void 0 : _b.discriminator})`;
+                    const inv_string = process_member_join(member, invs) || `I can't figure out how ${invitee_str} joined the server.`;
+                    invite_channel.send(new DiscordJS.MessageEmbed().setDescription(inv_string));
+                    invites = invs;
+                });
+            }, 1000);
+        }
+        else {
+            invite_channel.send(new DiscordJS.MessageEmbed().setDescription(inv_string));
+            invites = invs;
+        }
+    });
     fnct.serverStats(['users', 'online', 'new']);
 });
 client.on("guildMemberRemove", (member) => {
@@ -313,7 +382,7 @@ client.on("channelUpdate", (oldChannel, newChannel) => {
     }
 });
 client.on("message", (message) => {
-    var _a, _b, _c, _d, _e, _f, _g, _h;
+    var _a, _b, _c, _d, _e, _f, _g;
     if (client === null || client.user === null) {
         return;
     }
@@ -460,40 +529,6 @@ client.on("message", (message) => {
             return;
         }
     }
-    // be paranoid about newcomers who invite people
-    if (_.isEqual(message.channel.id, channels.tinkering.id)) {
-        const invite_regex = /<@\d+> \*\*joined\*\*; Invited by \*\*.*\*\* \(\*\*\d+\*\* invites\)/g;
-        if (!message.content.match(invite_regex)) { //not an invite message
-            return;
-        }
-        const before_name = "> **joined**; Invited by **";
-        const after_name = "** (**";
-        const name_start_pos = message.content.indexOf(before_name) + before_name.length;
-        const name_end_pos = message.content.indexOf(after_name);
-        const name = message.content.substr(name_start_pos, name_end_pos - name_start_pos);
-        if (name === "[!d] DISBOARD" || name === "AsheN") { //Can't be paranoid about people joining via their invites. Or can we? :tinfoilhat:
-            return;
-        }
-        const before_invites = before_name + name + "** (**";
-        const after_invites = "** invites)";
-        const before_invites_pos = message.content.indexOf(before_invites) + before_invites.length;
-        const after_invites_pos = message.content.indexOf(after_invites);
-        const invites = parseInt(message.content.substr(before_invites_pos, after_invites_pos - before_invites_pos));
-        const members = server.members.cache.filter(member => member.displayName === name);
-        if (members.size === 0) {
-            //Didn't find the user. This happens when the inviter left or Invite Manager didn't notice that someone changed their Discord name.
-            util.sendTextMessage(channels.tinkering, `Failed figuring out who **${name}** is.`);
-            return;
-        }
-        const inferred_members_text = members.reduce((member, result) => `${member} ${result}`, "").trim();
-        util.sendTextMessage(channels.tinkering, new DiscordJS.MessageEmbed().setDescription(`Invited by ${inferred_members_text}`));
-        //warn if any of the potentials are newer than 1 day
-        const newcomer_member = members.find(member => (member.joinedTimestamp || 0) > new Date().getTime() - 1000 * 60 * 60 * 24);
-        if (newcomer_member) {
-            util.sendTextMessage(channels["paranoia-plaza"], new DiscordJS.MessageEmbed().setDescription(`:warning: Got invite number ${invites} for ${(_b = message.mentions.members) === null || _b === void 0 ? void 0 : _b.first()} from recent member ${members.size === 1 ? "" : "one of "}${inferred_members_text}.`));
-        }
-        return;
-    }
     //copy new account joins from auth log to paranoia plaza
     if (message.channel.id === channels["authentication-logs"].id) {
         if (!message.embeds) { //Stop chatting in the auth log channel :reeeee:
@@ -509,7 +544,7 @@ client.on("message", (message) => {
         return;
     }
     // If not from Mee6 and contains mentions
-    if (((_c = message.mentions.members) === null || _c === void 0 ? void 0 : _c.size) && !_.isEqual(message.author.id, "159985870458322944") && !_.isEqual(message.channel.id, channels["lfp-contact"].id)) {
+    if (((_b = message.mentions.members) === null || _b === void 0 ? void 0 : _b.size) && !_.isEqual(message.author.id, "159985870458322944") && !_.isEqual(message.channel.id, channels["lfp-contact"].id)) {
         // react with :pingangry: to users who mention someone with the Don't Ping role
         const dontPingRole = server.roles.cache.find(r => _.isEqual(r.name, util.roles.DONTPING));
         if (!dontPingRole) {
@@ -533,7 +568,7 @@ client.on("message", (message) => {
     if (_.isEqual(message.channel.name, "📈level-up-log")) {
         util.handle_level_up(message);
     }
-    if ((_d = message.mentions.members) === null || _d === void 0 ? void 0 : _d.has(client.user.id)) {
+    if ((_c = message.mentions.members) === null || _c === void 0 ? void 0 : _c.has(client.user.id)) {
         const args = message.content.trim().split(/ +/g).splice(1);
         util.log(message.content, `mentioned by (${message.author})`, util.logLevel.INFO);
         if (disableMentions && !util.isStaff(message))
@@ -559,14 +594,14 @@ client.on("message", (message) => {
         } // _.isEqual(message.author.id, "159985870458322944") &&
     }
     if (_.isEqual(message.channel.name, "🚨reports-log")) {
-        const was_mute = (_f = (_e = message.embeds[0].author) === null || _e === void 0 ? void 0 : _e.name) === null || _f === void 0 ? void 0 : _f.indexOf('Mute');
+        const was_mute = (_e = (_d = message.embeds[0].author) === null || _d === void 0 ? void 0 : _d.name) === null || _e === void 0 ? void 0 : _e.indexOf('Mute');
         if (was_mute) {
             const usr = message.embeds[0].fields[0].value;
-            const usrid = (_g = usr.match(/([0-9])+/g)) === null || _g === void 0 ? void 0 : _g[0];
+            const usrid = (_f = usr.match(/([0-9])+/g)) === null || _f === void 0 ? void 0 : _f[0];
             if (!usrid) {
                 return;
             }
-            const userM = (_h = message.guild) === null || _h === void 0 ? void 0 : _h.members.cache.get(usrid);
+            const userM = (_g = message.guild) === null || _g === void 0 ? void 0 : _g.members.cache.get(usrid);
             if (userM && userM.roles.cache.find(role => _.isEqual(role.name, util.roles.NEW))) {
                 util.log(`Attempting to ban Muted Newcomer: ${message.embeds[0].fields[0].value}`, 'Mute check', util.logLevel.INFO);
                 let options = {
@@ -1576,6 +1611,26 @@ const cmd = {
     'stop typing': function (message) {
         var _a;
         (_a = message) === null || _a === void 0 ? void 0 : _a.channel.stopTyping(true);
+    },
+    'raid': async function (message) {
+        var _a;
+        if (message && !util.isStaff(message)) {
+            util.sendTextMessage(message.channel, `Call the mods!`);
+            return;
+        }
+        if (typeof roles.NSFW === "string") {
+            util.log(`Failed resolving NSFW role`, "Raid", util.logLevel.ERROR);
+            return;
+        }
+        await roles.NSFW.setPermissions(roles.NSFW.permissions.bitfield & ~DiscordJS.Permissions.FLAGS.CREATE_INSTANT_INVITE, "Raid");
+        server.fetchInvites()
+            .then(invs => {
+            invs.forEach(inv => {
+                inv.delete("Raid");
+            });
+        });
+        (_a = message) === null || _a === void 0 ? void 0 : _a.react('✅');
+        util.log(`Disabled invite creation and deleted invites`, "Raid", util.logLevel.WARN);
     },
     'help': function (message) {
         if (!message) {
