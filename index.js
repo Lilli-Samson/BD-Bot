@@ -31,7 +31,7 @@ let channels = {
     'level': "📈level-up-log",
     'logs': "accalia-logs",
     'warnings': "🚨warnings",
-    'cult-info': "🗿cult-info",
+    'cult-info': "🗿cult-selection",
     'char-sub': "📃character-submission",
     'char-archive': "📚character-archive",
     'char-index': "📕character-index",
