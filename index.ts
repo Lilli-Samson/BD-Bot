@@ -354,6 +354,10 @@ client.on("guildMemberAdd", (member) => {
     fnct.serverStats(['users', 'online', 'new']);
 });
 
+client.on("inviteCreate", invite => {
+    invites.set(invite.code, invite);
+});
+
 client.on("guildMemberRemove", (member) => {
     fnct.serverStats(['users', 'online', 'new']);
 });
