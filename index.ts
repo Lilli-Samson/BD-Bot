@@ -62,6 +62,7 @@ let channels: Str_to_Channel = {
     'authentication-logs': "🎫authentication-logs",
     'paranoia-plaza': "🙈ashs-paranoia-plaza",
     'invites': "⚠invite-log",
+    'roles-selection': "🎲roles-selection",
 };
 let roles: Str_to_Role = {
     "No_Ping": "DONT PING⛔",
@@ -1672,6 +1673,24 @@ const cmd: Cmd = {
         });
         message?.react('✅');
         util.log(`Disabled invite creation and deleted invites`, "Raid", util.logLevel.WARN);
+    },
+    'trim_reacts': async function (commandmessage) {
+        if (!commandmessage) return;
+        const roles_selection = channels["roles-selection"];
+        if (typeof roles_selection === "string") return;
+        const messages = await roles_selection.messages.fetch();
+        for (const [messageid, message] of messages) {
+            util.sendTextMessage(commandmessage.channel, `Trimming ${message.url}`);
+            for (const [reactionid, reaction] of message.reactions.cache) {
+                const users = await reaction.users.fetch();
+                for (const [userid, user] of users) {
+                    if (!user.bot) {
+                        await reaction.users.remove(userid);
+                    }
+                }
+            }
+        }
+        commandmessage.react("✅");
     },
     'help': function (message) {
         if (!message) {
