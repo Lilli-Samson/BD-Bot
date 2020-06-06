@@ -1729,6 +1729,10 @@ const cmd: Cmd = {
         if (!message) {
             return;
         }
+        if (!util.isStaff(message)) {
+            util.sendTextMessage(message.channel, `<#534863007860129792>`);
+            return;
+        }
         const archive_channel = <DiscordJS.TextChannel>server.channels.cache.get("534863007860129792");
         if (!archive_channel) {
             util.sendTextMessage(message.channel, `Failed finding character archive channel`);
