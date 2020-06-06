@@ -1066,6 +1066,36 @@ const audit_log_search = (target_string: string, message: DiscordJS.Message, sno
         message.channel.stopTyping();
     });
 };
+
+const dead_char_search = async (start_message_id: string, message: DiscordJS.Message, archive_channel: DiscordJS.TextChannel) => {
+    const messages = await archive_channel.messages.fetch({limit: 100, before: start_message_id});
+    if (messages.size === 0) { //reached the end of messages
+        util.sendTextMessage(message.channel, "Didn't find any messages with mentions of users that are not in the server.");
+        return;
+    }
+    const first_message = messages.first();
+    if (!first_message) return; //should never happen because we have at least 1 message at this point
+    const oldest_message = messages.reduce((l, r) => l.createdTimestamp < r.createdTimestamp ? l : r, first_message);
+    const messages_with_dead_mentions = messages.filter((message) =>
+        !!message.mentions.users.find(user => !server.members.cache.has(user.id))
+    );
+    if (messages_with_dead_mentions.size === 0) {
+        //didn't find any, keep searching
+        dead_char_search(oldest_message.id, message, archive_channel);
+        return;
+    }
+    //actually found results
+    let counter = 1;
+    const leavers_messages = messages_with_dead_mentions.reduce((current, message) => {
+        const leavers = message.mentions.users.filter(user => server.members.cache.get(user.id) === undefined);
+        if (leavers.size === 0) {
+            return current;
+        }
+        return `${current}[${counter++}. archive](${message.url}) ${leavers.reduce((current, leaver) => current + `${leaver}`, "")}\n`;
+    }, "");
+    util.sendTextMessage(message.channel, new DiscordJS.MessageEmbed().setDescription(leavers_messages + "For new results use command\n**_chararchive " + oldest_message.id + "**"));
+}
+
 type Cmd = {
     [key: string]: (arg1?: DiscordJS.Message, arg2?: string[]) => void
 };
@@ -1692,6 +1722,30 @@ const cmd: Cmd = {
         }
         commandmessage.react("✅");
     },
+    'ca': async function (message) {
+        return this.chararchive(message);
+    },
+    'chararchive': async function (message) {
+        if (!message) {
+            return;
+        }
+        const archive_channel = <DiscordJS.TextChannel>server.channels.cache.get("534863007860129792");
+        if (!archive_channel) {
+            util.sendTextMessage(message.channel, `Failed finding character archive channel`);
+            return;
+        }
+        const snowflakes = message.content.match(/(?:\d){18}/g) || [archive_channel.lastMessageID];
+        if (snowflakes.length !== 1) {
+            util.sendTextMessage(message.channel, `Please don't specify multiple IDs.`);
+            return;
+        }
+        const snowflake = snowflakes[0];
+        if (!snowflake) {
+            util.sendTextMessage(message.channel, "Failed getting last archive messge");
+            return;
+        }
+        dead_char_search(snowflake, message, archive_channel);
+    },
     'help': function (message) {
         if (!message) {
             return;
@@ -1742,6 +1796,9 @@ Displays a list of all roles and the number of their uses sorted by name.
 
 ***\`_roles who\`*** \`[@role|roleID]*\`
 Displays a list of members who have the specified role(s).
+
+***\`_chararchive\`*** | ***\`_ca\`*** \`[messageID]?\`
+Displays a list of links to <#534863007860129792> messages that contain a mention of a user that is not a member. The character archive is searched starting the specified messageID or the latest message. Displays the oldest messageID searched for to continue searching.
 
 **\`_help\`**
 Display this text.`))
