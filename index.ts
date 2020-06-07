@@ -1882,7 +1882,7 @@ const fnct = {
                     .then(msg => {
                         if (typeof channels["char-index"] === "string") return;
                         if (msgType === 1) {
-                            channels["char-index"].send(`\`${message.author} Your character has been approved/updated and can be found in the index under \"\"\``);
+                            channels["char-index"].send(`\`${message.author} Your character has been approved and can be found in the index under \"\".\``);
                         }
                         let msgImages = msg.attachments.map(a => a.url);
                         let msgImagesString = "";
