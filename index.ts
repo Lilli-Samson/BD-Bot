@@ -244,7 +244,6 @@ const startUpMod = {
             server.fetchInvites()
             .then(invs => invites = invs);
 
-            cmd.cn();
             this.startSchedules();
 
         } catch (e) {
