@@ -550,7 +550,9 @@ client.on("message", (message) => {
                 .catch((e) => {
                     util.log(`Failed to remove ${logBody}\nError: ${e.toString()}`, 'Media Channel Text Filtering', util.logLevel.ERROR);
                 });
-            message.reply(`Sorry, messages without media or links are removed in these media channels. Please put it in #nsfw-discussion instead.`)
+            message.reply(message.channel.id === "719959096643682335" ?
+            `Read the rules, no commenting <:cathyper:666020454837780510>` :
+            `Sorry, messages without media or links are removed in these media channels. Please put it in #nsfw-discussion instead.`)
                 .then(msg => {
                     setTimeout(()=> {
                         msg.delete();
