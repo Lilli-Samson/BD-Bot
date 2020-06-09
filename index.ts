@@ -1475,10 +1475,8 @@ const cmd: Cmd = {
             }
         });
     },
-    'slowmode': function (message) {
-        if (!message) {
-            return;
-        }
+    'slowmode': async function (message) {
+        if (!message) return;
         if (!util.isStaff(message)) {
             util.sendTextMessage(message.channel, `${message.author} Too slow!`);
             return;
@@ -1487,34 +1485,59 @@ const cmd: Cmd = {
             util.sendTextMessage(message.channel, `Error: Command unavailable in this discord.js version. Required version: 11.5.0+`);
             return;
         }
-        const matches = message.content.match(/\d+/g);
-        if (!matches?.[0]) {
-            util.sendTextMessage(message.channel, `Error: Failed parsing channel. Example usage: \`slowmode #channel 3h 5m 2s\``);
-            return;
+        const matches = message.content.match(/(?:\d){18}/g) || [message.channel.id];
+        let target_channels: DiscordJS.Snowflake[] = [];
+        for (const match of matches) {
+            const target_channel = server.channels.cache.get(match);
+            if (!target_channel) {
+                util.sendTextMessage(message.channel, `Error: Unknown ID ${match}`);
+                return;
+            }
+            if (target_channel instanceof DiscordJS.TextChannel) {
+                target_channels.push(target_channel.id);
+            }
+            else if (target_channel instanceof DiscordJS.CategoryChannel) {
+                target_channel.children.forEach(channel => {
+                    if (channel instanceof DiscordJS.TextChannel) {
+                        target_channels.push(channel.id);
+                    }
+                });
+            }
+            else {
+                util.sendTextMessage(message.channel, `Error: Cannot set slowmode on non-text non-category channel <#${match}>`);
+                return;
+            }
         }
-        const target_channel = server.channels.cache.get(matches[0]);
-        if (target_channel === undefined) {
-            util.sendTextMessage(message.channel, `Error: Failed finding channel \`<#${matches[0]}>\``);
-            return;
-        }
-        if (!(target_channel instanceof DiscordJS.TextChannel)) {
-            util.sendTextMessage(message.channel, `Error: Cannot set slowmode on non-text channel \`<#${matches[0]}>\``);
-            return;
+        if (target_channels.length === 0) {
+            target_channels.push(message.channel.id);
         }
         const hours = parseInt(message.content.match(/\d+h/g)?.[0] || "0");
         const minutes = parseInt(message.content.match(/\d+m/g)?.[0] || "0");
         const seconds = parseInt(message.content.match(/\d+s/g)?.[0] || "0");
         const time_s = hours * 60 * 60 + minutes * 60 + seconds;
         const time_str = `${hours}h ${minutes}m ${seconds}s`;
-        target_channel.setRateLimitPerUser(time_s, `Set by @${message.author.tag} in #${message.channel.name}`)
-            .then(() => {
-                util.sendTextMessage(message.channel, `Successfully set slowmode in ${target_channel} to ${time_str}.`);
+        for (const id of target_channels) {
+            if (message.channel instanceof DiscordJS.DMChannel) return;
+            const target_channel = server.channels.cache.get(id);
+            if (!target_channel || !(target_channel instanceof DiscordJS.TextChannel)) {
+                return;
+            }
+            try {
+                await target_channel.setRateLimitPerUser(time_s, `Set by @${message.author.tag} in #${message.channel.name}`);
                 util.log(`${message.author} set the slowmode in ${target_channel} to ${time_str}.`, `Channel Administration`, util.logLevel.INFO);
-            })
-            .catch(error => {
+            }
+            catch (error) {
                 util.sendTextMessage(message.channel, `Failed setting slowmode to ${time_str} because of:\n${error}`);
                 util.log(`${message.author} failed setting slowmode in ${target_channel} to ${time_str} because of:\n${error}`, `Channel Administration`, util.logLevel.ERROR);
-            });
+                return;
+            };
+        };
+        if (time_s === 0) {
+            util.sendTextMessage(message.channel, `Successfully removed slowmode in${target_channels.reduce((curr, id) => `${curr} <#${id}>`, "")}.`);
+        }
+        else {
+            util.sendTextMessage(message.channel, `Successfully set slowmode in${target_channels.reduce((curr, id) => `${curr} <#${id}>`, "")} to ${time_str}.`);
+        }
     },
     'sm': function (message) {
         cmd.slowmode(message);
@@ -1792,7 +1815,7 @@ Display the profile picture of a user in big.
 ***\`_audit\`*** \`[mention|ID]*\`
 Go through the last 10000 audit entries and display all entries (up to message limit) that contain moderator action of the given target. This command tends to take ~10-20 seconds, please be patient.
 
-***\`_slowmode\`*** | ***\`_sm\`*** \`[#channel|channelID] [number][h|m|s]*\`
+***\`_slowmode\`*** | ***\`_sm\`*** \`[#channel|channelID|categoryID]* [number][h|m|s]*\`
 Sets slowmode to the channel. Example: \`_slowmode #🔞general 30s 2m\`. The time is optional and defaults to 0. The maximum time is 6 hours. Use this command if you need to set a slowmode that is not supported by the UI such as 4 hours.
 
 **\`_cultinfo\`**
