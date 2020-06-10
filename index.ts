@@ -58,6 +58,8 @@ let channels: Str_to_Channel = {
     'lfp-sfw': "🌺lfp-sfw",
     'general': "🔞general",
     'nsfw-media': "👅nsfw-media",
+    'nsfw-media-discussion': "👄nsfw-media-discussion",
+    'nsfw-discussion': "nsfw-discussion",
     'tinkering': "tinkering",
     'authentication-logs': "🎫authentication-logs",
     'paranoia-plaza': "🙈ashs-paranoia-plaza",
@@ -86,7 +88,6 @@ let disableMentions = true;
 let ping_violation_reaction_emoji = emojis.pingangry;
 const level_up_module = "Level roles";
 const link_regex = /((https?|ftp):\/\/|www\.)(\w.+\w\W?)/g; //source: https://support.discordapp.com/hc/en-us/community/posts/360036244152-Change-in-text-link-detection-RegEx
-let mediaTextonlyMessageCounter = 0;
 let invites: DiscordJS.Collection<string, DiscordJS.Invite>;
 
 const dbMod = {
@@ -514,31 +515,10 @@ client.on("message", (message) => {
         }
     }
 
-    // react to too many text messages in nsfw-media
-    if (_.isEqual(message.channel.id, channels["nsfw-media"].id)) {
-        if (_.isNull(message.content.match(link_regex)) && message.attachments.size === 0) {
-            if (util.isStaff(message)) { // staff
-                return;
-            } else if (mediaTextonlyMessageCounter % 7 === 0 && mediaTextonlyMessageCounter !== 0) {
-                util.sendTempTextMessage(message.channel, `**Please refrain from having a lengthy conversation in the __media__ channel!** Thank you...`);
-                util.sendTextMessage(channels.main, `There's too much discussion in ${message.channel}...`);
-                mediaTextonlyMessageCounter = 15;
-            } else if (mediaTextonlyMessageCounter > 7) {
-                util.sendTempTextMessage(message.channel, `**Please refrain from having a lengthy conversation in the __media__ channel!** Thank you...`);
-                message.delete().catch(console.error);
-                //message.react("💢").catch(console.error);
-            }
-            mediaTextonlyMessageCounter++;
-            return;
-        } else {
-            mediaTextonlyMessageCounter--;
-        }
-    }
-
-    // delete links in Hentai Corner and Pornhub categories
+    // delete links in Hentai Corner and Pornhub categories and nsfw-media
     if (!_.contains(["SOURCE", "NSFW-DISCUSSION", "EXTREME-FETISHES-BOT", "NSFW-BOT-IMAGES"], message.channel.name.toUpperCase()) &&
         !_.isNull(message.channel.parent) && _.contains(["HENTAI CORNER", "PORNHUB"], message.channel.parent?.name.toUpperCase()) ||
-        message.channel.id === "719959096643682335"
+        message.channel.id === channels["nsfw-media"].id
     ) {
         if (util.isUserStaff(message.author)) return;
         if (!message.content.match(link_regex) && message.attachments.size < 1) {
@@ -550,9 +530,9 @@ client.on("message", (message) => {
                 .catch((e) => {
                     util.log(`Failed to remove ${logBody}\nError: ${e.toString()}`, 'Media Channel Text Filtering', util.logLevel.ERROR);
                 });
-            message.reply(message.channel.id === "719959096643682335" ?
-            `read the rules, no commenting <:cathyper:666020454837780510>` :
-            `sorry, messages without media or links are removed in these media channels. Please put it in #nsfw-discussion instead.`)
+            message.reply(message.channel.id === channels["nsfw-media"].id ?
+            `sorry, no messages without media allowed in this channel. Use ${channels["nsfw-media-discussion"]}.` :
+            `sorry, messages without media or links are removed in media channels. Please put it in ${channels["nsfw-discussion"]} instead.`)
                 .then(msg => {
                     setTimeout(()=> {
                         msg.delete();
