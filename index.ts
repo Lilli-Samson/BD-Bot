@@ -1408,7 +1408,7 @@ const cmd: Cmd = {
         snowflakes.forEach(snowflake => {
             client.users.fetch(snowflake).then(user => {
                 if (user) {
-                    util.sendTextMessage(message.channel, new DiscordJS.MessageEmbed().setDescription(`${user}'s Avatar`).setImage(user.displayAvatarURL()));
+                    util.sendTextMessage(message.channel, new DiscordJS.MessageEmbed().setDescription(`${user}'s Avatar`).setImage(user.displayAvatarURL() + "?size=2048"));
                 }
                 else {
                     util.sendTextMessage(message.channel, new DiscordJS.MessageEmbed().setDescription(`Invalid User: <@${snowflake}>`));
