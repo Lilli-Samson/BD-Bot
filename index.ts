@@ -43,22 +43,6 @@ let channels: Str_to_Channel = {
     'char-archive': "📚character-archive",
     'char-index': "📕character-index",
     'reports': "📮reports-and-issues",
-    'lfp-info': "📌lfp-info",
-    'lfp-contact': "💬lfp-contact",
-    'lfp-male': "🍆lfp-male",
-    'lfp-female': "🍑lfp-female",
-    'lfp-femboy': "🍌lfp-femboy",
-    'lfp-vanilla': "🍦lfp-vanilla",
-    'lfp-gay': "👬lfp-gay",
-    'lfp-lesbian': "👭lfp-lesbian",
-    'lfp-trans': "🌽lfp-trans",
-    'lfp-futa': "🥕lfp-futa-herm",
-    'lfp-furry': "😺lfp-furry",
-    'lfp-bestiality': "🦄lfp-bestiality",
-    'lfp-extreme': "✨lfp-extreme",
-    'lfp-long': "📰lfp-long-term-plot",
-    'lfp-vc': "🎤lfp-vc",
-    'lfp-sfw': "🌺lfp-sfw",
     'with-male': "🍆with-male",
     'with-female': "🍑with-female",
     'with-femboy': "🍌with-femboy",
@@ -81,6 +65,7 @@ let channels: Str_to_Channel = {
     'group': "👥group",
     'long-term-plot': "📰long-term-plot",
     'gm-style': "🧙gm-style",
+    'contact': "💬contact",
     'playing-as-info': "📌playing-as-info",
     'playing-with-info': "📌playing-with-info",
     'general': "🔞general",
@@ -273,21 +258,6 @@ const startUpMod = {
             util.log("INITIALIZED.", "Startup", util.logLevel.INFO);
 
             fnct.serverStats(['users', 'online', 'new', 'bots', 'roles', 'channels', 'age']);
-
-            lfpChannels.push(<DiscordJS.TextChannel>channels["lfp-bestiality"]);
-            lfpChannels.push(<DiscordJS.TextChannel>channels["lfp-extreme"]);
-            lfpChannels.push(<DiscordJS.TextChannel>channels["lfp-female"]);
-            lfpChannels.push(<DiscordJS.TextChannel>channels["lfp-femboy"]);
-            lfpChannels.push(<DiscordJS.TextChannel>channels["lfp-furry"]);
-            lfpChannels.push(<DiscordJS.TextChannel>channels["lfp-futa"]);
-            lfpChannels.push(<DiscordJS.TextChannel>channels["lfp-gay"]);
-            lfpChannels.push(<DiscordJS.TextChannel>channels["lfp-lesbian"]);
-            lfpChannels.push(<DiscordJS.TextChannel>channels["lfp-long"]);
-            lfpChannels.push(<DiscordJS.TextChannel>channels["lfp-male"]);
-            lfpChannels.push(<DiscordJS.TextChannel>channels["lfp-sfw"]);
-            lfpChannels.push(<DiscordJS.TextChannel>channels["lfp-vc"]);
-            lfpChannels.push(<DiscordJS.TextChannel>channels["lfp-trans"]);
-            lfpChannels.push(<DiscordJS.TextChannel>channels["lfp-vanilla"]);
 
             lfpChannels.push(<DiscordJS.TextChannel>channels["with-male"]);
             lfpChannels.push(<DiscordJS.TextChannel>channels["with-female"]);
@@ -509,7 +479,7 @@ client.on("message", (message) => {
         typeof channels.general === "string" ||
         typeof channels["nsfw-media"] === "string" ||
         typeof channels["paranoia-plaza"] === "string" ||
-        typeof channels["lfp-contact"] === "string" ||
+        typeof channels["contact"] === "string" ||
         typeof channels["authentication-logs"] === "string" ||
         typeof roles.No_Ping === "string") {
         return;
@@ -580,8 +550,8 @@ client.on("message", (message) => {
                             `[Previous Message Link](${previous_message.message.url})`));
                     });
 
-                warnMsg += `${reason} \nPlease follow the guidelines as described in ${channels["lfp-info"]}. Thanks! :heart:`;
-                util.sendTextMessage(channels["lfp-contact"], warnMsg);
+                warnMsg += `${reason} \nPlease follow the guidelines as described in ${channels["type-info"]}. Thanks! :heart:`;
+                util.sendTextMessage(channels["contact"], warnMsg);
                 util.log(`${message.author}'s lfp ad in ${message.channel} ${reason}`, "lfpAdViolation", util.logLevel.INFO);
             })
             .catch(e => {
@@ -651,7 +621,7 @@ client.on("message", (message) => {
     }
 
     // If not from Mee6 and contains mentions
-    if (message.mentions.members?.size && !message.author.bot && message.channel.id !== channels["lfp-contact"].id) {
+    if (message.mentions.members?.size && !message.author.bot && message.channel.id !== channels["contact"].id) {
         // react with :pingangry: to users who mention someone with the Don't Ping role
         const dontPingRole = roles.No_Ping;
         const no_ping_mentions = message.mentions.members.filter(member => (member.roles.cache.has(dontPingRole.id) && !_.isEqual(member.user, message.author)));
@@ -747,64 +717,6 @@ client.on("message", (message) => {
             let target = "";
 
             switch (channel.name.substr(2)) {
-                //Matchmaking
-                case "lfp-male":
-                    title = "MALES";
-                    target = "Males, people with the \"Male\" role (not Femboys)";
-                    break;
-                case "lfp-female":
-                    title = "FEMALES";
-                    target = "Females, Tomboys, etc.";
-                    break;
-                case "lfp-femboy":
-                    title = "FEMBOYS";
-                    target = "People with the \"Trap/Femboy\" role";
-                    break;
-                case "lfp-vanilla":
-                    title = "VANILLA RP";
-                    target = "People with Vanilla Kinks and the \"Vanilla\" role";
-                    break;
-                case "lfp-gay":
-                    title = "GAY (Male x Male) RP";
-                    target = "Males with the \"Gay\" and/or \"Bi/Pansexual\" role";
-                    break;
-                case "lfp-lesbian":
-                    title = "LESBIAN (Female x Female) RP";
-                    target = "Females with the \"Lesbian\" and/or \"Bi/Pansexual\" role";
-                    break;
-                case "lfp-trans":
-                    title = "TRANS";
-                    target = "People with the MtF and FtM roles";
-                    break;
-                case "lfp-futa-herm":
-                    title = "FUTANARI / HERMAPHRODITE";
-                    target = "Futanari and Hermaphrodites (not trans)";
-                    break;
-                case "lfp-furry":
-                    title = "FURRY / ANTHRO";
-                    target = "Furries and Anthromorphs (not beasts/bestiality rp)";
-                    break;
-                case "lfp-bestiality":
-                    title = "BESTIALITY RP";
-                    target = "Beasts, people interested in Bestiality RP (not furries)";
-                    break;
-                case "fp-extreme":
-                    title = "EXTREME KINKS RP";
-                    target = "People with Extreme Kinks and the \"Extreme\" role";
-                    break;
-                case "lfp-long-term-plot":
-                    title = "LONG TERM / PLOT DRIVEN RP";
-                    target = "People who would like a long term and/or plot driven RP";
-                    break;
-                case "lfp-vc":
-                    title = "VOICE CHATS  / ETC.";
-                    target = "People wanting to find others to go in a Voice Chat session or etc. with";
-                    break;
-                case "lfp-sfw":
-                    title = "NON-EROTIC";
-                    target = "People who would like a non-erotic RP";
-                    break;
-
                 //RP Looking For
                 case "with-male":
                     title = "MALE";
@@ -878,7 +790,7 @@ client.on("message", (message) => {
                     title = "LESBIAN";
                     target = "People looking for RPs involving sexual relationships between females.";
                     break;
-                case "xtreme":
+                case "xtreme": //the unicode symbol for extreme is 1 byte long instead of 2, so the e gets removed along with the symbol
                     title = "EXTREME";
                     target = "People looking for an RP with more hardcore kinks like vore, gore and scat.";
                     break;
@@ -911,17 +823,17 @@ client.on("message", (message) => {
             playing_as ? `${channels["playing-as-info"]}` :
             playing_with ? `${channels["playing-with-info"]}` :
             by_type ? `${channels["type-info"]}` :
-            `${channels["lfp-info"]}`;
+            ``;
             const rp_type_str =
             playing_as ? "Playing As" :
             playing_with ? "Playing With" :
             by_type ? "RP Type" :
-            "Looking for";
+            "";
             const rp_with_as_looking_for =
             playing_as ? "want to play as" :
             playing_with ? "want to play with" :
             by_type ? "are looking for" :
-            "Looking for";
+            "";
             if (!(message.channel instanceof DiscordJS.TextChannel)) return;
             const lfpMsg =
                 `>>> __**${rp_type_str} ${title} Channel Info**__\n` +
@@ -930,7 +842,7 @@ client.on("message", (message) => {
                 `🔹 __Target Audience for LFP posts:__\n` +
                 `**${playing_as ? "Anyone wanting to play with " : ""}${target}**\n\n` +
                 `If you see posts which are __not clearly looking for these kinds of RP__ in this channel let the staff know by reacting with :x: (\`:x:\`) or reporting it in ${channels.reports}!\n\n` +
-                `If you want to **contact** someone who posted in this channel, **please check their DM Roles** first! If they have **Ask to DM ⚠️** or **DMs Closed ⛔** use ${channels["lfp-contact"]}!\n\n` +
+                `If you want to **contact** someone who posted in this channel, **please check their DM Roles** first! If they have **Ask to DM ⚠️** or **DMs Closed ⛔** use ${channels["contact"]}!\n\n` +
                 `*More info in:* ${info_channel}\n\n`
             ;
 
