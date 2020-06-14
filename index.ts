@@ -538,10 +538,13 @@ client.on("message", (message) => {
                     return;
                 }
 
-                let warnMsg = `${message.author}, your Looking For Partner ad in ${message.channel} `;
+                let warnMsg = `${message.author}, your roleplaying ad in ${message.channel} `;
                 let reason = "";
                 if (violationMode === 1) { reason = `contains more than 3 images.`; }
 
+                util.sendTextMessage(channels["reported-rps"], new DiscordJS.MessageEmbed()
+                .setDescription("RP ad violation: More than 3 images in RP ad.")
+                .addField("Details", `Post author: ${message.author}\n[Link to post](${message.url})`));
                 message.react('❌')
                     .then() // react success
                     .catch(e => {
