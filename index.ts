@@ -22,12 +22,15 @@ let server: DiscordJS.Guild;
 
 type Str_to_Channel = {
     [key: string]: string | DiscordJS.TextChannel
-};
+}
 type Str_to_Role = {
     [key: string]: string | DiscordJS.Role
 }
 type Str_to_Emoji = {
     [key: string]: string | DiscordJS.GuildEmoji
+}
+type Str_to_Category = {
+    [key: string]: string | DiscordJS.CategoryChannel
 }
 
 let channels: Str_to_Channel = {
@@ -56,6 +59,31 @@ let channels: Str_to_Channel = {
     'lfp-long': "📰lfp-long-term-plot",
     'lfp-vc': "🎤lfp-vc",
     'lfp-sfw': "🌺lfp-sfw",
+    'with-male': "🍆with-male",
+    'with-female': "🍑with-female",
+    'with-femboy': "🍌with-femboy",
+    'with-trans': "🌽with-trans",
+    'with-furry': "😺with-furry",
+    'with-beast': "🦄with-beast",
+    'with-futa-herm': "🥕with-futa-herm",
+    'as-male': "🍆as-male",
+    'as-female': "🍑as-female",
+    'as-femboy': "🍌as-femboy",
+    'as-trans': "🌽as-trans",
+    'as-furry': "😺as-furry",
+    'as-beast': "🦄as-beast",
+    'as-futa-herm': "🥕as-futa-herm",
+    'type-info': "📌type-info",
+    'vanilla': "🍦vanilla",
+    'gay': "👬gay",
+    'lesbian': "👭lesbian",
+    'extreme': "✨extreme",
+    'group': "👥group",
+    'long-term-plot': "📰long-term-plot",
+    'gm-style': "🧙gm-style",
+    'playing-as-info': "📌playing-as-info",
+    'looking-for-info': "📌looking-for-info",
+    'contact': "💬contact",
     'general': "🔞general",
     'nsfw-media': "👅nsfw-media",
     'nsfw-media-discussion': "👄nsfw-media-discussion",
@@ -65,12 +93,20 @@ let channels: Str_to_Channel = {
     'paranoia-plaza': "🙈ashs-paranoia-plaza",
     'invites': "⚠invite-log",
     'roles-selection': "🎲roles-selection",
+    'reported-rps': "☣reported-rp-ads",
+};
+let categories: Str_to_Category = {
+    'playing-with': "RP Playing With",
+    'playing-as': "RP Playing As",
+    'by-type': "RP By Type",
 };
 let roles: Str_to_Role = {
     "No_Ping": "DONT PING⛔",
     "Newcomer": "Newcomer",
     "CustomRoles": "--Custom Roles--",
     "NSFW": "NSFW",
+    "Ask_to_dm": "Ask to DM ⚠️",
+    "DMs_closed": "DMs Closed ⛔",
 };
 let emojis: Str_to_Emoji = {
     "bancat": "bancat",
@@ -210,6 +246,18 @@ const startUpMod = {
                     console.log(`Error: Failed filling channel ${channels[channelID]} because it's not a text channel`)
                 }
             });
+            _.each(categories, function (category, categoryID) {
+                const c = server.channels.cache.find(ch => _.isEqual(ch.name, categories[categoryID]));
+                if (!c) {
+                    console.log(`Error: Failed filling channel ${categories[categoryID]} because it was not found`)
+                }
+                else if (c.type === "category") {
+                    categories[categoryID] = c as DiscordJS.CategoryChannel;
+                }
+                else {
+                    console.log(`Error: Failed filling channel ${categories[categoryID]} because it's not a category channel`)
+                }
+            });
             _.each(Object.keys(util.roles.LVL), role_name => util.roles.LVL[role_name] = <DiscordJS.Role>server.roles.cache.find(role => role.name === <string>util.roles.LVL[role_name]));
             _.each(Object.keys(roles), role_name => roles[role_name] = <DiscordJS.Role>server.roles.cache.find(role => role.name === roles[role_name]));
             _.each(Object.keys(emojis), emojiname => emojis[emojiname] = <DiscordJS.GuildEmoji>server.emojis.cache.find(emoji => emoji.name === emojiname));
@@ -241,6 +289,28 @@ const startUpMod = {
             lfpChannels.push(<DiscordJS.TextChannel>channels["lfp-vc"]);
             lfpChannels.push(<DiscordJS.TextChannel>channels["lfp-trans"]);
             lfpChannels.push(<DiscordJS.TextChannel>channels["lfp-vanilla"]);
+
+            lfpChannels.push(<DiscordJS.TextChannel>channels["with-male"]);
+            lfpChannels.push(<DiscordJS.TextChannel>channels["with-female"]);
+            lfpChannels.push(<DiscordJS.TextChannel>channels["with-femboy"]);
+            lfpChannels.push(<DiscordJS.TextChannel>channels["with-trans"]);
+            lfpChannels.push(<DiscordJS.TextChannel>channels["with-furry"]);
+            lfpChannels.push(<DiscordJS.TextChannel>channels["with-beast"]);
+            lfpChannels.push(<DiscordJS.TextChannel>channels["with-futa-herm"]);
+            lfpChannels.push(<DiscordJS.TextChannel>channels["as-male"]);
+            lfpChannels.push(<DiscordJS.TextChannel>channels["as-female"]);
+            lfpChannels.push(<DiscordJS.TextChannel>channels["as-femboy"]);
+            lfpChannels.push(<DiscordJS.TextChannel>channels["as-trans"]);
+            lfpChannels.push(<DiscordJS.TextChannel>channels["as-furry"]);
+            lfpChannels.push(<DiscordJS.TextChannel>channels["as-beast"]);
+            lfpChannels.push(<DiscordJS.TextChannel>channels["as-futa-herm"]);
+            lfpChannels.push(<DiscordJS.TextChannel>channels["vanilla"]);
+            lfpChannels.push(<DiscordJS.TextChannel>channels["gay"]);
+            lfpChannels.push(<DiscordJS.TextChannel>channels["lesbian"]);
+            lfpChannels.push(<DiscordJS.TextChannel>channels["extreme"]);
+            lfpChannels.push(<DiscordJS.TextChannel>channels["group"]);
+            lfpChannels.push(<DiscordJS.TextChannel>channels["long-term-plot"]);
+            lfpChannels.push(<DiscordJS.TextChannel>channels["gm-style"]);
 
             server.fetchInvites()
             .then(invs => invites = invs);
@@ -384,6 +454,30 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
     if (_.isEqual(reaction, "⭐") || _.isEqual(reaction, "✅")) {
         fnct.approveChar(messagereaction.message, messagereaction.emoji, user);
     }
+    if (reaction === "❌") { //Post got flagged
+        //check that it's in an LFP channel
+        const channel = messagereaction.message.channel;
+        if (!(channel instanceof DiscordJS.TextChannel)) return;
+        if (!channel.parent) return;
+        const playing_with_category = categories['playing-with'];
+        if (typeof playing_with_category === "string") return;
+        const playing_as_category = categories['playing-as'];
+        if (typeof playing_as_category === "string") return;
+        const type_category = categories['by-type'];
+        if (typeof type_category === "string") return;
+        if (!([playing_with_category.id, playing_as_category.id, type_category.id].includes(channel.parent.id))) return;
+        //no self-reports
+        if (messagereaction.message.author.id === client.user?.id) return;
+        //check that we haven't already handled it
+        if (messagereaction.me) return;
+        //place own reaction
+        await messagereaction.message.react("❌");
+        //make report
+        util.sendTextMessage(channels["reported-rps"], new DiscordJS.MessageEmbed()
+        .setDescription(messagereaction.message.content)
+        .addField("Details", `Post author: ${messagereaction.message.author}\nReported by: ${user}\n[Link to post](${messagereaction.message.url})`)
+        );
+    }
 });
 
 client.on('messageReactionRemove', async (messagereaction, user) => {
@@ -417,7 +511,9 @@ client.on("message", (message) => {
         typeof channels["nsfw-media"] === "string" ||
         typeof channels["paranoia-plaza"] === "string" ||
         typeof channels["lfp-contact"] === "string" ||
-        typeof channels["authentication-logs"] === "string") {
+        typeof channels["contact"] === "string" ||
+        typeof channels["authentication-logs"] === "string" ||
+        typeof roles.No_Ping === "string") {
         return;
     }
     if (_.isEqual(message.author.username, client.user.username)) return;
@@ -557,12 +653,9 @@ client.on("message", (message) => {
     }
 
     // If not from Mee6 and contains mentions
-    if (message.mentions.members?.size && !_.isEqual(message.author.id, "159985870458322944") && !_.isEqual(message.channel.id, channels["lfp-contact"].id)) {
+    if (message.mentions.members?.size && !message.author.bot && message.channel.id !== channels["lfp-contact"].id && message.channel.id !== channels["contact"].id) {
         // react with :pingangry: to users who mention someone with the Don't Ping role
-        const dontPingRole = server.roles.cache.find(r => _.isEqual(r.name, util.roles.DONTPING));
-        if (!dontPingRole) {
-            return;
-        }
+        const dontPingRole = roles.No_Ping;
         const no_ping_mentions = message.mentions.members.filter(member => (member.roles.cache.has(dontPingRole.id) && !_.isEqual(member.user, message.author)));
         if (no_ping_mentions.size !== 0) {
             const no_ping_mentions_string = no_ping_mentions.reduce((prev_member, next_member) => prev_member + `${next_member} `, "");
@@ -653,110 +746,194 @@ client.on("message", (message) => {
             });
 
             let title = "";
-            let color = 0;
             let target = "";
 
-            switch (channel.name.substr(6).split(/-/g)[0]) {
-                case "male":
+            switch (channel.name.substr(2)) {
+                //Matchmaking
+                case "lfp-male":
                     title = "MALES";
-                    color = server.roles.cache.find(role => _.isEqual(role.name, "Male"))?.color || 0;
                     target = "Males, people with the \"Male\" role (not Femboys)";
                     break;
-                case "female":
+                case "lfp-female":
                     title = "FEMALES";
-                    color = server.roles.cache.find(role => _.isEqual(role.name, "Female"))?.color || 0;
                     target = "Females, Tomboys, etc.";
                     break;
-                case "femboy":
+                case "lfp-femboy":
                     title = "FEMBOYS";
-                    color = server.roles.cache.find(role => _.isEqual(role.name, "Trap"))?.color || 0;
                     target = "People with the \"Trap/Femboy\" role";
                     break;
-                case "vanilla":
+                case "lfp-vanilla":
                     title = "VANILLA RP";
-                    color = server.roles.cache.find(role => _.isEqual(role.name, "Vanilla"))?.color || 0;
                     target = "People with Vanilla Kinks and the \"Vanilla\" role";
                     break;
-                case "gay":
+                case "lfp-gay":
                     title = "GAY (Male x Male) RP";
-                    color = server.roles.cache.find(role => _.isEqual(role.name, "Gay"))?.color || 0;
                     target = "Males with the \"Gay\" and/or \"Bi/Pansexual\" role";
                     break;
-                case "lesbian":
+                case "lfp-lesbian":
                     title = "LESBIAN (Female x Female) RP";
-                    color = server.roles.cache.find(role => _.isEqual(role.name, "Lesbian"))?.color || 0;
                     target = "Females with the \"Lesbian\" and/or \"Bi/Pansexual\" role";
                     break;
-                case "trans":
+                case "lfp-trans":
                     title = "TRANS";
-                    color = server.roles.cache.find(role => _.isEqual(role.name, "MtF"))?.color || 0;
                     target = "People with the MtF and FtM roles";
                     break;
-                case "futa":
+                case "lfp-futa-herm":
                     title = "FUTANARI / HERMAPHRODITE";
-                    color = server.roles.cache.find(role => _.isEqual(role.name, "Futa"))?.color || 0;
                     target = "Futanari and Hermaphrodites (not trans)";
                     break;
-                case "furry":
+                case "lfp-furry":
                     title = "FURRY / ANTHRO";
-                    color = server.roles.cache.find(role => _.isEqual(role.name, "Furry"))?.color || 0;
                     target = "Furries and Anthromorphs (not beasts/bestiality rp)";
                     break;
-                case "bestiality":
+                case "lfp-bestiality":
                     title = "BESTIALITY RP";
-                    color = server.roles.cache.find(role => _.isEqual(role.name, "Beast"))?.color || 0;
                     target = "Beasts, people interested in Bestiality RP (not furries)";
                     break;
-                case "xtreme":
+                case "lfp-xtreme":
                     title = "EXTREME KINKS RP";
-                    color = server.roles.cache.find(role => _.isEqual(role.name, "Extreme"))?.color || 0;
                     target = "People with Extreme Kinks and the \"Extreme\" role";
                     break;
-                case "long":
+                case "lfp-long-term-plot":
                     title = "LONG TERM / PLOT DRIVEN RP";
-                    color = 0x00FFCA;
                     target = "People who would like a long term and/or plot driven RP";
                     break;
-                case "vc":
+                case "lfp-vc":
                     title = "VOICE CHATS  / ETC.";
-                    color = 0xA8A8A8;
                     target = "People wanting to find others to go in a Voice Chat session or etc. with";
                     break;
-                case "sfw":
+                case "lfp-sfw":
                     title = "NON-EROTIC";
-                    color = 0xCA2C92;
                     target = "People who would like a non-erotic RP";
                     break;
-            }
 
-            let lfpEmbed = new DiscordJS.MessageEmbed()
-            .setColor(color)
-            .setTitle("Looking for " + title + " Channel Info")
-            .setDescription(
-                "This channel is specifically for posts, which are **looking for " + title + "**.\n\n" +
-                "If you do see posts, which are __not clearly looking for these kinds of RP/things__ in this channel, **please** let the staff team know in " + channels.reports + "!\n\n" +
-                "If you want to **contact** someone who posted in this channel, **please check their DM Roles** first before doing so and please use " + channels["lfp-contact"] + "!\n\n" +
-                "*More info in:* " + channels["lfp-info"]
-            )
-            .addField(
-                "What posts are to be expected and to be posted in this channel?",
-                "LFP Ads, which explicitly state that they are __looking for " + title + "__"
-            )
-            .addField(
-                "Target Audience for LFP posts:",
-                target
-            );
+                //RP Looking For
+                case "with-male":
+                    title = "MALE";
+                    target = "Males, people with the \"Male\" role (not Femboys)";
+                    break;
+                case "with-female":
+                    title = "FEMALE";
+                    target = "Females, Tomboys, etc.";
+                    break;
+                case "with-femboy":
+                    title = "FEMBOY";
+                    target = "People with the \"Trap/Femboy\" role";
+                    break;
+                case "with-trans":
+                    title = "TRANS";
+                    target = "People with the MtF or FtM roles";
+                    break;
+                case "with-furry":
+                    title = "FURRY";
+                    target = "Furries and Anthromorphs (not beasts/bestiality rp)";
+                    break;
+                case "with-beast":
+                    title = "BEAST";
+                    target = "People playing Beasts who are interested in Bestiality RP (not furries)";
+                    break;
+                case "with-futa-herm":
+                    title = "FUTANARI / HERMAPHRODITE";
+                    target = "Futanari and Hermaphrodites (not trans)";
+                    break;
 
-            let lfpMsg =
-                `>>> __**Looking for ${title} Channel Info**__\n` +
-                `This channel is specifically for posts, which are **looking for ${title}**.\n\n` +
+                //RP Playing As
+                case "as-male":
+                    title = "MALE";
+                    target = "Males and people with the \"Male\" role (not Femboys)";
+                    break;
+                case "as-female":
+                    title = "FEMALE";
+                    target = "Females, Tomboys, etc.";
+                    break;
+                case "as-femboy":
+                    title = "FEMBOY";
+                    target = "People with the \"Trap/Femboy\" role";
+                    break;
+                case "as-trans":
+                    title = "TRANS";
+                    target = "People who want to play as gender-transitioned characters or make gender-bending a major theme in the RP.";
+                    break;
+                case "as-furry":
+                    title = "FURRY";
+                    target = "Furries and Anthromorphs (not beasts/bestiality rp)";
+                    break;
+                case "as-beast":
+                    title = "BEAST";
+                    target = "Beasts and people interested in Bestiality RP (not furries)";
+                    break;
+                case "as-futa-herm":
+                    title = "FUTANARI / HERMAPHRODITE";
+                    target = "Futanari and Hermaphrodites (not trans)";
+                    break;
+
+                //RP By Type
+                case "vanilla":
+                    title = "VANILLA";
+                    target = "People who like a more wholesome RP that does not involve hardcore themes.";
+                    break;
+                case "gay":
+                    title = "GAY";
+                    target = "People looking for RPs involving sexual relationships between males.";
+                    break;
+                case "lesbian":
+                    title = "LESBIAN";
+                    target = "People looking for RPs involving sexual relationships between females.";
+                    break;
+                case "xtreme":
+                    title = "EXTREME";
+                    target = "People looking for an RP with more hardcore kinks like vore, gore and scat.";
+                    break;
+                case "group":
+                    title = "GROUP";
+                    target = "Players who are looking for a roleplay group as opposed to a 1 on 1 RP.";
+                    break;
+                case "long-term-plot":
+                    title = "LONG-TERM";
+                    target = "People who are interested in plots that aim to evolve over weeks and are not meant to end within a couple of days.";
+                    break;
+                case "gm-style":
+                    title = "GM-STYLE RP";
+                    target = "Game Masters that create a world and plots as well as players who want to play in those.";
+                    break;
+                default:
+                    util.log(`Failed finding matchmaking channel ${channel.name.substr(2)}`, "Matchmaking", util.logLevel.ERROR);
+                }
+
+            const playing_as_category = categories["playing-as"];
+            const playing_with_category = categories["playing-with"];
+            const by_type_category = categories["by-type"];
+            if (typeof playing_as_category === "string") return;
+            if (typeof playing_with_category === "string") return;
+            if (typeof by_type_category === "string") return;
+            const playing_as = channel.parent?.id === playing_as_category.id;
+            const playing_with = channel.parent?.id === playing_with_category.id;
+            const by_type = channel.parent?.id === by_type_category.id;
+            const info_channel =
+            playing_as ? `${channels["playing-as-info"]}` :
+            playing_with ? `${channels["looking-for-info"]}` :
+            by_type ? `${channels["type-info"]}` :
+            `${channels["lfp-info"]}`;
+            const rp_type_str =
+            playing_as ? "Playing As" :
+            playing_with ? "Playing With" :
+            by_type ? "RP Type" :
+            "Looking for";
+            const rp_with_as_looking_for =
+            playing_as ? "want to play as" :
+            playing_with ? "want to play with" :
+            by_type ? "are looking for" :
+            "Looking for";
+            if (!(message.channel instanceof DiscordJS.TextChannel)) return;
+            const lfpMsg =
+                `>>> __**${rp_type_str} ${title} Channel Info**__\n` +
                 `🔹 __What posts are to be expected and to be posted in this channel?__\n` +
-                `LFP Ads, which explicitly state that they are **looking for ${title}**\n\n` +
+                `LFP ads which explicitly state that they **${rp_with_as_looking_for} ${title}${by_type ? " RPs" : " characters"}**.\n\n` +
                 `🔹 __Target Audience for LFP posts:__\n` +
-                `${target}\n\n` +
-                `If you do see posts, which are __not clearly looking for these kinds of RP/things__ in this channel, **please** let the staff team know in ${channels.reports}!\n\n` +
-                `If you want to **contact** someone who posted in this channel, **please check their DM Roles** first before doing so and please use ${channels["lfp-contact"]}!\n\n` +
-                `*More info in:* ${channels["lfp-info"]}\n\n`
+                `**${playing_as ? "Anyone wanting to play with " : ""}${target}**\n\n` +
+                `If you see posts which are __not clearly looking for these kinds of RP__ in this channel let the staff know by reacting with :x: (\`:x:\`) or reporting it in ${channels.reports}!\n\n` +
+                `If you want to **contact** someone who posted in this channel, **please check their DM Roles** first! If they have ${roles.Ask_to_dm} or ${roles.DMs_closed} use ${channels["contact"]}!\n\n` +
+                `*More info in:* ${info_channel}\n\n`
             ;
 
             channel.send(lfpMsg)
