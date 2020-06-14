@@ -444,6 +444,7 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
         //make report
         util.sendTextMessage(channels["reported-rps"], new DiscordJS.MessageEmbed()
         .setDescription(messagereaction.message.content)
+        .addField("Channel", `${channel}`)
         .addField("Details", `Post author: ${messagereaction.message.author}\nReported by: ${user}\n[Link to post](${messagereaction.message.url})`)
         );
     }
