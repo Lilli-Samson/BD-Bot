@@ -83,7 +83,6 @@ let channels: Str_to_Channel = {
     'gm-style': "🧙gm-style",
     'playing-as-info': "📌playing-as-info",
     'playing-with-info': "📌playing-with-info",
-    'contact': "💬contact",
     'general': "🔞general",
     'nsfw-media': "👅nsfw-media",
     'nsfw-media-discussion': "👄nsfw-media-discussion",
@@ -511,7 +510,6 @@ client.on("message", (message) => {
         typeof channels["nsfw-media"] === "string" ||
         typeof channels["paranoia-plaza"] === "string" ||
         typeof channels["lfp-contact"] === "string" ||
-        typeof channels["contact"] === "string" ||
         typeof channels["authentication-logs"] === "string" ||
         typeof roles.No_Ping === "string") {
         return;
@@ -653,7 +651,7 @@ client.on("message", (message) => {
     }
 
     // If not from Mee6 and contains mentions
-    if (message.mentions.members?.size && !message.author.bot && message.channel.id !== channels["lfp-contact"].id && message.channel.id !== channels["contact"].id) {
+    if (message.mentions.members?.size && !message.author.bot && message.channel.id !== channels["lfp-contact"].id) {
         // react with :pingangry: to users who mention someone with the Don't Ping role
         const dontPingRole = roles.No_Ping;
         const no_ping_mentions = message.mentions.members.filter(member => (member.roles.cache.has(dontPingRole.id) && !_.isEqual(member.user, message.author)));
@@ -932,7 +930,7 @@ client.on("message", (message) => {
                 `🔹 __Target Audience for LFP posts:__\n` +
                 `**${playing_as ? "Anyone wanting to play with " : ""}${target}**\n\n` +
                 `If you see posts which are __not clearly looking for these kinds of RP__ in this channel let the staff know by reacting with :x: (\`:x:\`) or reporting it in ${channels.reports}!\n\n` +
-                `If you want to **contact** someone who posted in this channel, **please check their DM Roles** first! If they have **Ask to DM ⚠️** or **DMs Closed ⛔** use ${channels["contact"]}!\n\n` +
+                `If you want to **contact** someone who posted in this channel, **please check their DM Roles** first! If they have **Ask to DM ⚠️** or **DMs Closed ⛔** use ${channels["lfp-contact"]}!\n\n` +
                 `*More info in:* ${info_channel}\n\n`
             ;
 
