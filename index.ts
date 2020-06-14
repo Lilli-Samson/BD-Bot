@@ -790,7 +790,7 @@ client.on("message", (message) => {
                     title = "BESTIALITY RP";
                     target = "Beasts, people interested in Bestiality RP (not furries)";
                     break;
-                case "fp-xtreme":
+                case "fp-extreme":
                     title = "EXTREME KINKS RP";
                     target = "People with Extreme Kinks and the \"Extreme\" role";
                     break;
