@@ -932,7 +932,7 @@ client.on("message", (message) => {
                 `🔹 __Target Audience for LFP posts:__\n` +
                 `**${playing_as ? "Anyone wanting to play with " : ""}${target}**\n\n` +
                 `If you see posts which are __not clearly looking for these kinds of RP__ in this channel let the staff know by reacting with :x: (\`:x:\`) or reporting it in ${channels.reports}!\n\n` +
-                `If you want to **contact** someone who posted in this channel, **please check their DM Roles** first! If they have Ask to DM ⚠️ or DMs Closed ⛔ use ${channels["contact"]}!\n\n` +
+                `If you want to **contact** someone who posted in this channel, **please check their DM Roles** first! If they have **Ask to DM ⚠️** or **DMs Closed ⛔** use ${channels["contact"]}!\n\n` +
                 `*More info in:* ${info_channel}\n\n`
             ;
 
