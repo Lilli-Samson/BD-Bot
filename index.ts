@@ -82,7 +82,7 @@ let channels: Str_to_Channel = {
     'long-term-plot': "📰long-term-plot",
     'gm-style': "🧙gm-style",
     'playing-as-info': "📌playing-as-info",
-    'looking-for-info': "📌looking-for-info",
+    'playing-with-info': "📌playing-with-info",
     'contact': "💬contact",
     'general': "🔞general",
     'nsfw-media': "👅nsfw-media",
@@ -911,7 +911,7 @@ client.on("message", (message) => {
             const by_type = channel.parent?.id === by_type_category.id;
             const info_channel =
             playing_as ? `${channels["playing-as-info"]}` :
-            playing_with ? `${channels["looking-for-info"]}` :
+            playing_with ? `${channels["playing-with-info"]}` :
             by_type ? `${channels["type-info"]}` :
             `${channels["lfp-info"]}`;
             const rp_type_str =
