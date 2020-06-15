@@ -2213,7 +2213,7 @@ const util = {
         const role_gain_string = added_roles.reduce((curr, role) => curr + `${role}`, "");
         const role_lose_string = removed_roles.reduce((curr, role) => curr + `${role}`, "");
 
-        util.log(`${user} gained level ${level}, so added [${role_gain_string}] and removed [${role_lose_string}]`, level_up_module, util.logLevel.INFO);
+        util.log(`${(added_roles.size !== 1 || removed_roles.size !== 1) ? "⚠ Incorrect role change: " : ""}${user} gained level ${level}, so added [${role_gain_string}] and removed [${role_lose_string}]`, level_up_module, util.logLevel.INFO);
 
         await member.roles.set(updated_roles);
 
