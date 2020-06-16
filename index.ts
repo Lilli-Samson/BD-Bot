@@ -85,7 +85,7 @@ let categories: Str_to_Category = {
     'by-type': "RP By Type",
 };
 let roles: Str_to_Role = {
-    "No_Ping": "DONT PING⛔",
+    "No_Ping": "DON'T PING⛔",
     "Newcomer": "Newcomer",
     "CustomRoles": "--Custom Roles--",
     "NSFW": "NSFW",
@@ -295,10 +295,6 @@ const startUpMod = {
         let j = schedule.scheduleJob('*/60 * * * *', function(fireDate){
             cmd.cn();
         });
-        return;
-        let k = schedule.scheduleJob('*/60 * * * *', function(fireDate){
-            cmd.cn();
-        });
     }
 };
 
@@ -441,11 +437,25 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
         if (messagereaction.me) return;
         //place own reaction
         await messagereaction.message.react("❌");
+        //get context
+        let playtype = "";
+        if (channel.parent.id === playing_with_category.id) playtype = `to play with ${channel.name.substr(7)} characters`;
+        else if (channel.parent.id === playing_as_category.id) playtype = `to play as a ${channel.name.substr(5)} character`;
+        else playtype = `for ${channel.name === "✨extreme" ? "an extreme" : channel.name.substr(2)} type roleplay`;
         //make report
         util.sendTextMessage(channels["reported-rps"], new DiscordJS.MessageEmbed()
         .setDescription(messagereaction.message.content)
-        .addField("Channel", `${channel}`)
-        .addField("Details", `Post author: ${messagereaction.message.author}\nReported by: ${user}\n[Link to post](${messagereaction.message.url})`)
+        .addField("Details",
+        `Channel: ${channel}\n` +
+        `Post author: ${messagereaction.message.author}\n` +
+        `Reported by: ${user}\n` +
+        `[Link to post](${messagereaction.message.url})`)
+        .addField("Founded Report",
+        `\`\`\`\n<@${messagereaction.message.author.id}> Your ad does not fit in <#${channel.id}> because it doesn't explicitly look ${playtype}.\`\`\`` +
+        `${channels["contact"]}`)
+        .addField("Unfounded Report",
+        `\`\`\`\n<@${user.id}> The ad you reported in <#${channel.id}> (<${messagereaction.message.url}>) seems to be on-topic since it's looking ${playtype}. What is wrong with it?\`\`\`` +
+        `${channels["contact"]}`)
         );
     }
 });
