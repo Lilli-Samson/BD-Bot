@@ -441,7 +441,7 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
         let playtype = "";
         if (channel.parent.id === playing_with_category.id) playtype = `to play with ${channel.name.substr(7)} characters`;
         else if (channel.parent.id === playing_as_category.id) playtype = `to play as a ${channel.name.substr(5)} character`;
-        else playtype = `for ${channel.name === "✨extreme" ? "an extreme" : channel.name.substr(2)} type roleplay`;
+        else playtype = `for ${channel.name === "✨extreme" ? "an extreme" : `a ${channel.name.substr(2)}`} type roleplay`;
         //make report
         util.sendTextMessage(channels["reported-rps"], new DiscordJS.MessageEmbed()
         .setDescription(messagereaction.message.content)
@@ -450,10 +450,10 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
         `Post author: ${messagereaction.message.author}\n` +
         `Reported by: ${user}\n` +
         `[Link to post](${messagereaction.message.url})`)
-        .addField("Founded Report",
+        .addField("Founded Report Template",
         `\`\`\`\n<@${messagereaction.message.author.id}> Your ad does not fit in <#${channel.id}> because it doesn't explicitly look ${playtype}.\`\`\`` +
         `${channels["contact"]}`)
-        .addField("Unfounded Report",
+        .addField("Unfounded Report Template",
         `\`\`\`\n<@${user.id}> The ad you reported in <#${channel.id}> (<${messagereaction.message.url}>) seems to be on-topic since it's looking ${playtype}. What is wrong with it?\`\`\`` +
         `${channels["contact"]}`)
         );
