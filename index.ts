@@ -1786,7 +1786,7 @@ const cmd: Cmd = {
             if (_.isUndefined(this[command])) return;
             if (command in this) {
                 this[command](message, args);
-                util.log(message.author.username + ' is calling command: ' + command, command, util.logLevel.INFO);
+                util.log(`${message.author.username} is calling command: \`${message.content}\``, command, util.logLevel.INFO);
             }
         } catch (e) {
             util.log(`Failed to process (${command})`, command, util.logLevel.ERROR);
@@ -1871,7 +1871,7 @@ const cmd: Cmd = {
         let channels: string[] = []; //the channels to set permissions for
         let target: string = ""; //the member ID to set permissions for
         let error: string = ""; //errors that occured
-        const snowflakes = (message.content.match(/\d+/g) || [message.author.id]).filter(match => match.length > 15);
+        const snowflakes = (message.content.match(/(?:\d+){18}/g) || []);
         snowflakes.forEach(snowflake => {
             if (server.members.cache.has(snowflake)) {
                 if (target) { //duplicate target user, bad
@@ -1907,6 +1907,14 @@ const cmd: Cmd = {
                     error += `No channels match ${prefix_match}\n`
                 }
             });
+        }
+        if (!target) {
+            util.sendTextMessage(message.channel, `Error: Target user not specified`);
+            return;
+        }
+        if (channels.length === 0) {
+            util.sendTextMessage(message.channel, `Error: Channel(s) not specified`);
+            return;
         }
         if (error) {
             util.sendTextMessage(message.channel, error);
