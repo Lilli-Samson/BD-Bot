@@ -1860,6 +1860,68 @@ const cmd: Cmd = {
         }
         dead_char_search(snowflake, message, archive_channel);
     },
+    'banish': function (message) { //banish ID|Mention Channel|ChannelID|CategoryID|"Prefix"+
+        if (!message) {
+            return;
+        }
+        if (!util.isStaff(message)) {
+            util.sendTextMessage(message.channel, `${message.author} has been banished to the shadow realm!`);
+            return;
+        }
+        let channels: string[] = []; //the channels to set permissions for
+        let target: string = ""; //the member ID to set permissions for
+        let error: string = ""; //errors that occured
+        const snowflakes = (message.content.match(/\d+/g) || [message.author.id]).filter(match => match.length > 15);
+        snowflakes.forEach(snowflake => {
+            if (server.members.cache.has(snowflake)) {
+                if (target) { //duplicate target user, bad
+                    error += "Too many members specified\n";
+                    return;
+                }
+                target = snowflake;
+                return;
+            }
+            const channel = server.channels.cache.get(snowflake)
+            if (channel) {
+                if (channel.type === "category") {
+                    channels = channels.concat((<DiscordJS.CategoryChannel>channel).children.keyArray());
+                    return;
+                }
+                channels.push(snowflake);
+                return;
+            }
+            error += "Unknown ID: " + snowflake + "\n";
+        });
+        const prefix_matches = message.content.match(/"[^"]*"/g);
+        if (prefix_matches) {
+            prefix_matches.forEach(prefix_match => {
+                prefix_match = prefix_match.slice(1, -1); //remove the "
+                let matchcount = 0;
+                server.channels.cache.forEach(channel => {
+                    if (channel.name.startsWith(prefix_match)) {
+                        channels.push(channel.id);
+                        matchcount++;
+                    }
+                });
+                if (matchcount === 0) {
+                    error += `No channels match ${prefix_match}\n`
+                }
+            });
+        }
+        if (error) {
+            util.sendTextMessage(message.channel, error);
+            return;
+        }
+        const summary = channels.reduce((current, snowflake) => {
+            const channel = server.channels.cache.get(snowflake);
+            if (!channel) {
+                return `${current} Invalid channel ${snowflake}`
+            }
+            channel.updateOverwrite(target, {VIEW_CHANNEL: false}, `${message.author.username}#${message.author.discriminator} banished ${server.members.cache.get(target)?.user.username} from ${channel.name}`);
+            return `${current} <#${snowflake}>`;
+        }, "")
+        util.sendTextMessage(message.channel, new DiscordJS.MessageEmbed().setDescription(`Banished <@${target}> from ${summary}`));
+    },
     'help': function (message) {
         if (!message) {
             return;
@@ -1913,6 +1975,9 @@ Displays a list of members who have the specified role(s).
 
 ***\`_chararchive\`*** | ***\`_ca\`*** \`[messageID]?\`
 Displays a list of links to <#534863007860129792> messages that contain a mention of a user that is not a member. The character archive is searched starting the specified messageID or the latest message. Displays the oldest messageID searched for to continue searching.
+
+***\`_banish\`*** \`[userID] [channelID]* [categoryID]* ["prefix"]*\`
+Hides the given channels from the given user. The channels can be specified directly, by specifying a category or using a prefix. For example \`_banish 315977186383364096 (user ID) ":wine_glass:" (Cult prefix)\` hides the Debaucherous Bastards cult from that user. \`_banish 315977186383364096 (user ID) 616685364186316820 (fun corner ID)\` hides the Fun Corner from the user.
 
 **\`_help\`**
 Display this text.`))
