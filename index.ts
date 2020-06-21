@@ -1817,7 +1817,7 @@ const cmd: Cmd = {
             if (_.isUndefined(this[command])) return;
             if (command in this) {
                 this[command](message, args);
-                util.log(`${message.author.username} is calling command: \`${message.content}\``, command, util.logLevel.INFO);
+                util.log(`${message.author} is calling command: \`${message.content}\``, command, util.logLevel.INFO);
             }
         } catch (e) {
             util.log(`Failed to process (${command})`, command, util.logLevel.ERROR);
