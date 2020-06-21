@@ -1397,9 +1397,6 @@ const cmd: Cmd = {
                 }
             }
         });
-        if (newcomerMembers.length === 0) {
-            channel.send("0" + " Newcomers found.");
-        }
     },
     'ancient': function(message) {
         return;
@@ -2081,7 +2078,6 @@ const fnct = {
         } catch (e) {
             util.log(`Failed to update server stats for ${modes}: ${e}`, 'Server Stats', util.logLevel.ERROR);
         }
-        util.log('Successfully updated server stats! (' + modes + ')', 'Server Stats', util.logLevel.INFO);
     },
     'approveChar': function(message: DiscordJS.Message, reaction: DiscordJS.ReactionEmoji, user: DiscordJS.User) {
         try {
