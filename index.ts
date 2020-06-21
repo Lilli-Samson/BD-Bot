@@ -91,6 +91,7 @@ let roles: Str_to_Role = {
     "NSFW": "NSFW",
     "Ask_to_dm": "Ask to DM ⚠️",
     "DMs_closed": "DMs Closed ⛔",
+    "cult-leader": "Cult Leader",
 };
 let emojis: Str_to_Emoji = {
     "bancat": "bancat",
@@ -1717,6 +1718,9 @@ const cmd: Cmd = {
         if (args?.[0] === "who") {
             return cmd["roles who"](message);
         }
+        if (args?.[0] === "purge") {
+            return cmd["roles purge"](message);
+        }
         util.sendTempTextMessage(message.channel, 'That didn\'t work out... maybe try `_roles who <roleID>` or `_roles usage` or `_roles usage list`');
     },
     'roles usage': function (message, args) { //list all the roles and their usage; args can only be "list"
@@ -1774,6 +1778,33 @@ const cmd: Cmd = {
             }, "");
             util.sendTextMessage(message.channel, new DiscordJS.MessageEmbed().setDescription(`Users with role ${role}:\n${users_str}`));
         });
+    },
+    'roles purge': async function (message) {
+        if (!message) return;
+        if (message.author.id !== "591241625737494538") return;
+        const matches = message.content.match(/(?:\d){18}/g);
+        if (!matches) return;
+        const cultleader = roles["cult-leader"];
+        if (typeof cultleader === "string") {
+            util.log("Failed finding cult leader role", "Cult cleanup", util.logLevel.ERROR);
+            return;
+        }
+        for (const index in matches) {
+            let counter = 0;
+            const match = matches[index];
+            const role = server.roles.cache.get(match);
+            if (!role) {
+                util.sendTextMessage(message.channel, `Failed finding role with ID ${match}.`);
+                continue;
+            }
+            for (const [, member] of server.members.cache) {
+                if (member.roles.cache.has(match) && !member.roles.cache.has(cultleader.id)) {
+                    await member.roles.remove(match);
+                    counter++;
+                }
+            }
+            util.sendTextMessage(message.channel, new DiscordJS.MessageEmbed().setDescription(`Removed <@&${match}> from ${counter} members.`));
+        }
     },
     'call': async function (message) {
         if (!message) {
