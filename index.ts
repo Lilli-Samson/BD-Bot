@@ -65,6 +65,7 @@ let channels: Str_to_Channel = {
     'group': "👥group",
     'long-term-plot': "📰long-term-plot",
     'gm-style': "🧙gm-style",
+    'real-life': "🤝real-life",
     'contact': "💬contact",
     'playing-as-info': "📌playing-as-info",
     'playing-with-info': "📌playing-with-info",
@@ -281,6 +282,7 @@ const startUpMod = {
             lfpChannels.push(<DiscordJS.TextChannel>channels["group"]);
             lfpChannels.push(<DiscordJS.TextChannel>channels["long-term-plot"]);
             lfpChannels.push(<DiscordJS.TextChannel>channels["gm-style"]);
+            lfpChannels.push(<DiscordJS.TextChannel>channels["real-life"]);
 
             server.fetchInvites()
             .then(invs => invites = invs);
@@ -415,6 +417,7 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
             return;
         }
     }
+    if (messagereaction.message.guild?.id !== server.id) return;
     const reaction = messagereaction.emoji.name;
     if (messagereaction.emoji instanceof DiscordJS.GuildEmoji) return;
     if (_.isEqual(reaction, "⭐") || _.isEqual(reaction, "✅")) {
@@ -734,92 +737,96 @@ client.on("message", (message) => {
             switch (channel.name.substr(2)) {
                 //RP Looking For
                 case "with-male":
-                    title = "MALE";
+                    title = "MALE Characters";
                     target = "Males, people with the \"Male\" role (not Femboys)";
                     break;
                 case "with-female":
-                    title = "FEMALE";
+                    title = "FEMALE Characters";
                     target = "Females, Tomboys, etc.";
                     break;
                 case "with-femboy":
-                    title = "FEMBOY";
+                    title = "FEMBOY Characters";
                     target = "People with the \"Trap/Femboy\" role";
                     break;
                 case "with-trans":
-                    title = "TRANS";
+                    title = "TRANS Characters";
                     target = "People with the MtF or FtM roles";
                     break;
                 case "with-furry":
-                    title = "FURRY";
+                    title = "FURRY Characters";
                     target = "Furries and Anthromorphs (not beasts/bestiality rp)";
                     break;
                 case "with-beast":
-                    title = "BEAST";
+                    title = "BEAST Characters";
                     target = "People playing Beasts who are interested in Bestiality RP (not furries)";
                     break;
                 case "with-futa-herm":
-                    title = "FUTANARI / HERMAPHRODITE";
+                    title = "FUTANARI / HERMAPHRODITE Characters";
                     target = "Futanari and Hermaphrodites (not trans)";
                     break;
 
                 //RP Playing As
                 case "as-male":
-                    title = "MALE";
+                    title = "MALE Characters";
                     target = "Males and people with the \"Male\" role (not Femboys)";
                     break;
                 case "as-female":
-                    title = "FEMALE";
+                    title = "FEMALE Characters";
                     target = "Females, Tomboys, etc.";
                     break;
                 case "as-femboy":
-                    title = "FEMBOY";
+                    title = "FEMBOY Characters";
                     target = "People with the \"Trap/Femboy\" role";
                     break;
                 case "as-trans":
-                    title = "TRANS";
+                    title = "TRANS Characters";
                     target = "People who want to play as gender-transitioned characters or make gender-bending a major theme in the RP.";
                     break;
                 case "as-furry":
-                    title = "FURRY";
+                    title = "FURRY Characters";
                     target = "Furries and Anthromorphs (not beasts/bestiality rp)";
                     break;
                 case "as-beast":
-                    title = "BEAST";
+                    title = "BEAST Characters";
                     target = "Beasts and people interested in Bestiality RP (not furries)";
                     break;
                 case "as-futa-herm":
-                    title = "FUTANARI / HERMAPHRODITE";
+                    title = "FUTANARI / HERMAPHRODITE Characters";
                     target = "Futanari and Hermaphrodites (not trans)";
                     break;
 
                 //RP By Type
                 case "vanilla":
-                    title = "VANILLA";
+                    title = "VANILLA RPs";
                     target = "People who like a more wholesome RP that does not involve hardcore themes.";
                     break;
                 case "gay":
-                    title = "GAY";
+                    title = "GAY RPs";
                     target = "People looking for RPs involving sexual relationships between males.";
                     break;
                 case "lesbian":
-                    title = "LESBIAN";
+                    title = "LESBIAN RPs";
                     target = "People looking for RPs involving sexual relationships between females.";
                     break;
                 case "xtreme": //the unicode symbol for extreme is 1 byte long instead of 2, so the e gets removed along with the symbol
-                    title = "EXTREME";
+                    title = "EXTREME RPs";
                     target = "People looking for an RP with more hardcore kinks like vore, gore and scat.";
                     break;
                 case "group":
-                    title = "GROUP";
+                    title = "GROUP RPs";
                     target = "Players who are looking for a roleplay group as opposed to a 1 on 1 RP.";
                     break;
                 case "long-term-plot":
-                    title = "LONG-TERM";
+                    title = "LONG-TERM RPs";
                     target = "People who are interested in plots that aim to evolve over weeks and are not meant to end within a couple of days.";
                     break;
                 case "gm-style":
-                    title = "GM-STYLE RP";
+                    title = "GM-STYLE RPs";
                     target = "Game Masters that create a world and plots as well as players who want to play in those.";
+                    break;
+                case "real-life":
+                    title = "REAL LIFE Contacts";
+                    target = "People who want some form of real life contact, be it dating, sharing images, talking in voice chat or similar.";
                     break;
                 default:
                     util.log(`Failed finding matchmaking channel ${channel.name.substr(2)}`, "Matchmaking", util.logLevel.ERROR);
@@ -849,20 +856,23 @@ client.on("message", (message) => {
             playing_with ? "want to play with" :
             by_type ? "are looking for" :
             "";
+            if (typeof channels["extreme"] === "string") return;
+            if (typeof channels["real-life"] === "string") return;
+            const exclusive = [channels["extreme"].id, channels["real-life"].id].indexOf(message.channel.id) !== -1 ? "⚠️ __**If your ad is on-topic in this channel do not post it in other channels!**__\n\n" : "";
             if (!(message.channel instanceof DiscordJS.TextChannel)) return;
             const lfpMsg =
                 `>>> __**${rp_type_str} ${title} Channel Info**__\n` +
                 `🔹 __What posts are to be expected and to be posted in this channel?__\n` +
-                `LFP ads which explicitly state that they **${rp_with_as_looking_for} ${title}${by_type ? " RPs" : " characters"}**.\n\n` +
+                `LFP ads which explicitly state that they **${rp_with_as_looking_for} ${title}**.\n\n` +
                 `🔹 __Target Audience for LFP posts:__\n` +
                 `**${playing_as ? "Anyone wanting to play with " : ""}${target}**\n\n` +
+                `${exclusive}` +
                 `If you see posts which are __not clearly looking for these kinds of RP__ in this channel let the staff know by reacting with :x: (\`:x:\`) or reporting it in ${channels.reports}!\n\n` +
                 `If you want to **contact** someone who posted in this channel, **please check their DM Roles** first! If they have **Ask to DM ⚠️** or **DMs Closed ⛔** use ${channels["contact"]}!\n\n` +
                 `*More info in:* ${info_channel}\n\n`
             ;
 
             channel.send(lfpMsg)
-            .then(() => util.log(`Updated lfp info in <#${channel.id}>`, "lfpInfo", util.logLevel.INFO))
             .catch(error => util.log(`Failed updating lfp info in ${channel} because ${error}`, "lfpInfo", util.logLevel.ERROR));
         }, 2000);
     }
