@@ -544,8 +544,7 @@ client.on("message", (message) => {
                         time_passed_s = ~~((message.createdTimestamp - previous_message.createdTimestamp) / 1000);
                         if (time_passed_s < 60 * 60 * 24) {
                             previous_message.message.delete()
-                                .then(() => util.log(`Deleted previous LFP message from ${message.author} (${message.author.id}) in ${message.channel} from ${util.time(time_passed_s)}.`, 'lfpMsgDelete', util.logLevel.INFO))
-                                .catch(() => util.log(`Couldn't delete previous LFP message from ${message.author} (${message.author.id}) in ${message.channel} from ${util.time(time_passed_s)}.`, 'lfpMsgDelete', util.logLevel.WARN));
+                            .catch(() => util.log(`Couldn't delete previous LFP message from ${message.author} (${message.author.id}) in ${message.channel} from ${util.time(time_passed_s)}.`, 'lfpMsgDelete', util.logLevel.WARN));
                         }
                     }
                 }
