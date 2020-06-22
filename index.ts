@@ -1823,13 +1823,13 @@ const cmd: Cmd = {
             if (_.isUndefined(this[command])) return;
             if (command in this) {
                 this[command](message, args);
-                util.log(`${message.author} is calling command: \`${message.content}\``, command, util.logLevel.INFO);
+                util.log(`${message.author} is calling command: \`${message.content}\`\n[link](${message.url})`, command, util.logLevel.INFO);
             }
         } catch (e) {
             util.log(`Failed to process (${command})`, command, util.logLevel.ERROR);
         }
     },
-    'stop typing': function (message) {
+    'stop_typing': function (message) {
         message?.channel.stopTyping(true);
     },
     'raid': async function(message) {
@@ -2333,6 +2333,13 @@ const util = {
         const role_lose_string = removed_roles.reduce((curr, role) => curr + `${role}`, "");
 
         util.log(`${(added_roles.size !== 1 || removed_roles.size !== 1) ? "⚠ Incorrect role change: " : ""}${user} gained level ${level}, so added [${role_gain_string}] and removed [${role_lose_string}]`, level_up_module, util.logLevel.INFO);
+
+        if (removed_roles.size === 0) {
+            const old_role = util.level_to_role(level - 1);
+            util.log(`Expected to find role ${old_role} with ID ${old_role.id} on user ${user}, but didn't. Roles found: ${
+                member.roles.cache.reduce((curr, role) => `${curr} ${role} (${role.id})`, "")
+            }`, level_up_module, util.logLevel.WARN);
+        }
 
         await member.roles.set(updated_roles);
 
