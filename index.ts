@@ -663,7 +663,10 @@ client.on("message", (message) => {
 
     if (message.mentions.members?.has(client.user.id)) {
         const args = message.content.trim().split(/ +/g).splice(1);
-        util.log(message.content, `mentioned by (${message.author})`, util.logLevel.INFO);
+        util.sendTextMessage(message.channel,
+            new DiscordJS.MessageEmbed()
+            .setDescription(message.content)
+            .addField("Details", `Mentioned by: ${message.author}\n[Link](${message.url})`));
 
         if (disableMentions && !util.isStaff(message)) return;
 
@@ -676,7 +679,7 @@ client.on("message", (message) => {
                     break;
                 }
                 case "help": {
-                    util.sendTextMessage(message.channel, `${message.author}, please be patient, the help page is under construction KAPPACINNOOOO...`);
+                    cmd["help"](message);
                     break;
                 }
                 default: {
