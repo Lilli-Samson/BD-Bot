@@ -559,7 +559,7 @@ client.on("message", (message) => {
                 util.sendTextMessage(channels["reported-rps"], new DiscordJS.MessageEmbed()
                 .setDescription("RP ad violation: More than 3 images in RP ad.")
                 .addField("Details", `Post author: ${message.author}\n[Link to post](${message.url})`));
-                message.react('❌')
+                message.react('🖼')
                     .then() // react success
                     .catch(e => {
                         util.sendTextMessage(channels.main, new DiscordJS.MessageEmbed().setDescription(`HALP, I cannot warn ${message.author} for violating the LFP rules in ${message.channel}! Their ad ${reason}\n` +
