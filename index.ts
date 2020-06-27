@@ -79,6 +79,7 @@ let channels: Str_to_Channel = {
     'invites': "⚠invite-log",
     'roles-selection': "🎲roles-selection",
     'reported-rps': "☣reported-rp-ads",
+    'report-log': "reported-lfp-warning-logs",
 };
 let categories: Str_to_Category = {
     'playing-with': "RP Playing With",
@@ -92,6 +93,7 @@ let roles: Str_to_Role = {
     "NSFW": "NSFW",
     "Ask_to_dm": "Ask to DM ⚠️",
     "DMs_closed": "DMs Closed ⛔",
+    "DMs_open": "DMs Open ✔️",
     "cult-leader": "Cult Leader",
 };
 let emojis: Str_to_Emoji = {
@@ -423,18 +425,18 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
     if (_.isEqual(reaction, "⭐") || _.isEqual(reaction, "✅")) {
         fnct.approveChar(messagereaction.message, messagereaction.emoji, user);
     }
-    if (reaction === "❌") { //Post got flagged
-        //check that it's in an LFP channel
-        const channel = messagereaction.message.channel;
-        if (!(channel instanceof DiscordJS.TextChannel)) return;
-        if (!channel.parent) return;
-        const playing_with_category = categories['playing-with'];
-        if (typeof playing_with_category === "string") return;
-        const playing_as_category = categories['playing-as'];
-        if (typeof playing_as_category === "string") return;
-        const type_category = categories['by-type'];
-        if (typeof type_category === "string") return;
-        if (!([playing_with_category.id, playing_as_category.id, type_category.id].includes(channel.parent.id))) return;
+    if (user.id === client.user?.id) return; //don't react to our own reactions
+    //check if it's in an LFP channel
+    const channel = messagereaction.message.channel;
+    if (!(channel instanceof DiscordJS.TextChannel)) return;
+    if (!channel.parent) return;
+    const playing_with_category = categories['playing-with'];
+    if (typeof playing_with_category === "string") return;
+    const playing_as_category = categories['playing-as'];
+    if (typeof playing_as_category === "string") return;
+    const type_category = categories['by-type'];
+    if (typeof type_category === "string") return;
+    if (reaction === "❌" && [playing_with_category.id, playing_as_category.id, type_category.id].includes(channel.parent.id)) { //Post got flagged
         //no self-reports
         if (messagereaction.message.author.id === client.user?.id) return;
         //check that we haven't already handled it
@@ -447,29 +449,105 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
         else if (channel.parent.id === playing_as_category.id) playtype = `to play as a ${channel.name.substr(5)} character`;
         else playtype = `for ${channel.name === "✨extreme" ? "an extreme" : `a ${channel.name.substr(2)}`} type roleplay`;
         //make report
-        util.sendTextMessage(channels["reported-rps"], new DiscordJS.MessageEmbed()
-        .setDescription(messagereaction.message.content)
-        .addField("Details",
-        `Channel: ${channel}\n` +
-        `Post author: ${messagereaction.message.author}\n` +
-        `Reported by: ${user}\n` +
-        `[Link to post](${messagereaction.message.url})`)
-        .addField("Founded Report Template",
-        `\`\`\`\n<@${messagereaction.message.author.id}> Your ad does not fit in <#${channel.id}> because it doesn't explicitly look ${playtype}.\`\`\`` +
-        `${channels["contact"]}`)
-        .addField("Unfounded Report Template",
-        `\`\`\`\n<@${user.id}> The ad you reported in <#${channel.id}> (<${messagereaction.message.url}>) seems to be on-topic since it's looking ${playtype}. What is wrong with it?\`\`\`` +
-        `${channels["contact"]}`)
+        const report_channel = channels["reported-rps"];
+        if (typeof report_channel === "string") return;
+        const report_message = await report_channel.send(new DiscordJS.MessageEmbed()
+            .setDescription(messagereaction.message.content)
+            .addField("Details",
+            `Channel: ${channel}\n` +
+            `Post author: ${messagereaction.message.author}\n` +
+            `Reported by: ${user}\n` +
+            `[Link to post](${messagereaction.message.url})`)
+            .addField("Founded Report Template",
+            `\`\`\`\n<@${messagereaction.message.author.id}>, your ad does not fit in <#${channel.id}> because it doesn't explicitly look ${playtype}, so it has been removed.\`\`\`` +
+            `${channels["contact"]}`)
+            .addField("Unfounded Report Template",
+            `\`\`\`\n<@${user.id}>, the ad you reported in <#${channel.id}> (<${messagereaction.message.url}>) seems to be on-topic since it's looking ${playtype}. What is wrong with it?\`\`\`` +
+            `${channels["contact"]}`)
+            .setFooter(`${channel.id}/${messagereaction.message.id}`)
+            .setTimestamp(new Date().getTime())
         );
+        await report_message.react("✅");
+        await report_message.react("❌");
+        await report_message.react("✋");
     }
-});
-
-client.on('messageReactionRemove', async (messagereaction, user) => {
-    if (user === client.user) return;
-    if (!(user instanceof DiscordJS.User)) {
-        user = await client.users.fetch(user.id);
+    const report_channel = channels["reported-rps"];
+    if (typeof report_channel === "string") return;
+    if (messagereaction.message.channel.id === report_channel.id) {
+        //get original ad
+        const footer_text = messagereaction.message.embeds[0].footer?.text;
+        if (!footer_text) return;
+        const [channelID, messageID] = footer_text.split("/");
+        const ad_channel = server.channels.cache.get(channelID);
+        if (!ad_channel) return;
+        if (!(ad_channel instanceof DiscordJS.TextChannel)) return;
+        const message = await ad_channel.messages.fetch(messageID);
+        if (message.deleted) return;
+        //get reporters
+        let reporters = "";
+        for (const [id, reaction] of message.reactions.cache) {
+            if (reaction.emoji.name !== "❌") continue;
+            await reaction.users.fetch();
+            reporters = reaction.users.cache.reduce((curr, user) => {
+                if (user.id === client.user?.id) return curr;
+                return curr + `${user} `;
+            }, "").trim();
+        }
+        //handle reaction
+        switch (reaction) {
+            case "✅": //founded report
+            {
+                //delete original message
+                await message.delete({reason: "Founded LFP-ad-report"});
+                //yell at author
+                util.sendTextMessage(channels["contact"], messagereaction.message.embeds[0].fields[1].value.split("```")[1] + ` (confirmed by @${user.username})`);
+                //log in reports log
+                util.sendTextMessage(channels["report-log"], new DiscordJS.MessageEmbed().setTimestamp(new Date().getTime())
+                .setDescription(`✅ Removed ad by ${message.author} reported by ${reporters} confirmed by ${user} concerning [this report](${messagereaction.message.url}).`));
+                break;
+            }
+            case "❌": //unfounded report
+            {
+                //yell at reporters
+                if (reporters !== "") { //not a retracted report
+                    const template = messagereaction.message.embeds[0].fields[2].value.split("```")[1];
+                    util.sendTextMessage(channels["contact"], reporters + " " + template.substr(22) + ` (marked unfounded by @${user.username})`);
+                }
+                //remove reactions from ad
+                for (const [id, reaction] of message.reactions.cache) {
+                    if (reaction.emoji.name === "❌") {
+                        await reaction.remove();
+                        break;
+                    }
+                }
+                //log in reports log
+                util.sendTextMessage(channels["report-log"], new DiscordJS.MessageEmbed().setTimestamp(new Date().getTime())
+                .setDescription(`❌ ${reporters ? `Report by ${reporters}` : `Retracted report`} marked unfounded by ${user} concerning [this ad](${message.url})/[this report](${messagereaction.message.url}).`));
+                break;
+            }
+            case "✋":
+            {
+                //log in reports log
+                util.sendTextMessage(channels["report-log"], new DiscordJS.MessageEmbed().setTimestamp(new Date().getTime())
+                .setDescription(`✋ ${reporters ? `Report by ${reporters}` : `Retracted report`} handled manually by ${user} concerning [this ad](${message.url})/[this report](${messagereaction.message.url}).`));
+                break;
+            }
+            default: //don't react with random emojis reeeeeee
+                return;
+        }
+        //remove own reactions from report
+        for (const [id, reaction] of messagereaction.message.reactions.cache) {
+            if (reaction.me) {
+                await reaction.users.fetch(); //need to do this, otherwise reaction.users is empty
+                for (const [id] of reaction.users.cache) {
+                    if (id === client.user?.id) {
+                        reaction.users.remove(id);
+                        break;
+                    }
+                }
+            }
+        }
     }
-    const reaction = messagereaction.emoji.name;
 });
 
 client.on("channelUpdate", (oldChannel, newChannel) => {
@@ -519,61 +597,47 @@ client.on("message", (message) => {
     }
 
     if (lfpChannels.includes(message.channel)) {
-        let number_of_attached_images = message.attachments.filter(embed => !!embed.height).size;
-        let violationMode = 0;
-        if ((util.image_link_count(message.content) + number_of_attached_images) > 3) { // check for msg which have >3 images in any LFP channel
-            violationMode = 1;
-        }
-        // Check for messages sent in lfp channels
-        message.channel.messages.fetch({ "before": message.id, "limit": 100 })
-            .then(messages => {
-                let time_passed_s = 0;
-                type Message_Author_Timestamp = {
-                    message: DiscordJS.Message
-                    createdTimestamp: number
-                };
-                let previous_message: Message_Author_Timestamp;
-                if (_.isEmpty(messages)) {
-                    previous_message = messages.reduce((m1, m2) => {
-                        if (!_.isEqual(m1.message.author.id, m2.author.id)) return m1;
-                        return m1.createdTimestamp > m2.createdTimestamp ? m1 : {message: m2, createdTimestamp: m2.createdTimestamp};
-                    }, { "message": message, "createdTimestamp": 0 });
-
-                    // Previous message sent was less than 24h ago
-                    if (previous_message.createdTimestamp !== 0) {
-                        time_passed_s = ~~((message.createdTimestamp - previous_message.createdTimestamp) / 1000);
-                        if (time_passed_s < 60 * 60 * 24) {
-                            previous_message.message.delete()
-                            .catch(() => util.log(`Couldn't delete previous LFP message from ${message.author} (${message.author.id}) in ${message.channel} from ${util.time(time_passed_s)}.`, 'lfpMsgDelete', util.logLevel.WARN));
-                        }
-                    }
+        //Check for 3+ images
+        (async () => {
+            let number_of_attached_images = message.attachments.filter(embed => !!embed.height).size;
+            if ((util.image_link_count(message.content) + number_of_attached_images) > 3) {
+                message.delete({reason: "More than 3 images in an RP ad"});
+                util.sendTextMessage(channels["contact"],
+                `${message.author}, your roleplaying ad in ${message.channel} has been removed because it had more than 3 images.\n` +
+                `Please follow the rules as described in ${channels["type-info"]}.`);
+                util.sendTextMessage(channels["report-log"], new DiscordJS.MessageEmbed()
+                .setDescription(`✅ Deleted RP ad by ${message.author} in ${message.channel} because it contained more than 3 images.`)
+                .setTimestamp(new Date().getTime()));
+                return;
+            }
+            //Add DM status emotes
+            const user = server.members.cache.get(message.author.id);
+            const add_reaction = async (emote: string) => {
+                try {
+                    await message.react(emote);
+                } catch (error) {
+                    console.log(`Failed adding emote ${emote} because ${error}`);
                 }
-                if (violationMode === 0) {
-                    return;
-                }
-
-                let warnMsg = `${message.author}, your roleplaying ad in ${message.channel} `;
-                let reason = "";
-                if (violationMode === 1) { reason = `contains more than 3 images.`; }
-
-                util.sendTextMessage(channels["reported-rps"], new DiscordJS.MessageEmbed()
-                .setDescription("RP ad violation: More than 3 images in RP ad.")
-                .addField("Details", `Post author: ${message.author}\n[Link to post](${message.url})`));
-                message.react('🖼')
-                    .then() // react success
-                    .catch(e => {
-                        util.sendTextMessage(channels.main, new DiscordJS.MessageEmbed().setDescription(`HALP, I cannot warn ${message.author} for violating the LFP rules in ${message.channel}! Their ad ${reason}\n` +
-                            `[Violating Message Link](${message.url})\n` +
-                            `[Previous Message Link](${previous_message.message.url})`));
-                    });
-
-                warnMsg += `${reason} \nPlease follow the guidelines as described in ${channels["type-info"]}. Thanks! :heart:`;
-                util.sendTextMessage(channels["contact"], warnMsg);
-                util.log(`${message.author}'s lfp ad in ${message.channel} ${reason}`, "lfpAdViolation", util.logLevel.INFO);
-            })
-            .catch(e => {
-                util.log('Failed: ' + e.toString(), 'lfpAdViolation', util.logLevel.WARN);
-            });
+            }
+            if (user) {
+                await add_reaction("🇩");
+                await add_reaction("🇲");
+                if (typeof roles["DMs_open"] === "string") return;
+                if (typeof roles["DMs_closed"] === "string") return;
+                if (typeof roles["Ask_to_dm"] === "string") return;
+                if (user.roles.cache.has(roles["DMs_open"].id)) await add_reaction("✅");
+                else if (user.roles.cache.has(roles["DMs_closed"].id)) await add_reaction("⛔");
+                else if (user.roles.cache.has(roles["Ask_to_dm"].id)) await add_reaction("⚠️");
+                else await add_reaction("❔");
+            }
+        })();
+        //Delete previous message
+        (async () => {
+            const messages = await message.channel.messages.fetch({ "before": message.id, "limit": 100 });
+            for (const [message_id, old_message] of messages) {
+                if (old_message.author.id === message.author.id && old_message.id !== message.id) await old_message.delete({reason: "New ad posted in LFP channel"});
+            }
+        })();
     }
 
     // delete links in general
@@ -687,7 +751,7 @@ client.on("message", (message) => {
                     break;
                 }
             }
-        } // _.isEqual(message.author.id, "159985870458322944") &&
+        }
     }
     if (_.isEqual(message.channel.name, "🚨reports-log")) {
         const was_mute = message.embeds[0].author?.name?.indexOf('Mute');
