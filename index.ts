@@ -442,7 +442,7 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
         //check that we haven't already handled it
         if (messagereaction.me) return;
         //place own reaction
-        await messagereaction.message.react("❌");
+        await util.react(messagereaction.message, "❌");
         //get context
         let playtype = "";
         if (channel.parent.id === playing_with_category.id) playtype = `to play with ${channel.name.substr(7)} characters`;
@@ -467,9 +467,9 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
             .setFooter(`${channel.id}/${messagereaction.message.id}`)
             .setTimestamp(new Date().getTime())
         );
-        await report_message.react("✅");
-        await report_message.react("❌");
-        await report_message.react("✋");
+        await util.react(report_message, "✅");
+        await util.react(report_message, "❌");
+        await util.react(report_message, "✋");
     }
     const report_channel = channels["reported-rps"];
     if (typeof report_channel === "string") return;
@@ -614,7 +614,7 @@ client.on("message", (message) => {
             const user = server.members.cache.get(message.author.id);
             const add_reaction = async (emote: string) => {
                 try {
-                    await message.react(emote);
+                    await util.react(message, emote);
                 } catch (error) {
                     console.log(`Failed adding emote ${emote} because ${error}`);
                 }
@@ -644,7 +644,7 @@ client.on("message", (message) => {
     if (_.isEqual(message.channel.id, channels["general"].id)) {
         if (message.content.match(link_regex)) {
             if (util.isStaff(message)) { //have mercy on staff and don't delete messages
-                message.react(emojis.bancat).catch(console.error);
+            util.react(message, emojis.bancat);
                 return;
             }
             const logBody = `link in ${message.channel} from ${message.author}\nMessage content: ${message}`;
@@ -711,12 +711,7 @@ client.on("message", (message) => {
             const log_message = `${message.author} pinged people with <@&${dontPingRole.id}>:\n${no_ping_mentions_string}\n[Message Link](${message.url})`;
             if (!util.isUserStaff(message.author)) { // exclude staff
                 util.log(log_message, "Ping role violation", util.logLevel.INFO);
-                message.react(!_.isNull(ping_violation_reaction_emoji) ? ping_violation_reaction_emoji : '🚫')
-                    .catch(error => {
-                        util.log(`Failed reacting to [this message](${message.url})`, "Ping role violation", util.logLevel.WARN);
-                        util.sendTextMessage(channels.main, new DiscordJS.MessageEmbed().setDescription(`HALP, I'm blocked by ${message.author}!\n` +
-                            `They pinged people with the <@&${dontPingRole.id}> role!\n[Message Link](${message.url})`));
-                    });
+                util.react(message, !_.isNull(ping_violation_reaction_emoji) ? ping_violation_reaction_emoji : '🚫');
             }
         }
     }
@@ -1900,7 +1895,8 @@ const cmd: Cmd = {
         message?.channel.stopTyping(true);
     },
     'raid': async function(message) {
-        if (message && !util.isStaff(message)) {
+        if (!message) return;
+        if (!util.isStaff(message)) {
             util.sendTextMessage(message.channel, `Call the mods!`);
             return;
         }
@@ -1915,7 +1911,7 @@ const cmd: Cmd = {
                 inv.delete("Raid");
             });
         });
-        message?.react('✅');
+        util.react(message, '✅');
         util.log(`Disabled invite creation and deleted invites`, "Raid", util.logLevel.WARN);
     },
     'trim_reacts': async function (commandmessage) {
@@ -1934,7 +1930,7 @@ const cmd: Cmd = {
                 }
             }
         }
-        commandmessage.react("✅");
+        util.react(commandmessage, "✅");
     },
     'ca': async function (message) {
         return this.chararchive(message);
@@ -2423,7 +2419,7 @@ const util = {
                 "\nSimply ask a Staff member and tell them the __Name__ and __Color__ (ideally in Hexcode) of the Custom role!\n\n(_P.S. I'm a bot, so please don't reply!_)");
         }
 
-        await message.react('✅').catch(console.error);
+        await util.react(message, '✅');
     },
 
     'time': function(time_ms: number) {
@@ -2451,6 +2447,14 @@ const util = {
         }
         return `${s}s`;
     },
+
+    'react': async function(message: DiscordJS.Message, emote: string | DiscordJS.GuildEmoji) {
+        try {
+            await message.react(emote);
+        } catch (error) {
+            util.log(`Failed reacting with emote ${emote} to [this message](${message.url}) because ${error}`, "Adding reaction", util.logLevel.ERROR);
+        }
+    }
 };
 
 client.login(_.isUndefined(localConfig) ? process.env.BOT_TOKEN : localConfig.TOKEN);
