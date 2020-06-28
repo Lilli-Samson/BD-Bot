@@ -2266,7 +2266,7 @@ const util = {
     },
 
     'roles': {
-        'DONTPING': "DONT PING⛔",
+        'DONTPING': "DON'T PING⛔",
         'STAFF': "Staff",
         'TRIALMOD': "Trial-Moderator",
         'ANCIENT': "💠Ancient Member",
@@ -2400,7 +2400,13 @@ const util = {
         const level = parseInt(level_string.match(/\d+/g)?.[0] || "");
 
         const new_role = util.level_to_role(level);
-        const updated_roles = member.roles.cache.filter(role => !_.contains(util.roles.LVL, role)).set(new_role.id, new_role);
+        const is_lvl_role = (role_id: DiscordJS.Snowflake) => {
+            for (const name in util.roles.LVL) {
+                if (role_id === (<DiscordJS.Role>util.roles.LVL[name]).id) return true;
+            }
+            return false;
+        }
+        const updated_roles = member.roles.cache.filter(role =>  !is_lvl_role(role.id)).set(new_role.id, new_role);
         const added_roles = updated_roles.filter(role => !member.roles.cache.has(role.id));
         const removed_roles = member.roles.cache.filter(role => !updated_roles.has(role.id));
         if (added_roles.size === 0 && removed_roles.size === 0) return;
