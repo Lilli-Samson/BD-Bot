@@ -400,14 +400,6 @@ client.on("inviteCreate", invite => {
 
 client.on("guildMemberRemove", (member) => {
     fnct.serverStats(['users', 'online', 'new']);
-    for (const lvl_name in ['LVL_20', 'LVL_30', 'LVL_40', 'LVL_50', 'LVL_60', 'LVL_70', 'LVL_80', 'LVL_90', 'LVL_100']) {
-        const lvl_role = <DiscordJS.Role>util.roles.LVL[lvl_name];
-        if (member.roles.cache.has(lvl_role.id)) {
-            const lilli = client.users.cache.get("591241625737494538");
-            if (!lilli) return;
-            lilli.send(`${member} left`);
-        }
-    }
 });
 
 client.on("guildUpdate", (oldGuild, newGuild) => {
