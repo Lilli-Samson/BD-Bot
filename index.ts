@@ -367,7 +367,7 @@ const process_member_join = (member: DiscordJS.GuildMember | DiscordJS.PartialGu
     }, "");
 }
 
-function member_check(member: DiscordJS.GuildMember) {
+function member_check(member: DiscordJS.GuildMember | DiscordJS.PartialGuildMember) {
     if (member.user?.username === "Jonathan Galindo" || member.nickname === "Jonathan Galindo") {
         member.ban({reason: "Jonathan Galindo -> Whale challenge"});
         util.sendTextMessage(channels["warnings"], `Banned ${member} for being named Jonathan Galindo referring to the whale challenge.`);
@@ -399,14 +399,7 @@ client.on("guildMemberAdd", (member) => {
         }
     });
     fnct.serverStats(['users', 'online', 'new']);
-    if (member instanceof DiscordJS.GuildMember) {
-        member_check(member);
-    }
-    else {
-        member.fetch()
-        .then(member => member_check(member))
-        .catch(error => util.log(`${error}`, "Member fetch on join", util.logLevel.ERROR));
-    }
+    member_check(member);
 });
 
 client.on("inviteCreate", invite => {
@@ -963,15 +956,7 @@ client.on("message", (message) => {
 });
 
 client.on("guildMemberUpdate", (old_member, new_member) => {
-    const member = new_member;
-    if (member instanceof DiscordJS.GuildMember) {
-        member_check(member);
-    }
-    else {
-        member.fetch()
-        .then(member => member_check(member))
-        .catch(error => util.log(`${error}`, "Member fetch on join", util.logLevel.ERROR));
-    }
+    member_check(new_member);
 })
 
 const get_permission_diff_string = (old_permissions: number, new_permissions: number) => {
