@@ -444,7 +444,7 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
     if (typeof playing_as_category === "string") return;
     const type_category = categories['by-type'];
     if (typeof type_category === "string") return;
-    if (reaction === "❌" && [playing_with_category.id, playing_as_category.id, type_category.id].includes(channel.parent.id)) { //Post got flagged
+    if (reaction === "❌" && lfpChannels.reduce((found, lfp_channel) => found || lfp_channel.id === channel.id, false)) { //RP ad got flagged
         //no self-reports
         if (messagereaction.message.author.id === client.user?.id) return;
         //check that we haven't already handled it
@@ -1465,7 +1465,6 @@ const cmd: Cmd = {
                         if (index+1 === newcomerMembers.length) {
                             const logText = successCount + '/' + (successCount + errorCount) + " users cleared of Newcomer role. " + kickCount + " users kicked from not having the NSFW role until now.";
                             util.log(logText, 'clearNewcomer', util.logLevel.INFO);
-                            util.sendTextMessage(channels.main, logText);
                         }
                     });
             } catch (e) {
