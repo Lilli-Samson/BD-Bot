@@ -66,7 +66,7 @@ let channels: Str_to_Channel = {
     'long-term-plot': "📰long-term-plot",
     'gm-style': "🧙gm-style",
     'real-life': "🤝real-life",
-    'contact': "💬contact",
+    'contact': "💬ask-to-dm",
     'playing-as-info': "📌playing-as-info",
     'playing-with-info': "📌playing-with-info",
     'general': "🔞general",
