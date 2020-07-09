@@ -483,7 +483,7 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
     if (typeof report_channel === "string") return;
     if (messagereaction.message.channel.id === report_channel.id) {
         //get original ad
-        const footer_text = messagereaction.message.embeds[0].footer?.text;
+        const footer_text = messagereaction.message.embeds[0]?.footer?.text;
         if (!footer_text) return;
         const [channelID, messageID] = footer_text.split("/");
         const ad_channel = server.channels.cache.get(channelID);
