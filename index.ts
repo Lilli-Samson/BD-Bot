@@ -508,6 +508,7 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
                     return curr + `${user} `;
                 }, "").trim();
             }
+            const nickname = server.members.cache.get(user.id)?.displayName || user.username;
             //handle reaction
             switch (reaction) {
                 case "✅": //founded report
@@ -515,7 +516,7 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
                     //delete original message
                     await message.delete({reason: "Founded LFP-ad-report"});
                     //yell at author
-                    util.sendTextMessage(channels["contact"], messagereaction.message.embeds[0].fields[1].value.split("```")[1] + ` (confirmed by @${user.username})`);
+                    util.sendTextMessage(channels["contact"], messagereaction.message.embeds[0].fields[1].value.split("```")[1] + ` (confirmed by @${nickname})`);
                     //log in reports log
                     util.sendTextMessage(channels["report-log"], new DiscordJS.MessageEmbed().setTimestamp(new Date().getTime())
                     .setDescription(`✅ Removed ad by ${message.author} reported by ${reporters} confirmed by ${user} concerning [this report](${messagereaction.message.url}).`));
@@ -526,7 +527,7 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
                     //yell at reporters
                     if (reporters !== "") { //not a retracted report
                         const template = messagereaction.message.embeds[0].fields[2].value.split("```")[1];
-                        util.sendTextMessage(channels["contact"], reporters + " " + template.substr(22) + ` (marked unfounded by @${user.username})`);
+                        util.sendTextMessage(channels["contact"], reporters + " " + template.substr(22) + ` (marked unfounded by @${nickname})`);
                     }
                     //remove reactions from ad
                     for (const [id, reaction] of message.reactions.cache) {
@@ -537,14 +538,14 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
                     }
                     //log in reports log
                     util.sendTextMessage(channels["report-log"], new DiscordJS.MessageEmbed().setTimestamp(new Date().getTime())
-                    .setDescription(`❌ ${reporters ? `Report by ${reporters}` : `Retracted report`} marked unfounded by ${user} concerning [this ad](${message.url})/[this report](${messagereaction.message.url}).`));
+                    .setDescription(`❌ Ad by ${message.author} ${reporters ? `reported by ${reporters}` : `with retracted report`} marked unfounded by ${user} concerning [this ad](${message.url})/[this report](${messagereaction.message.url}).`));
                     break;
                 }
                 case "✋":
                 {
                     //log in reports log
                     util.sendTextMessage(channels["report-log"], new DiscordJS.MessageEmbed().setTimestamp(new Date().getTime())
-                    .setDescription(`✋ ${reporters ? `Report by ${reporters}` : `Retracted report`} handled manually by ${user} concerning [this ad](${message.url})/[this report](${messagereaction.message.url}).`));
+                    .setDescription(`✋ Ad by ${message.author} ${reporters ? `reported by ${reporters}` : `with retracted report`} handled manually by ${user} concerning [this ad](${message.url})/[this report](${messagereaction.message.url}).`));
                     break;
                 }
                 default: //don't react with random emojis reeeeeee
