@@ -482,6 +482,9 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
     const report_channel = channels["reported-rps"];
     if (typeof report_channel === "string") return;
     if (messagereaction.message.channel.id === report_channel.id) {
+        if (!messagereaction.me) {
+            return;
+        }
         //get original ad
         const footer_text = messagereaction.message.embeds[0]?.footer?.text;
         if (!footer_text) return;
