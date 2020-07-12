@@ -819,7 +819,7 @@ client.on("message", (message) => {
                 //RP Looking For
                 case "with-male":
                     title = "MALE Characters";
-                    target = "Males, people with the \"Male\" role (not Femboys)";
+                    target = "Males, people with the \"Male\" role (not femboys or traps)";
                     break;
                 case "with-female":
                     title = "FEMALE Characters";
@@ -849,7 +849,7 @@ client.on("message", (message) => {
                 //RP Playing As
                 case "as-male":
                     title = "MALE Characters";
-                    target = "Males and people with the \"Male\" role (not Femboys)";
+                    target = "Males and people with the \"Male\" role (not femboys or traps)";
                     break;
                 case "as-female":
                     title = "FEMALE Characters";
