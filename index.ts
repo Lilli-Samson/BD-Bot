@@ -963,83 +963,61 @@ client.on("guildMemberUpdate", (old_member, new_member) => {
     member_check(new_member);
 })
 
+const permissions_map = new Map([
+    ["ADMINISTRATOR", DiscordJS.Permissions.FLAGS.ADMINISTRATOR],
+    ["CREATE_INSTANT_INVITE", DiscordJS.Permissions.FLAGS.CREATE_INSTANT_INVITE],
+    ["KICK_MEMBERS", DiscordJS.Permissions.FLAGS.KICK_MEMBERS],
+    ["BAN_MEMBERS", DiscordJS.Permissions.FLAGS.BAN_MEMBERS],
+    ["MANAGE_CHANNELS", DiscordJS.Permissions.FLAGS.MANAGE_CHANNELS],
+    ["MANAGE_GUILD", DiscordJS.Permissions.FLAGS.MANAGE_GUILD],
+    ["ADD_REACTIONS", DiscordJS.Permissions.FLAGS.ADD_REACTIONS],
+    ["VIEW_AUDIT_LOG", DiscordJS.Permissions.FLAGS.VIEW_AUDIT_LOG],
+    ["PRIORITY_SPEAKER", DiscordJS.Permissions.FLAGS.PRIORITY_SPEAKER],
+    ["STREAM", DiscordJS.Permissions.FLAGS.STREAM],
+    ["VIEW_CHANNEL", DiscordJS.Permissions.FLAGS.VIEW_CHANNEL],
+    ["SEND_MESSAGES", DiscordJS.Permissions.FLAGS.SEND_MESSAGES],
+    ["SEND_TTS_MESSAGES", DiscordJS.Permissions.FLAGS.SEND_TTS_MESSAGES],
+    ["MANAGE_MESSAGES", DiscordJS.Permissions.FLAGS.MANAGE_MESSAGES],
+    ["EMBED_LINKS", DiscordJS.Permissions.FLAGS.EMBED_LINKS],
+    ["ATTACH_FILES", DiscordJS.Permissions.FLAGS.ATTACH_FILES],
+    ["READ_MESSAGE_HISTORY", DiscordJS.Permissions.FLAGS.READ_MESSAGE_HISTORY],
+    ["MENTION_EVERYONE", DiscordJS.Permissions.FLAGS.MENTION_EVERYONE],
+    ["USE_EXTERNAL_EMOJIS", DiscordJS.Permissions.FLAGS.USE_EXTERNAL_EMOJIS],
+    ["VIEW_GUILD_INSIGHTS", DiscordJS.Permissions.FLAGS.VIEW_GUILD_INSIGHTS],
+    ["CONNECT", DiscordJS.Permissions.FLAGS.CONNECT],
+    ["SPEAK", DiscordJS.Permissions.FLAGS.SPEAK],
+    ["MUTE_MEMBERS", DiscordJS.Permissions.FLAGS.MUTE_MEMBERS],
+    ["DEAFEN_MEMBERS", DiscordJS.Permissions.FLAGS.DEAFEN_MEMBERS],
+    ["MOVE_MEMBERS", DiscordJS.Permissions.FLAGS.MOVE_MEMBERS],
+    ["USE_VAD", DiscordJS.Permissions.FLAGS.USE_VAD],
+    ["CHANGE_NICKNAME", DiscordJS.Permissions.FLAGS.CHANGE_NICKNAME],
+    ["MANAGE_NICKNAMES", DiscordJS.Permissions.FLAGS.MANAGE_NICKNAMES],
+    ["MANAGE_ROLES", DiscordJS.Permissions.FLAGS.MANAGE_ROLES],
+    ["MANAGE_WEBHOOKS", DiscordJS.Permissions.FLAGS.MANAGE_WEBHOOKS],
+    ["MANAGE_EMOJIS", DiscordJS.Permissions.FLAGS.MANAGE_EMOJIS],
+]);
+
+const permission_to_string = (permission: number) => {
+    let perm_string = "";
+    for (const [name, perm] of permissions_map) {
+        if ((perm & permission) !== 0) {
+            perm_string += name + ", ";
+        }
+    };
+    return perm_string.slice(0, -2);
+}
+
 const get_permission_diff_string = (old_permissions: number, new_permissions: number) => {
     let added = "";
     let removed = "";
-    const permissions = [
-        DiscordJS.Permissions.FLAGS.ADMINISTRATOR,
-        DiscordJS.Permissions.FLAGS.CREATE_INSTANT_INVITE,
-        DiscordJS.Permissions.FLAGS.KICK_MEMBERS,
-        DiscordJS.Permissions.FLAGS.BAN_MEMBERS,
-        DiscordJS.Permissions.FLAGS.MANAGE_CHANNELS,
-        DiscordJS.Permissions.FLAGS.MANAGE_GUILD,
-        DiscordJS.Permissions.FLAGS.ADD_REACTIONS,
-        DiscordJS.Permissions.FLAGS.VIEW_AUDIT_LOG,
-        DiscordJS.Permissions.FLAGS.PRIORITY_SPEAKER,
-        DiscordJS.Permissions.FLAGS.STREAM,
-        DiscordJS.Permissions.FLAGS.VIEW_CHANNEL,
-        DiscordJS.Permissions.FLAGS.SEND_MESSAGES,
-        DiscordJS.Permissions.FLAGS.SEND_TTS_MESSAGES,
-        DiscordJS.Permissions.FLAGS.MANAGE_MESSAGES,
-        DiscordJS.Permissions.FLAGS.EMBED_LINKS,
-        DiscordJS.Permissions.FLAGS.ATTACH_FILES,
-        DiscordJS.Permissions.FLAGS.READ_MESSAGE_HISTORY,
-        DiscordJS.Permissions.FLAGS.MENTION_EVERYONE,
-        DiscordJS.Permissions.FLAGS.USE_EXTERNAL_EMOJIS,
-        DiscordJS.Permissions.FLAGS.VIEW_GUILD_INSIGHTS,
-        DiscordJS.Permissions.FLAGS.CONNECT,
-        DiscordJS.Permissions.FLAGS.SPEAK,
-        DiscordJS.Permissions.FLAGS.MUTE_MEMBERS,
-        DiscordJS.Permissions.FLAGS.DEAFEN_MEMBERS,
-        DiscordJS.Permissions.FLAGS.MOVE_MEMBERS,
-        DiscordJS.Permissions.FLAGS.USE_VAD,
-        DiscordJS.Permissions.FLAGS.CHANGE_NICKNAME,
-        DiscordJS.Permissions.FLAGS.MANAGE_NICKNAMES,
-        DiscordJS.Permissions.FLAGS.MANAGE_ROLES,
-        DiscordJS.Permissions.FLAGS.MANAGE_WEBHOOKS,
-        DiscordJS.Permissions.FLAGS.MANAGE_EMOJIS,
-    ];
-    const permissions_strings = [
-        "Administrator",
-        "Create Instant Invite",
-        "Kick Members",
-        "Ban Members",
-        "Manage Channels",
-        "Manage Server",
-        "Add Reactions",
-        "View Audit Log",
-        "Priority Speaker",
-        "Stream",
-        "View Channels",
-        "Send Messages",
-        "Send Text To Speech Messages",
-        "Manage Messages",
-        "Embed Links",
-        "Attach Files",
-        "Read Message History",
-        "Use External Emojis",
-        "View Guild Insights",
-        "External Emojis",
-        "Connect To VC",
-        "Speak In VC",
-        "Mute Members in VC",
-        "Deafen Members in VC",
-        "Move Members in VC",
-        "Use VAD",
-        "Chane Nickname",
-        "Manage Nicknames",
-        "Manage Roles",
-        "Manage Webhooks",
-        "Manage Emojis",
-    ];
-    _.forEach(permissions, (permission, index) => {
+    for (const [name, permission] of permissions_map) {
         if ((old_permissions & permission) !== 0 && (new_permissions & permission) === 0) {
-            removed += permissions_strings[index] + ", ";
+            removed += name + ", ";
         }
         if ((old_permissions & permission) === 0 && (new_permissions & permission) !== 0) {
-            added += permissions_strings[index] + ", ";
+            added += name + ", ";
         }
-    });
+    }
     let result = "";
     if (added.length) {
         result += "Added Permission(s): *" + added.slice(0, -2) + "* ";
@@ -2053,18 +2031,183 @@ const cmd: Cmd = {
         }, "")
         util.sendTextMessage(message.channel, new DiscordJS.MessageEmbed().setDescription(`Banished <@${target}> from ${summary}`));
     },
+    'perms': async function (message) {
+        if (!message) {
+            return;
+        }
+        if (!util.isStaff(message)) {
+            util.sendTextMessage(message.channel, `${message.author} had their horny license revoked!`);
+            return;
+        }
+        const member = server.members.cache.get(message.author.id);
+        if (!member) return;
+        let applied_channels: DiscordJS.GuildChannel[] = [];
+        let applied_targets: (DiscordJS.GuildMember | DiscordJS.Role) [] = [];
+        let granted_permissions = 0;
+        let neutral_permissions = 0;
+        let denied_permissions = 0;
+        let clearing = false;
+        for (const part of message.content.split(/\s+/).splice(1)) {
+            const snowflake_match = part.match(/(?:<(?:@|#)!?(\d{18})>)|(\d{18})/) || [];
+            const snowflake = snowflake_match[1] || snowflake_match[2];
+            if (snowflake) {
+                const member = server.members.cache.get(snowflake);
+                if (member) {
+                    applied_targets.push(member);
+                    continue;
+                }
+                const channel = server.channels.cache.get(snowflake);
+                if (channel) {
+                    if (channel.type === "category") {
+                        const category = <DiscordJS.CategoryChannel>(channel);
+                        applied_channels.push(...category.children.values());
+                    }
+                    else {
+                        applied_channels.push(channel);
+                    }
+                    continue;
+                }
+                const role = server.roles.cache.get(snowflake);
+                if (role) {
+                    applied_targets.push(role);
+                    continue;
+                }
+                util.sendTextMessage(message.channel, `Error: I don't know what ID ${snowflake} refers to.`);
+                return;
+            }
+            if (part === "clear") {
+                clearing = true;
+                continue;
+            }
+            if ("+-/".includes(part[0])) {
+                const command = part.substr(1);
+                const perm = permissions_map.get(command);
+                if (perm) {
+                    if (part[0] === "+") {
+                        granted_permissions |= perm;
+                    }
+                    if (part[0] === "-") {
+                        denied_permissions |= perm;
+                    }
+                    if (part[0] === "/") {
+                        neutral_permissions |= perm;
+                    }
+                    continue;
+                }
+                else {
+                    util.sendTextMessage(message.channel, `Invalid permission \`${command}\`. Check <https://discord.com/developers/docs/topics/permissions> for a list of valid permissions.`);
+                    return;
+                }
+            }
+            if (part[0] === "\"" && part.slice(-1) === "\"") {
+                for (const [snowflake, channel] of server.channels.cache) {
+                    if (channel.name.startsWith(part.slice(1, -1))) {
+                        applied_channels.push(channel);
+                    }
+                }
+                continue;
+            }
+            if (permissions_map.has(part)) {
+                util.sendTextMessage(message.channel, `Error: The permission ${part} needs to be prefixed by a + to grant the permission, - to deny the permission or / to use the default.`);
+                return;
+            }
+            util.sendTextMessage(message.channel, `Error: I don't know what to do with \`${part}\`.`);
+            return;
+        }
+        if (applied_channels.length === 0) {
+            util.sendTextMessage(message.channel, `Error: No target channel(s) to set permissions for were specified.`);
+            return;
+        }
+        if (applied_targets.length === 0) {
+            util.sendTextMessage(message.channel, `Error: No target user(s) and/or role(s) to set permissions for were specified.`);
+            return;
+        }
+        if (granted_permissions === 0 && denied_permissions === 0 && neutral_permissions === 0 && clearing === false) {
+            util.sendTextMessage(message.channel, `Error: No permissions were specified.`);
+            return;
+        }
+        if ((granted_permissions !== 0 || denied_permissions !== 0) && clearing) {
+            util.sendTextMessage(message.channel, `Error: Conflicting permissions: Permissions are being set and cleared at the same time.`);
+            return;
+        }
+        if (granted_permissions & DiscordJS.Permissions.FLAGS.MANAGE_CHANNELS && !member.permissions.has(DiscordJS.Permissions.FLAGS.ADMINISTRATOR)) {
+            util.sendTextMessage(message.channel, `${message.author} Sorry, you need to be an administrator to hand out manage channel permissions.`);
+            return;
+        }
+        for (const channel of applied_channels) {
+            for (const member_or_role of applied_targets) {
+                function getOverwrites(allow: number, deny: number, reset: number, original: number): DiscordJS.PermissionOverwriteOption {
+                    let result: DiscordJS.PermissionOverwriteOption = {};
+                    for (const [name, perm] of permissions_map) {
+                        if (perm & allow) {
+                            (result as any)[name] = true;
+                            continue;
+                        }
+                        if (perm & deny) {
+                            (result as any)[name] = false;
+                            continue;
+                        }
+                        if (perm & reset) {
+                            (result as any)[name] = null;
+                            continue;
+                        }
+                        (result as any)[name] = perm & original;
+                    }
+                    return result;
+                }
+                try {
+                    if (clearing) {
+                        channel.permissionOverwrites.delete(member_or_role.id);
+                        await channel.overwritePermissions(channel.permissionOverwrites);
+                    }
+                    else {
+                        await channel.updateOverwrite(member_or_role, getOverwrites(granted_permissions, denied_permissions, neutral_permissions, channel.permissionsFor(member_or_role.id)?.valueOf() || 0), `perms command ${message.channel.id}/${message.id}`);
+                    }
+                } catch(error) {
+                    util.sendTextMessage(message.channel, new DiscordJS.MessageEmbed().setDescription(`Error setting permissions for ${member_or_role} in ${channel} because ${error}.`));
+                    return;
+                }
+            }
+        }
+        if (clearing) {
+            util.sendTextMessage(message.channel, new DiscordJS.MessageEmbed().setDescription(
+                `Permissions cleared ` +
+                `for${applied_targets.reduce((curr, member_or_roll) => `${curr} ${member_or_roll}`, "")} ` +
+                `in channel(s)${applied_channels.reduce((curr, channel) => `${curr} ${channel}`, "")}`));
+        }
+        else {
+            util.sendTextMessage(message.channel, new DiscordJS.MessageEmbed().setDescription(
+                `Permission(s) ` +
+                `${granted_permissions ? `[${permission_to_string(granted_permissions)}] **granted** ` : ""}` +
+                `${denied_permissions ? `[${permission_to_string(denied_permissions)}] **denied** ` : ""}` +
+                `${neutral_permissions ? `[${permission_to_string(neutral_permissions)}] **reset** ` : ""}` +
+                `for${applied_targets.reduce((curr, member_or_roll) => `${curr} ${member_or_roll}`, "")} ` +
+                `in channel(s)${applied_channels.reduce((curr, channel) => `${curr} ${channel}`, "")}`));
+        }
+    },
     'help': function (message) {
         if (!message) {
             return;
         }
-        util.sendTextMessage(message.channel, new DiscordJS.MessageEmbed().setDescription(`I understand the following commands. *Italic* commands are staff-only.
-
+        const public_commands = `
 **\`_ping\`**
 Show practical reaction delay and Discord delay.
 
 **\`_staff\`**
 Checks if you are staff.
 
+**\`_age\`** \`[@user|#channel|emoji|ID]*\`
+Display the age of an ID. If the ID is of a member of the server also display when they joined and will be eligible for the ancient role. If you don't specify an ID it displays your own info.
+
+**\`_pfp\`** \`[@user|userID]*\`
+Display the profile picture of a user in big.
+
+**\`_cultinfo\`**
+Displays a list of the current cults and their symbol, cult role, leader and number of members sorted by members.
+
+**\`_help\`**
+Display this text.`
+        const staff_commands = `
 ***\`_warn\`*** \`[@user] [?reason]\`
 Applies appropriate warning role (Warned 1x or Warned 2x), sends a DM about the warning and enters it into database.
 
@@ -2080,20 +2223,11 @@ Kick newcomers who do not have the NSFW role for over 10 minutes. The command is
 ***\`_clear\`*** \`[number]\`
 Deletes the laste [number] messages.
 
-**\`_age\`** \`[@user|#channel|emoji|ID]*\`
-Display the age of an ID. If the ID is of a member of the server also display when they joined and will be eligible for the ancient role. If you don't specify an ID it displays your own info.
-
-**\`_pfp\`** \`[@user|userID]*\`
-Display the profile picture of a user in big.
-
 ***\`_audit\`*** \`[mention|ID]*\`
 Go through the last 10000 audit entries and display all entries (up to message limit) that contain moderator action of the given target. This command tends to take ~10-20 seconds, please be patient.
 
 ***\`_slowmode\`*** | ***\`_sm\`*** \`[#channel|channelID|categoryID]* [number][h|m|s]*\`
 Sets slowmode to the channel. Example: \`_slowmode #🔞general 30s 2m\`. The time is optional and defaults to 0. The maximum time is 6 hours. Use this command if you need to set a slowmode that is not supported by the UI such as 4 hours.
-
-**\`_cultinfo\`**
-Displays a list of the current cults and their symbol, cult role, leader and number of members sorted by members.
 
 ***\`_roles usage\`***
 Displays a list of all roles and the number of their uses sorted by use-count.
@@ -2110,9 +2244,13 @@ Displays a list of links to <#534863007860129792> messages that contain a mentio
 ***\`_banish\`*** \`[userID] [channelID]* [categoryID]* ["prefix"]*\`
 Hides the given channels from the given user. The channels can be specified directly, by specifying a category or using a prefix. For example \`_banish 315977186383364096 (user ID) ":wine_glass:" (Cult prefix)\` hides the Debaucherous Bastards cult from that user. \`_banish 315977186383364096 (user ID) 616685364186316820 (fun corner ID)\` hides the Fun Corner from the user.
 
-**\`_help\`**
-Display this text.`))
-    },
+***\`_perms\`*** \`([user]|[role])+ ([channel]|[category]|["prefix"])+ [+|-|/[PERMISSION])|clear]+\`
+Sets the given permission(s) for the user and/or role in the given channel(s). You can [look up valid [PERMISSIONS] here in the "Bitwise Permission Flags" table](https://discord.com/developers/docs/topics/permissions#permissions-bitwise-permission-flags). Note that permissions only work in text channels if there is a T in the last column and in voice channels only if there is a V in the last column.
+Alternatively you can use \`clear\` as the [PERMISSION] which will remove the user(s)/role(s) from the channel(s) permission list.
+Example: \`_perms @Lilli -ADD_REACTIONS #tinkering\``
+        util.sendTextMessage(message.channel, new DiscordJS.MessageEmbed().setDescription(`I understand the following commands:
+${public_commands}
+${util.isStaff(message) ? staff_commands : ""}`))},
 };
 
 const fnct = {
@@ -2260,6 +2398,8 @@ const util = {
         }
     },
     'isStaff': function (message: DiscordJS.Message) {
+        const member = server.members.cache.get(message.author.id);
+        if (member && member.permissions.has(DiscordJS.Permissions.FLAGS.ADMINISTRATOR)) return true;
         return message.author.lastMessage?.member?.roles.cache.find(role => _.isEqual(role.name, this.roles.STAFF) || _.isEqual(role.name, this.roles.TRIALMOD)) || message.author === AsheN;
     },
 
