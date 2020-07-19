@@ -459,7 +459,7 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
         //make report
         const report_channel = channels["reported-rps"];
         if (typeof report_channel === "string") return;
-        let embed = new DiscordJS.MessageEmbed()
+        const report_message = await report_channel.send(new DiscordJS.MessageEmbed()
             .setDescription(messagereaction.message.content)
             .addField("Details",
             `Channel: ${channel}\n` +
@@ -473,7 +473,7 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
             `\`\`\`\n<@${user.id}>, the ad you reported in <#${channel.id}> (<${messagereaction.message.url}>) seems to be on-topic since it's looking ${playtype}. What is wrong with it?\`\`\`` +
             `${channels["contact"]}`)
             .setFooter(`${channel.id}/${messagereaction.message.id}`)
-            .setTimestamp(new Date().getTime()
+            .setTimestamp(new Date().getTime())
         );
         let images: string[] = [];
         messagereaction.message.embeds.forEach(emb => {
@@ -482,8 +482,7 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
         messagereaction.message.attachments.forEach(attachment => {
             images.push(attachment.url);
         });
-        embed.attachFiles(images);
-        const report_message = await report_channel.send(embed);
+        if (images.length) report_channel.send(images);
         await util.react(report_message, "✅");
         await util.react(report_message, "❌");
         await util.react(report_message, "✋");
