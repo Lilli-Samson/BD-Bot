@@ -631,8 +631,7 @@ client.on("message", (message) => {
     if (lfpChannels.includes(message.channel)) {
         //Check for 3+ images
         (async () => {
-            let number_of_attached_images = message.attachments.filter(embed => !!embed.height).size;
-            if ((util.image_link_count(message.content) + number_of_attached_images) > 3) {
+            if (util.image_link_count(message) > 3) {
                 message.delete({reason: "More than 3 images in an RP ad"});
                 util.sendTextMessage(channels["contact"],
                 `${message.author}, your roleplaying ad in ${message.channel} has been removed because it had more than 3 images.\n` +
@@ -2516,8 +2515,8 @@ const util = {
         'FATAL': "__**FATAL**__",
     },
 
-    'image_link_count': function (message_string: string) {
-        return (message_string.toUpperCase().match(/\.PNG|\.JPG|\.JPEG|\.TIFF|\.BMP|\.PPM|\.PGM|\.PBM|\.PNM|\.WEBP|\.SVG|\.GIF/g) || []).length;
+    'image_link_count': function (message: DiscordJS.Message) {
+        return message.embeds.length + message.attachments.size;
     },
 
     'level_to_role': function (level: number) {
