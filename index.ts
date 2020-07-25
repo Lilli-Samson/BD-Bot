@@ -379,7 +379,7 @@ const process_member_join = (member: DiscordJS.GuildMember | DiscordJS.PartialGu
                 `${inviter_has_left ? "who already left " : ""}(**${new_uses}** invite(s) on ${expired ? "expired " : ""}code **${old_code}**)\n`;
             }
             else {
-                curr += `${invitee_str} **joined** using code **${old_code}**)\n`;
+                curr += `${invitee_str} **joined** (**${new_uses}** invite(s) on code **${old_code}**)\n`;
             }
         }
         if (new_uses > old_uses + 1) {
