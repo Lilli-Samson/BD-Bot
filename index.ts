@@ -112,7 +112,9 @@ let disableMentions = true;
 let ping_violation_reaction_emoji = emojis.pingangry;
 const level_up_module = "Level roles";
 const link_regex = /((https?|ftp):\/\/|www\.)(\w.+\w\W?)/g; //source: https://support.discordapp.com/hc/en-us/community/posts/360036244152-Change-in-text-link-detection-RegEx
-let invites: DiscordJS.Collection<string, DiscordJS.Invite>;
+type Invite_code = string;
+class Invites extends DiscordJS.Collection<Invite_code, {uses: number | null, maxUses?: number | null, inviter?: DiscordJS.User | null}>{};
+let invites: Invites;
 
 const dbMod = {
     'warnUser': function (member: DiscordJS.User, level: number, warner: DiscordJS.GuildMember, reason?: string) {
@@ -217,6 +219,22 @@ const dbMod = {
     }
 };
 
+async function fetch_invites() {
+    assert(server.available, "Server unavailable");
+    let retval = new Invites();
+    for (const [, invite] of await server.fetchInvites()) {
+        retval.set(invite.code, invite);
+    }
+    try {
+        const vanity_data = await server.fetchVanityData();
+        if (server.vanityURLCode) {
+            retval.set(vanity_data.code, {uses: vanity_data.uses});
+        }
+    }
+    catch (error) {}
+    return retval;
+}
+
 const startUpMod = {
     'initialize': function (startUpMessage:string) {
         try {
@@ -286,8 +304,7 @@ const startUpMod = {
             lfpChannels.push(<DiscordJS.TextChannel>channels["gm-style"]);
             lfpChannels.push(<DiscordJS.TextChannel>channels["real-life"]);
 
-            server.fetchInvites()
-            .then(invs => invites = invs);
+            fetch_invites().then(invs => invites = invs);
 
             this.startSchedules();
 
@@ -329,13 +346,13 @@ client.on("ready", () => {
     });
 });
 
-const process_member_join = (member: DiscordJS.GuildMember | DiscordJS.PartialGuildMember, invs: DiscordJS.Collection<string, DiscordJS.Invite>) => {
+const process_member_join = (member: DiscordJS.GuildMember | DiscordJS.PartialGuildMember, invs: Invites) => {
     const invitee_is_new = new Date().getTime() - (client.users.cache.get(member.id)?.createdTimestamp || 0) < 1000 * 60 * 60 * 24;
     const invitee_str = `${member}` +
         `(${member.user?.username}#${member.user?.discriminator})` +
         `${invitee_is_new ? `(:warning: new account from ${util.time(new Date().getTime() - (member.user?.createdTimestamp || 0))} ago)` : ""}`;
-    return invites.reduce((curr, old_invite) => {
-        const new_invite = invs.get(old_invite.code);
+    return invites.reduce((curr, old_invite, old_code) => {
+        const new_invite = invs.get(old_code);
         const old_uses = old_invite.uses || 0;
         let new_uses = 0;
         let expired = false;
@@ -356,9 +373,14 @@ const process_member_join = (member: DiscordJS.GuildMember | DiscordJS.PartialGu
             const inviter_is_recent = inviter_guildmember ? (new Date().getTime() - (inviter_guildmember.joinedTimestamp || 0) < 1000 * 60 * 60 * 24) : false;
             const inviter_age = util.time(new Date().getTime() - (inviter_guildmember?.joinedTimestamp || 0));
             const inviter_recent_string = inviter_is_recent ? `(:warning: who joined ${inviter_age} ago) ` : "";
-            curr += `${invitee_str} **joined**; Invited by\n` +
-                `${old_invite.inviter} ` + `(${old_invite.inviter?.username}#${old_invite.inviter?.discriminator}) ` + inviter_recent_string +
-                `${inviter_has_left ? "who already left " : ""}(**${new_uses}** invite(s) on ${expired ? "expired " : ""}code **${old_invite.code}**)\n`;
+            if (old_invite.inviter) {
+                curr += `${invitee_str} **joined**; Invited by\n` +
+                `${old_invite.inviter} ` + `(${old_invite.inviter.username}#${old_invite.inviter.discriminator}) ` + inviter_recent_string +
+                `${inviter_has_left ? "who already left " : ""}(**${new_uses}** invite(s) on ${expired ? "expired " : ""}code **${old_code}**)\n`;
+            }
+            else {
+                curr += `${invitee_str} **joined** using code **${old_code}**)\n`;
+            }
         }
         if (new_uses > old_uses + 1) {
             curr += `Sorry, I missed ${new_uses - old_uses - 1} join(s) invited by ${old_invite.inviter}, should be people below this message.\n`;
@@ -379,12 +401,12 @@ client.on("guildMemberAdd", (member) => {
         return;
     }
     const invite_channel = <DiscordJS.TextChannel>channels.invites;
-    server.fetchInvites()
+    fetch_invites()
     .then(invs => {
         const inv_string = process_member_join(member, invs);
         if (inv_string === "") {
             setTimeout(() => {
-                server.fetchInvites()
+                fetch_invites()
                 .then(invs => {
                     const invitee_str = `${member}(${member.user?.username}#${member.user?.discriminator})`;
                     const inv_string = process_member_join(member, invs) || `I can't figure out how ${invitee_str} joined the server.`;
