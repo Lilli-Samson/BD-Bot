@@ -1722,81 +1722,57 @@ const cmd: Cmd = {
     'sm': function (message) {
         cmd.slowmode(message);
     },
-    'cultinfo': function (message) {
+    'cultinfo': async function (message) {
         if (!message) {
             return;
         }
-        if (typeof channels["cult-info"] === "string") {
+        const cult_info_channel = channels["cult-info"];
+        if (typeof cult_info_channel === "string") {
             util.sendTextMessage(message.channel, "Error: cultinfo channel could not be resolved");
             return;
         }
         message.channel.startTyping();
-        channels["cult-info"].messages.fetch({ limit: 1 })
-            .then(messages => {
-                let cultMsg = messages.first();
-                if (cultMsg && cultMsg.mentions.roles) {
-                    const embed = new DiscordJS.MessageEmbed()
-                        .setAuthor(`Cult Info`)
-                        .setTimestamp(new Date());
-                    let description = "";
-                    let cultsString = cultMsg.content.split("\n\n");
-                    class Cult {
-                        iconId: DiscordJS.Snowflake;
-                        roleId: DiscordJS.Snowflake;
-                        leaderId: DiscordJS.Snowflake;
-                        memberCount: number;
-                        constructor(iconId: DiscordJS.Snowflake, roleId: DiscordJS.Snowflake, leaderId: DiscordJS.Snowflake, memberCount: number) {
-                            this.iconId = iconId;
-                            this.roleId = roleId;
-                            this.leaderId = leaderId;
-                            this.memberCount = memberCount;
-                        }
-                    };
-                    let cults: Cult[] = [];
-                    cultsString.forEach(cult => {
-                        if (!cult.match("<@&[0-9]*>")) return;
-                        const roleId = cult.match("<@&[0-9]*>")?.[0].slice(3, -1);
-                        if (!roleId) return;
-                        const iconId = cult.slice(0,2) === "<:" ? cult.match("<:[a-zA-Z_0-9]*:[0-9]*>")?.[0] : cult.slice(0,2);
-                        if (!iconId) return;
-                        const leaderId = cult.match("<@!?[0-9]*>")?.[0].match("[0-9]+")?.[0];
-                        if (!leaderId) return;
-                        const memberCount = server.roles.cache.get(roleId)?.members.map(m => m.user.tag).length;
-                        if (memberCount === undefined) return;
-                        cults.push({
-                            iconId: iconId,
-                            roleId: roleId,
-                            leaderId: leaderId,
-                            memberCount: memberCount
-                        });
-                    });
-
-                    cults = cults.sort((a,b) => b.memberCount - a.memberCount);
-                    cults.forEach(cult => {
-                        description +=
-                            `${cult.iconId} <@&${cult.roleId}>\n`
-                            + `Leader: <@!${cult.leaderId}>\n`
-                            + `**${cult.memberCount}** members\n\n`
-                        ;
-                    });
-
-                    embed.setDescription(description);
-
-                    message.channel.send(embed)
-                        .then(() => message.channel.stopTyping())
-                        .catch(err => util.log(err, 'cultInfo', util.logLevel.ERROR));
-                }
-            })
-            .catch(err => {
-                util.log(err, 'cultInfo', util.logLevel.ERROR);
+        try {
+            const messages = await cult_info_channel.messages.fetch({limit: 1});
+            let cultMsg = messages.first();
+            if (!cultMsg || !cultMsg.mentions.roles) {
                 message.channel.stopTyping();
-            });
-    },
-    'checkwarn': function (message) {
-
-    },
-    'cw': function (message) {
-        cmd.checkwarn(message);
+                return;
+            }
+            const embed = new DiscordJS.MessageEmbed()
+                .setAuthor(`Cult Info`)
+                .setTimestamp(new Date());
+            let cults: {
+                icon: string;
+                role: DiscordJS.Role;
+                leader: DiscordJS.User;
+                memberCount: number;
+            }[] = [];
+            for (const line of cultMsg.content.split("\n")) {
+                const matches = line.match(/(\S+)[^<]*<@&(\d+)>[^<]*<@!?(\d+)>/);
+                if (!matches) continue;
+                const icon = matches[1];
+                const role = server.roles.cache.get(matches[2]);
+                if (!role) continue;
+                const leader = client.users.cache.get(matches[3]);
+                if (!leader) continue;
+                const memberCount = role.members.size;
+                cults.push({icon, role, leader,memberCount});
+            }
+            cults = cults.sort((a,b) => b.memberCount - a.memberCount);
+            const description = cults.reduce((curr, cult) =>
+                `${curr}`+
+                `${cult.icon} ${cult.role}\n` +
+                `Leader: ${cult.leader}\n` +
+                `**${cult.memberCount}** members\n\n`, "");
+            embed.setDescription(description);
+            await message.channel.send(embed);
+            message.channel.stopTyping();
+        }
+        catch (err) {
+            util.log(err, 'cultInfo', util.logLevel.ERROR);
+            message.channel.stopTyping();
+        }
     },
     'roles': function (message, args) {
         if (!message) {
