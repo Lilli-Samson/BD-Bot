@@ -70,6 +70,8 @@ let channels: Str_to_Channel = {
     'playing-as-info': "📌playing-as-info",
     'playing-with-info': "📌playing-with-info",
     'general': "🔞general",
+    'irl-general': "💬irl-general",
+    'rp-general': "🧚rp-general",
     'nsfw-media': "👅nsfw-media",
     'nsfw-media-discussion': "👄nsfw-media-discussion",
     'nsfw-discussion': "nsfw-discussion",
@@ -624,6 +626,8 @@ client.on("message", (message) => {
     if (message.channel.type !== "text") return; // Ignore DMs
     if (typeof channels.tinkering === "string" ||
         typeof channels.general === "string" ||
+        typeof channels["irl-general"] === "string" ||
+        typeof channels["rp-general"] === "string" ||
         typeof channels["nsfw-media"] === "string" ||
         typeof channels["paranoia-plaza"] === "string" ||
         typeof channels["contact"] === "string" ||
@@ -694,7 +698,7 @@ client.on("message", (message) => {
     }
 
     // delete links in general
-    if (_.isEqual(message.channel.id, channels["general"].id)) {
+    if ([channels["general"].id, channels["irl-general"].id, channels["rp-general"].id].includes(message.channel.id)) {
         if (message.content.match(link_regex)) {
             if (util.isStaff(message)) { //have mercy on staff and don't delete messages
             util.react(message, emojis.bancat);
