@@ -97,6 +97,7 @@ let roles: Str_to_Role = {
     "DMs_closed": "DMs Closed ⛔",
     "DMs_open": "DMs Open ✔️",
     "cult-leader": "Cult Leader",
+    "extreme": "Extreme",
 };
 let emojis: Str_to_Emoji = {
     "bancat": "bancat",
@@ -468,6 +469,7 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
     if (typeof playing_as_category === "string") return;
     const type_category = categories['by-type'];
     if (typeof type_category === "string") return;
+    if (typeof roles.extreme === "string") return;
     if (reaction === "❌" && lfpChannels.reduce((found, lfp_channel) => found || lfp_channel.id === channel.id, false)) { //RP ad got flagged
         //no self-reports
         if (messagereaction.message.author.id === client.user?.id) return;
@@ -475,11 +477,6 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
         if (messagereaction.me) return;
         //place own reaction
         await util.react(messagereaction.message, "❌");
-        //get context
-        let playtype = "";
-        if (channel.parent.id === playing_with_category.id) playtype = `to play with ${channel.name.substr(7)} characters`;
-        else if (channel.parent.id === playing_as_category.id) playtype = `to play as a ${channel.name.substr(5)} character`;
-        else playtype = `for ${channel.name === "✨extreme" ? "an extreme" : `a ${channel.name.substr(2)}`} type roleplay`;
         //make report
         const report_channel = channels["reported-rps"];
         if (typeof report_channel === "string") return;
@@ -490,12 +487,6 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
             `Post author: ${messagereaction.message.author}\n` +
             `Reported by: ${user}\n` +
             `[Link to post](${messagereaction.message.url})`)
-            .addField("Founded Report Template",
-            `\`\`\`\n<@${messagereaction.message.author.id}>, your ad does not fit in <#${channel.id}> because it doesn't explicitly look ${playtype}, so it has been removed.\`\`\`` +
-            `${channels["contact"]}`)
-            .addField("Unfounded Report Template",
-            `\`\`\`\n<@${user.id}>, the ad you reported in <#${channel.id}> (<${messagereaction.message.url}>) seems to be on-topic since it's looking ${playtype}. What is wrong with it?\`\`\`` +
-            `${channels["contact"]}`)
             .setFooter(`${channel.id}/${messagereaction.message.id}`)
             .setTimestamp(new Date().getTime())
         );
@@ -508,15 +499,16 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
         });
         if (images.length) report_channel.send(images);
         await util.react(report_message, "✅");
+        await util.react(report_message, "✨");
+        await util.react(report_message, "🤝");
+        await util.react(report_message, "👶");
         await util.react(report_message, "❌");
         await util.react(report_message, "✋");
     }
     const report_channel = channels["reported-rps"];
     if (typeof report_channel === "string") return;
     if (messagereaction.message.channel.id === report_channel.id) {
-        if (!messagereaction.me) {
-            return;
-        }
+        if (!messagereaction.me) return;
         //get original ad
         const footer_text = messagereaction.message.embeds[0]?.footer?.text;
         if (!footer_text) return;
@@ -533,6 +525,11 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
             }
         })();
         if (message) {
+            //get context
+            let playtype = "";
+            if (ad_channel.parent?.id === playing_with_category.id) playtype = `to play with ${channel.name.substr(7)} characters`;
+            else if (ad_channel.parent?.id === playing_as_category.id) playtype = `to play as a ${channel.name.substr(5)} character`;
+            else playtype = `for ${channel.name === "✨extreme" ? "an extreme" : `a ${channel.name.substr(2)}`} type roleplay`;
             //get reporters
             let reporters = "";
             for (const [id, reaction] of message.reactions.cache) {
@@ -551,21 +548,60 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
                     //delete original message
                     await message.delete({reason: "Founded LFP-ad-report"});
                     //yell at author
-                    util.sendTextMessage(channels["contact"], messagereaction.message.embeds[0].fields[1].value.split("```")[1] + ` (confirmed by @${nickname})`);
+                    const template = `<@${message.author.id}>, your ad does not fit in <#${ad_channel}> because it doesn't explicitly look ${playtype}, so it has been removed.`;
+                    util.sendTextMessage(channels["contact"], `${template} (confirmed by @${nickname})`);
                     //log in reports log
                     util.sendTextMessage(channels["report-log"], new DiscordJS.MessageEmbed().setTimestamp(new Date().getTime())
                     .setDescription(`✅ Removed ad by ${message.author} reported by ${reporters} confirmed by ${user} concerning [this report](${messagereaction.message.url}).`));
+                    break;
+                }
+                case "✨": //extreme
+                {
+                    //delete original message
+                    await message.delete({reason: "Founded LFP-ad-report"});
+                    //yell at author
+                    const author_member = server.members.cache.get(message.author.id);
+                    const extreme_role_explanation = author_member?.roles.cache.has(roles.extreme.id) ? "" : ` You cannot see the channel because you don't have the Extreme role. You can get it in ${channels["roles-selection"]}.`;
+                    const template = `<@${message.author.id}>, your ad does not fit in ${ad_channel} because it contains extreme kinks, so it has been removed. Please only post such ads in ${channels["extreme"]}.${extreme_role_explanation}`;
+                    util.sendTextMessage(channels["contact"], `${template} (confirmed by @${nickname})`);
+                    //log in reports log
+                    util.sendTextMessage(channels["report-log"], new DiscordJS.MessageEmbed().setTimestamp(new Date().getTime())
+                    .setDescription(`✨ Removed ad by ${message.author} reported by ${reporters} confirmed by ${user} concerning [this report](${messagereaction.message.url}).`));
+                    break;
+                }
+                case "🤝": //irl request
+                {
+                    //delete original message
+                    await message.delete({reason: "Founded LFP-ad-report"});
+                    //yell at author
+                    const template = `<@${message.author.id}>, your ad does not fit in ${ad_channel} because it is looking for real-life elements, so it has been removed. Please only post such ads in ${channels["real-life"]}.`;
+                    util.sendTextMessage(channels["contact"], `${template} (confirmed by @${nickname})`);
+                    //log in reports log
+                    util.sendTextMessage(channels["report-log"], new DiscordJS.MessageEmbed().setTimestamp(new Date().getTime())
+                    .setDescription(`🤝 Removed ad by ${message.author} reported by ${reporters} confirmed by ${user} concerning [this report](${messagereaction.message.url}).`));
+                    break;
+                }
+                case "👶": //underage
+                {
+                    //delete original message
+                    await message.delete({reason: "Founded LFP-ad-report"});
+                    //yell at author
+                    const template = `<@${message.author.id}>, your ad does not fit in ${ad_channel} because it containes references to or images of underage characters which is not allowed, so the ad has been removed. If you have ageplay as a kink please specify that you are not looking to play with underage characters.`;
+                    util.sendTextMessage(channels["contact"], `${template} (confirmed by @${nickname})`);
+                    //log in reports log
+                    util.sendTextMessage(channels["report-log"], new DiscordJS.MessageEmbed().setTimestamp(new Date().getTime())
+                    .setDescription(`👶 Removed ad by ${message.author} reported by ${reporters} confirmed by ${user} concerning [this report](${messagereaction.message.url}).`));
                     break;
                 }
                 case "❌": //unfounded report
                 {
                     //yell at reporters
                     if (reporters !== "") { //not a retracted report
-                        const template = messagereaction.message.embeds[0].fields[2].value.split("```")[1];
-                        util.sendTextMessage(channels["contact"], reporters + " " + template.substr(22) + ` (marked unfounded by @${nickname})`);
+                        const template = `${reporters}, the ad you reported in <#${ad_channel}> (<${message.url}>) seems to be on-topic since it's looking ${playtype}. What is wrong with it?`;
+                        util.sendTextMessage(channels["contact"], `${template} (marked unfounded by @${nickname})`);
                     }
                     //remove reactions from ad
-                    for (const [id, reaction] of message.reactions.cache) {
+                    for (const [, reaction] of message.reactions.cache) {
                         if (reaction.emoji.name === "❌") {
                             await reaction.remove();
                             break;
