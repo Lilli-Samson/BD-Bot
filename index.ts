@@ -470,6 +470,8 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
     const type_category = categories['by-type'];
     if (typeof type_category === "string") return;
     if (typeof roles.extreme === "string") return;
+    if (typeof channels.extreme === "string") return;
+    if (typeof channels["real-life"] === "string") return;
     if (reaction === "❌" && lfpChannels.reduce((found, lfp_channel) => found || lfp_channel.id === channel.id, false)) { //RP ad got flagged
         //no self-reports
         if (messagereaction.message.author.id === client.user?.id) return;
@@ -499,8 +501,8 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
         });
         if (images.length) report_channel.send(images);
         await util.react(report_message, "✅");
-        await util.react(report_message, "✨");
-        await util.react(report_message, "🤝");
+        if (channel.id !== channels.extreme.id) await util.react(report_message, "✨");
+        if (channel.id !== channels["real-life"].id) await util.react(report_message, "🤝");
         await util.react(report_message, "👶");
         await util.react(report_message, "❌");
         await util.react(report_message, "✋");
