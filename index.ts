@@ -488,7 +488,7 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
             `Channel: ${channel}\n` +
             `Post author: ${messagereaction.message.author}\n` +
             `Reported by: ${user}\n` +
-            `[Link to post](${messagereaction.message.url})` +
+            `[Link to post](${messagereaction.message.url})\n` +
             `${channels["contact"]}`)
             .setFooter(`${channel.id}/${messagereaction.message.id}`)
             .setTimestamp(new Date().getTime())
