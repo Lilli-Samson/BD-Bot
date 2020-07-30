@@ -47,14 +47,14 @@ let channels: Str_to_Channel = {
     'with-female': "🍑with-female",
     'with-femboy': "🍌with-femboy",
     'with-trans': "🌽with-trans",
-    'with-furry': "😺with-furry",
+    'with-furry': "😺with-anthro",
     'with-beast': "🦄with-beast",
     'with-futa-herm': "🥕with-futa-herm",
     'as-male': "🍆as-male",
     'as-female': "🍑as-female",
     'as-femboy': "🍌as-femboy",
     'as-trans': "🌽as-trans",
-    'as-furry': "😺as-furry",
+    'as-furry': "😺as-anthro",
     'as-beast': "🦄as-beast",
     'as-futa-herm': "🥕as-futa-herm",
     'type-info': "📌type-info",
@@ -530,9 +530,12 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
         if (message) {
             //get context
             let playtype = "";
-            if (ad_channel.parent?.id === playing_with_category.id) playtype = `to play with ${ad_channel.name.substr(7)} characters`;
+            if (ad_channel === channels["extreme"]) playtype = `for an extreme type roleplay`;
+            else if (ad_channel === channels["as-furry"]) playtype = `to play as an anthro character`;
+            else if (ad_channel.parent?.id === playing_with_category.id) playtype = `to play with ${ad_channel.name.substr(7)} characters`;
             else if (ad_channel.parent?.id === playing_as_category.id) playtype = `to play as a ${ad_channel.name.substr(5)} character`;
-            else playtype = `for ${ad_channel.name === "✨extreme" ? "an extreme" : `a ${ad_channel.name.substr(2)}`} type roleplay`;
+            else if (ad_channel === channels["real-life"]) playtype = `for real-life contacts`;
+            else playtype = `for a ${ad_channel.name.substr(2)} type roleplay`;
             //get reporters
             let reporters = "";
             for (const [id, reaction] of message.reactions.cache) {
@@ -905,13 +908,13 @@ client.on("message", (message) => {
                     title = "TRANS Characters";
                     target = "People with the MtF or FtM roles";
                     break;
-                case "with-furry":
-                    title = "FURRY Characters";
-                    target = "Furries and Anthromorphs (not beasts/bestiality rp)";
+                case "with-anthro":
+                    title = "ANTHRO Characters";
+                    target = "Anthromorphs, furries and similar (not beasts/bestiality rp)";
                     break;
                 case "with-beast":
                     title = "BEAST Characters";
-                    target = "People playing Beasts who are interested in Bestiality RP (not furries)";
+                    target = "People playing Beasts who are interested in Bestiality RP (not anthros)";
                     break;
                 case "with-futa-herm":
                     title = "FUTANARI / HERMAPHRODITE Characters";
@@ -935,13 +938,13 @@ client.on("message", (message) => {
                     title = "TRANS Characters";
                     target = "People who want to play as gender-transitioned characters or make gender-bending a major theme in the RP.";
                     break;
-                case "as-furry":
-                    title = "FURRY Characters";
-                    target = "Furries and Anthromorphs (not beasts/bestiality rp)";
+                case "as-anthro":
+                    title = "ANTHRO Characters";
+                    target = "Anthromorphs, furries and similar (not beasts/bestiality rp)";
                     break;
                 case "as-beast":
                     title = "BEAST Characters";
-                    target = "Beasts and people interested in Bestiality RP (not furries)";
+                    target = "Beasts and people interested in Bestiality RP (not anthros)";
                     break;
                 case "as-futa-herm":
                     title = "FUTANARI / HERMAPHRODITE Characters";
