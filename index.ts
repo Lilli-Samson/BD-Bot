@@ -530,9 +530,9 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
         if (message) {
             //get context
             let playtype = "";
-            if (ad_channel.parent?.id === playing_with_category.id) playtype = `to play with ${channel.name.substr(7)} characters`;
-            else if (ad_channel.parent?.id === playing_as_category.id) playtype = `to play as a ${channel.name.substr(5)} character`;
-            else playtype = `for ${channel.name === "✨extreme" ? "an extreme" : `a ${channel.name.substr(2)}`} type roleplay`;
+            if (ad_channel.parent?.id === playing_with_category.id) playtype = `to play with ${ad_channel.name.substr(7)} characters`;
+            else if (ad_channel.parent?.id === playing_as_category.id) playtype = `to play as a ${ad_channel.name.substr(5)} character`;
+            else playtype = `for ${ad_channel.name === "✨extreme" ? "an extreme" : `a ${ad_channel.name.substr(2)}`} type roleplay`;
             //get reporters
             let reporters = "";
             for (const [id, reaction] of message.reactions.cache) {
