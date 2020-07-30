@@ -488,7 +488,8 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
             `Channel: ${channel}\n` +
             `Post author: ${messagereaction.message.author}\n` +
             `Reported by: ${user}\n` +
-            `[Link to post](${messagereaction.message.url})`)
+            `[Link to post](${messagereaction.message.url})` +
+            `${channels["contact"]}`)
             .setFooter(`${channel.id}/${messagereaction.message.id}`)
             .setTimestamp(new Date().getTime())
         );
@@ -550,7 +551,7 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
                     //delete original message
                     await message.delete({reason: "Founded LFP-ad-report"});
                     //yell at author
-                    const template = `<@${message.author.id}>, your ad does not fit in <#${ad_channel}> because it doesn't explicitly look ${playtype}, so it has been removed.`;
+                    const template = `<@${message.author.id}>, your ad does not fit in ${ad_channel} because it doesn't explicitly look ${playtype}, so it has been removed.`;
                     util.sendTextMessage(channels["contact"], `${template} (confirmed by @${nickname})`);
                     //log in reports log
                     util.sendTextMessage(channels["report-log"], new DiscordJS.MessageEmbed().setTimestamp(new Date().getTime())
@@ -599,7 +600,7 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
                 {
                     //yell at reporters
                     if (reporters !== "") { //not a retracted report
-                        const template = `${reporters}, the ad you reported in <#${ad_channel}> (<${message.url}>) seems to be on-topic since it's looking ${playtype}. What is wrong with it?`;
+                        const template = `${reporters}, the ad you reported in ${ad_channel} (<${message.url}>) seems to be on-topic since it's looking ${playtype}. What is wrong with it?`;
                         util.sendTextMessage(channels["contact"], `${template} (marked unfounded by @${nickname})`);
                     }
                     //remove reactions from ad
