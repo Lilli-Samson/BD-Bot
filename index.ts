@@ -1820,6 +1820,9 @@ const cmd: Cmd = {
             message.channel.stopTyping();
         }
     },
+    'role': function(message, args) {
+        return cmd.roles(message, args);
+    },
     'roles': function (message, args) {
         if (!message) {
             return;
@@ -2280,13 +2283,13 @@ Go through the last 10000 audit entries and display all entries (up to message l
 ***\`_slowmode\`*** | ***\`_sm\`*** \`[#channel|channelID|categoryID]* [number][h|m|s]*\`
 Sets slowmode to the channel. Example: \`_slowmode #🔞general 30s 2m\`. The time is optional and defaults to 0. The maximum time is 6 hours. Use this command if you need to set a slowmode that is not supported by the UI such as 4 hours.
 
-***\`_roles usage\`***
+***\`_role(s) usage\`***
 Displays a list of all roles and the number of their uses sorted by use-count.
 
-***\`_roles usage list\`***
+***\`_role(s) usage list\`***
 Displays a list of all roles and the number of their uses sorted by name.
 
-***\`_roles who\`*** \`[@role|roleID]*\`
+***\`_role(s) who\`*** \`[@role|roleID]*\`
 Displays a list of members who have the specified role(s).
 
 ***\`_chararchive\`*** | ***\`_ca\`*** \`[messageID]?\`
