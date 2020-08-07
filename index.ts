@@ -801,7 +801,7 @@ client.on("message", (message) => {
     }
 
     // If not from Mee6 and contains mentions
-    if (message.mentions.members?.size && !message.author.bot && message.channel.id !== channels["contact"].id) {
+    if (message.mentions.members?.size && !message.author.bot && message.channel.id !== channels["contact"].id && message.channel.id !== "737043345913675786") {
         // react with :pingangry: to users who mention someone with the Don't Ping role
         const dontPingRole = roles.No_Ping;
         const no_ping_mentions = message.mentions.members.filter(member => (member.roles.cache.has(dontPingRole.id) && !_.isEqual(member.user, message.author)));
@@ -1365,6 +1365,7 @@ const cmd: Cmd = {
         if (!message) {
             return;
         }
+        if (message.channel.id === "737043345913675786") return;
         try {
             if (!util.isStaff(message)) {
                 //util.sendTextMessage(message.channel, `${message.author} Shoo! You don't have the permissions for that!`);
