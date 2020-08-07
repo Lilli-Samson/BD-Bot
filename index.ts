@@ -1367,7 +1367,7 @@ const cmd: Cmd = {
         }
         try {
             if (!util.isStaff(message)) {
-                util.sendTextMessage(message.channel, `${message.author} Shoo! You don't have the permissions for that!`);
+                //util.sendTextMessage(message.channel, `${message.author} Shoo! You don't have the permissions for that!`);
                 return;
             }
             if (!args) {
