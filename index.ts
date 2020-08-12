@@ -70,7 +70,7 @@ let channels: Str_to_Channel = {
     'playing-as-info': "📌playing-as-info",
     'playing-with-info': "📌playing-with-info",
     'general': "🔞general",
-    'irl-general': "💬irl-general",
+    'irl-general': "💬ooc-general",
     'rp-general': "🧚rp-general",
     'nsfw-media': "👅nsfw-media",
     'nsfw-media-discussion': "👄nsfw-media-discussion",
