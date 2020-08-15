@@ -33,56 +33,58 @@ type Str_to_Category = {
     [key: string]: string | DiscordJS.CategoryChannel
 }
 
-let channels: Str_to_Channel = {
-    'main': "accalia-main",
-    'level': "📈level-up-log",
-    'logs': "accalia-logs",
-    'warnings': "🚨warnings",
-    'cult-info': "🗿cult-selection",
-    'char-sub': "📃character-submission",
-    'char-archive': "📚character-archive",
-    'char-index': "📕character-index",
-    'reports': "📮reports-and-issues",
-    'with-male': "🍆with-male",
-    'with-female': "🍑with-female",
-    'with-femboy': "🍌with-femboy",
-    'with-trans': "🌽with-trans",
-    'with-furry': "😺with-anthro",
-    'with-beast': "🦄with-beast",
-    'with-futa-herm': "🥕with-futa-herm",
-    'as-male': "🍆as-male",
-    'as-female': "🍑as-female",
-    'as-femboy': "🍌as-femboy",
-    'as-trans': "🌽as-trans",
-    'as-furry': "😺as-anthro",
-    'as-beast': "🦄as-beast",
-    'as-futa-herm': "🥕as-futa-herm",
-    'type-info': "📌type-info",
-    'vanilla': "🍦vanilla",
-    'gay': "👬gay",
-    'lesbian': "👭lesbian",
-    'extreme': "✨extreme",
-    'group': "👥group",
-    'long-term-plot': "📰long-term-plot",
-    'gm-style': "🧙gm-style",
-    'real-life': "🤝real-life",
-    'contact': "💬ask-to-dm",
-    'playing-as-info': "📌playing-as-info",
-    'playing-with-info': "📌playing-with-info",
-    'general': "🔞general",
-    'irl-general': "💬ooc-general",
-    'rp-general': "🧚rp-general",
-    'nsfw-media': "👅nsfw-media",
-    'nsfw-media-discussion': "👄nsfw-media-discussion",
-    'nsfw-discussion': "nsfw-discussion",
-    'tinkering': "tinkering",
-    'authentication-logs': "🎫authentication-logs",
-    'paranoia-plaza': "🙈ashs-paranoia-plaza",
-    'invites': "⚠invite-log",
-    'roles-selection': "🎲roles-selection",
-    'reported-rps': "☣reported-rp-ads",
-    'report-log': "reported-lfp-warning-logs",
+let channels = {
+    main: <unknown>"accalia-main" as DiscordJS.TextChannel,
+    level: <unknown>"📈level-up-log" as DiscordJS.TextChannel,
+    logs: <unknown>"accalia-logs" as DiscordJS.TextChannel,
+    warnings: <unknown>"🚨warnings" as DiscordJS.TextChannel,
+    cult_info: <unknown>"🗿cult-selection" as DiscordJS.TextChannel,
+    char_sub: <unknown>"📃character-submission" as DiscordJS.TextChannel,
+    char_archive: <unknown>"📚character-archive" as DiscordJS.TextChannel,
+    char_index: <unknown>"📕character-index" as DiscordJS.TextChannel,
+    reports: <unknown>"📮reports-and-issues" as DiscordJS.TextChannel,
+    with_male: <unknown>"🍆with-male" as DiscordJS.TextChannel,
+    with_female: <unknown>"🍑with-female" as DiscordJS.TextChannel,
+    with_femboy: <unknown>"🍌with-femboy" as DiscordJS.TextChannel,
+    with_trans: <unknown>"🌽with-trans" as DiscordJS.TextChannel,
+    with_furry: <unknown>"😺with-anthro" as DiscordJS.TextChannel,
+    with_beast: <unknown>"🦄with-beast" as DiscordJS.TextChannel,
+    with_futa_herm: <unknown>"🥕with-futa-herm" as DiscordJS.TextChannel,
+    as_male: <unknown>"🍆as-male" as DiscordJS.TextChannel,
+    as_female: <unknown>"🍑as-female" as DiscordJS.TextChannel,
+    as_femboy: <unknown>"🍌as-femboy" as DiscordJS.TextChannel,
+    as_trans: <unknown>"🌽as-trans" as DiscordJS.TextChannel,
+    as_furry: <unknown>"😺as-anthro" as DiscordJS.TextChannel,
+    as_beast: <unknown>"🦄as-beast" as DiscordJS.TextChannel,
+    as_futa_herm: <unknown>"🥕as-futa-herm" as DiscordJS.TextChannel,
+    type_info: <unknown>"📌type-info" as DiscordJS.TextChannel,
+    vanilla: <unknown>"🍦vanilla" as DiscordJS.TextChannel,
+    gay: <unknown>"👬gay" as DiscordJS.TextChannel,
+    lesbian: <unknown>"👭lesbian" as DiscordJS.TextChannel,
+    extreme: <unknown>"✨extreme" as DiscordJS.TextChannel,
+    group: <unknown>"👥group" as DiscordJS.TextChannel,
+    long_term_plot: <unknown>"📰long-term-plot" as DiscordJS.TextChannel,
+    gm_style: <unknown>"🧙gm-style" as DiscordJS.TextChannel,
+    real_life: <unknown>"🤝real-life" as DiscordJS.TextChannel,
+    all_style: <unknown>"✥all-style" as DiscordJS.TextChannel,
+    contact: <unknown>"💬ask-to-dm" as DiscordJS.TextChannel,
+    playing_as_info: <unknown>"📌playing-as-info" as DiscordJS.TextChannel,
+    playing_with_info: <unknown>"📌playing-with-info" as DiscordJS.TextChannel,
+    general: <unknown>"🔞general" as DiscordJS.TextChannel,
+    ooc_general: <unknown>"💬ooc-general" as DiscordJS.TextChannel,
+    rp_general: <unknown>"🧚rp-general" as DiscordJS.TextChannel,
+    nsfw_media: <unknown>"👅nsfw-media" as DiscordJS.TextChannel,
+    nsfw_media_discussion: <unknown>"👄nsfw-media-discussion" as DiscordJS.TextChannel,
+    nsfw_discussion: <unknown>"nsfw-discussion" as DiscordJS.TextChannel,
+    tinkering: <unknown>"tinkering" as DiscordJS.TextChannel,
+    authentication_logs: <unknown>"🎫authentication-logs" as DiscordJS.TextChannel,
+    paranoia_plaza: <unknown>"🙈ashs-paranoia-plaza" as DiscordJS.TextChannel,
+    invites: <unknown>"⚠invite-log" as DiscordJS.TextChannel,
+    roles_selection: <unknown>"🎲roles-selection" as DiscordJS.TextChannel,
+    reported_rps: <unknown>"☣reported-rp-ads" as DiscordJS.TextChannel,
+    report_log: <unknown>"reported-lfp-warning-logs" as DiscordJS.TextChannel,
 };
+
 let categories: Str_to_Category = {
     'playing-with': "RP Playing With",
     'playing-as': "RP Playing As",
@@ -243,18 +245,11 @@ const startUpMod = {
         try {
             if (!_.isUndefined(localConfig)) server = localConfig.SERVER;
             server = <DiscordJS.Guild>client.guilds.resolve(server_id);
-            _.each(channels, function (channel, channelID) {
-                const c = server.channels.cache.find(ch => _.isEqual(ch.name, channels[channelID]));
-                if (!c) {
-                    console.log(`Error: Failed filling channel ${channels[channelID]} because it was not found`)
-                }
-                else if (c.type === "text") {
-                    channels[channelID] = c as DiscordJS.TextChannel;
-                }
-                else {
-                    console.log(`Error: Failed filling channel ${channels[channelID]} because it's not a text channel`)
-                }
-            });
+            for (const key in channels) {
+                const channel_name = <string>((channels as any)[key]);
+                assert((channels as any)[key] = server.channels.cache.find(ch => ch.name === channel_name), `failed finding channel ${channel_name}`);
+                assert((channels as any)[key] instanceof DiscordJS.TextChannel, `Failed initializing channels because ${(channels as any)[key]} is not a text channel`);
+            }
             _.each(categories, function (category, categoryID) {
                 const c = server.channels.cache.find(ch => _.isEqual(ch.name, categories[categoryID]));
                 if (!c) {
@@ -284,28 +279,29 @@ const startUpMod = {
 
             fnct.serverStats(['users', 'online', 'new', 'bots', 'roles', 'channels', 'age']);
 
-            lfpChannels.push(<DiscordJS.TextChannel>channels["with-male"]);
-            lfpChannels.push(<DiscordJS.TextChannel>channels["with-female"]);
-            lfpChannels.push(<DiscordJS.TextChannel>channels["with-femboy"]);
-            lfpChannels.push(<DiscordJS.TextChannel>channels["with-trans"]);
-            lfpChannels.push(<DiscordJS.TextChannel>channels["with-furry"]);
-            lfpChannels.push(<DiscordJS.TextChannel>channels["with-beast"]);
-            lfpChannels.push(<DiscordJS.TextChannel>channels["with-futa-herm"]);
-            lfpChannels.push(<DiscordJS.TextChannel>channels["as-male"]);
-            lfpChannels.push(<DiscordJS.TextChannel>channels["as-female"]);
-            lfpChannels.push(<DiscordJS.TextChannel>channels["as-femboy"]);
-            lfpChannels.push(<DiscordJS.TextChannel>channels["as-trans"]);
-            lfpChannels.push(<DiscordJS.TextChannel>channels["as-furry"]);
-            lfpChannels.push(<DiscordJS.TextChannel>channels["as-beast"]);
-            lfpChannels.push(<DiscordJS.TextChannel>channels["as-futa-herm"]);
-            lfpChannels.push(<DiscordJS.TextChannel>channels["vanilla"]);
-            lfpChannels.push(<DiscordJS.TextChannel>channels["gay"]);
-            lfpChannels.push(<DiscordJS.TextChannel>channels["lesbian"]);
-            lfpChannels.push(<DiscordJS.TextChannel>channels["extreme"]);
-            lfpChannels.push(<DiscordJS.TextChannel>channels["group"]);
-            lfpChannels.push(<DiscordJS.TextChannel>channels["long-term-plot"]);
-            lfpChannels.push(<DiscordJS.TextChannel>channels["gm-style"]);
-            lfpChannels.push(<DiscordJS.TextChannel>channels["real-life"]);
+            lfpChannels.push(channels.with_male);
+            lfpChannels.push(channels.with_female);
+            lfpChannels.push(channels.with_femboy);
+            lfpChannels.push(channels.with_trans);
+            lfpChannels.push(channels.with_furry);
+            lfpChannels.push(channels.with_beast);
+            lfpChannels.push(channels.with_futa_herm);
+            lfpChannels.push(channels.as_male);
+            lfpChannels.push(channels.as_female);
+            lfpChannels.push(channels.as_femboy);
+            lfpChannels.push(channels.as_trans);
+            lfpChannels.push(channels.as_furry);
+            lfpChannels.push(channels.as_beast);
+            lfpChannels.push(channels.as_futa_herm);
+            lfpChannels.push(channels.all_style);
+            lfpChannels.push(channels.vanilla);
+            lfpChannels.push(channels.gay);
+            lfpChannels.push(channels.lesbian);
+            lfpChannels.push(channels.extreme);
+            lfpChannels.push(channels.group);
+            lfpChannels.push(channels.long_term_plot);
+            lfpChannels.push(channels.gm_style);
+            lfpChannels.push(channels.real_life);
 
             fetch_invites().then(invs => invites = invs);
 
@@ -351,7 +347,7 @@ client.on("ready", () => {
 
 const process_member_join = (member: DiscordJS.GuildMember | DiscordJS.PartialGuildMember, invs: Invites) => {
     const invitee_is_new = new Date().getTime() - (client.users.cache.get(member.id)?.createdTimestamp || 0) < 1000 * 60 * 60 * 24;
-    const invitee_str = `${member}` +
+    const invitee_str = `${member} ` +
         `(${member.user?.username}#${member.user?.discriminator})` +
         `${invitee_is_new ? `(:warning: new account from ${util.time(new Date().getTime() - (member.user?.createdTimestamp || 0))} ago)` : ""}`;
     return invites.reduce((curr, old_invite, old_code) => {
@@ -395,7 +391,7 @@ const process_member_join = (member: DiscordJS.GuildMember | DiscordJS.PartialGu
 function member_check(member: DiscordJS.GuildMember | DiscordJS.PartialGuildMember) {
     if (member.user?.username === "Jonathan Galindo" || member.nickname === "Jonathan Galindo") {
         member.ban({reason: "Jonathan Galindo -> Whale challenge"});
-        util.sendTextMessage(channels["warnings"], `Banned ${member} for being named Jonathan Galindo referring to the whale challenge.`);
+        util.sendTextMessage(channels.warnings, `Banned ${member} for being named Jonathan Galindo referring to the whale challenge.`);
     }
 }
 
@@ -470,8 +466,6 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
     const type_category = categories['by-type'];
     if (typeof type_category === "string") return;
     if (typeof roles.extreme === "string") return;
-    if (typeof channels.extreme === "string") return;
-    if (typeof channels["real-life"] === "string") return;
     if (reaction === "❌" && lfpChannels.reduce((found, lfp_channel) => found || lfp_channel.id === channel.id, false)) { //RP ad got flagged
         //no self-reports
         if (messagereaction.message.author.id === client.user?.id) return;
@@ -480,7 +474,7 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
         //place own reaction
         await util.react(messagereaction.message, "❌");
         //make report
-        const report_channel = channels["reported-rps"];
+        const report_channel = channels.reported_rps;
         if (typeof report_channel === "string") return;
         const report_message = await report_channel.send(new DiscordJS.MessageEmbed()
             .setDescription(messagereaction.message.content)
@@ -489,7 +483,7 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
             `Post author: ${messagereaction.message.author}\n` +
             `Reported by: ${user}\n` +
             `[Link to post](${messagereaction.message.url})\n` +
-            `${channels["contact"]}`)
+            `${channels.contact}`)
             .setFooter(`${channel.id}/${messagereaction.message.id}`)
             .setTimestamp(new Date().getTime())
         );
@@ -503,12 +497,12 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
         if (images.length) report_channel.send(images);
         await util.react(report_message, "✅");
         if (channel.id !== channels.extreme.id) await util.react(report_message, "✨");
-        if (channel.id !== channels["real-life"].id) await util.react(report_message, "🤝");
+        if (channel.id !== channels.real_life.id) await util.react(report_message, "🤝");
         await util.react(report_message, "👶");
         await util.react(report_message, "❌");
         await util.react(report_message, "✋");
     }
-    const report_channel = channels["reported-rps"];
+    const report_channel = channels.reported_rps;
     if (typeof report_channel === "string") return;
     if (messagereaction.message.channel.id === report_channel.id) {
         if (!messagereaction.me) return;
@@ -530,11 +524,11 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
         if (message) {
             //get context
             let playtype = "";
-            if (ad_channel === channels["extreme"]) playtype = `for an extreme type roleplay`;
-            else if (ad_channel === channels["as-furry"]) playtype = `to play as an anthro character`;
+            if (ad_channel === channels.extreme) playtype = `for an extreme type roleplay`;
+            else if (ad_channel === channels.as_furry) playtype = `to play as an anthro character`;
             else if (ad_channel.parent?.id === playing_with_category.id) playtype = `to play with ${ad_channel.name.substr(7)} characters`;
             else if (ad_channel.parent?.id === playing_as_category.id) playtype = `to play as a ${ad_channel.name.substr(5)} character`;
-            else if (ad_channel === channels["real-life"]) playtype = `for real-life contacts`;
+            else if (ad_channel === channels.real_life) playtype = `for real-life contacts`;
             else playtype = `for a ${ad_channel.name.substr(2)} type roleplay`;
             //get reporters
             let reporters = "";
@@ -555,9 +549,9 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
                     await message.delete({reason: "Founded LFP-ad-report"});
                     //yell at author
                     const template = `<@${message.author.id}>, your ad does not fit in ${ad_channel} because it doesn't explicitly look ${playtype}, so it has been removed.`;
-                    util.sendTextMessage(channels["contact"], `${template} (confirmed by @${nickname})`);
+                    util.sendTextMessage(channels.contact, `${template} (confirmed by @${nickname})`);
                     //log in reports log
-                    util.sendTextMessage(channels["report-log"], new DiscordJS.MessageEmbed().setTimestamp(new Date().getTime())
+                    util.sendTextMessage(channels.report_log, new DiscordJS.MessageEmbed().setTimestamp(new Date().getTime())
                     .setDescription(`✅ Removed ad by ${message.author} reported by ${reporters} confirmed by ${user} concerning [this report](${messagereaction.message.url}).`));
                     break;
                 }
@@ -567,11 +561,11 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
                     await message.delete({reason: "Founded LFP-ad-report"});
                     //yell at author
                     const author_member = server.members.cache.get(message.author.id);
-                    const extreme_role_explanation = author_member?.roles.cache.has(roles.extreme.id) ? "" : ` You cannot see the channel because you don't have the Extreme role. You can get it in ${channels["roles-selection"]}.`;
-                    const template = `<@${message.author.id}>, your ad does not fit in ${ad_channel} because it contains extreme kinks, so it has been removed. Please only post such ads in ${channels["extreme"]}.${extreme_role_explanation}`;
-                    util.sendTextMessage(channels["contact"], `${template} (confirmed by @${nickname})`);
+                    const extreme_role_explanation = author_member?.roles.cache.has(roles.extreme.id) ? "" : ` You cannot see the channel because you don't have the Extreme role. You can get it in ${channels.roles_selection}.`;
+                    const template = `<@${message.author.id}>, your ad does not fit in ${ad_channel} because it contains extreme kinks, so it has been removed. Please only post such ads in ${channels.extreme}.${extreme_role_explanation}`;
+                    util.sendTextMessage(channels.contact, `${template} (confirmed by @${nickname})`);
                     //log in reports log
-                    util.sendTextMessage(channels["report-log"], new DiscordJS.MessageEmbed().setTimestamp(new Date().getTime())
+                    util.sendTextMessage(channels.report_log, new DiscordJS.MessageEmbed().setTimestamp(new Date().getTime())
                     .setDescription(`✨ Removed ad by ${message.author} reported by ${reporters} confirmed by ${user} concerning [this report](${messagereaction.message.url}).`));
                     break;
                 }
@@ -580,10 +574,10 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
                     //delete original message
                     await message.delete({reason: "Founded LFP-ad-report"});
                     //yell at author
-                    const template = `<@${message.author.id}>, your ad does not fit in ${ad_channel} because it is looking for real-life elements, so it has been removed. Please only post such ads in ${channels["real-life"]}.`;
-                    util.sendTextMessage(channels["contact"], `${template} (confirmed by @${nickname})`);
+                    const template = `<@${message.author.id}>, your ad does not fit in ${ad_channel} because it is looking for real-life elements, so it has been removed. Please only post such ads in ${channels.real_life}.`;
+                    util.sendTextMessage(channels.contact, `${template} (confirmed by @${nickname})`);
                     //log in reports log
-                    util.sendTextMessage(channels["report-log"], new DiscordJS.MessageEmbed().setTimestamp(new Date().getTime())
+                    util.sendTextMessage(channels.report_log, new DiscordJS.MessageEmbed().setTimestamp(new Date().getTime())
                     .setDescription(`🤝 Removed ad by ${message.author} reported by ${reporters} confirmed by ${user} concerning [this report](${messagereaction.message.url}).`));
                     break;
                 }
@@ -593,9 +587,9 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
                     await message.delete({reason: "Founded LFP-ad-report"});
                     //yell at author
                     const template = `<@${message.author.id}>, your ad does not fit in ${ad_channel} because it containes references to or images of underage characters which is not allowed, so the ad has been removed. If you have ageplay as a kink please specify that you are not looking to play with underage characters.`;
-                    util.sendTextMessage(channels["contact"], `${template} (confirmed by @${nickname})`);
+                    util.sendTextMessage(channels.contact, `${template} (confirmed by @${nickname})`);
                     //log in reports log
-                    util.sendTextMessage(channels["report-log"], new DiscordJS.MessageEmbed().setTimestamp(new Date().getTime())
+                    util.sendTextMessage(channels.report_log, new DiscordJS.MessageEmbed().setTimestamp(new Date().getTime())
                     .setDescription(`👶 Removed ad by ${message.author} reported by ${reporters} confirmed by ${user} concerning [this report](${messagereaction.message.url}).`));
                     break;
                 }
@@ -604,7 +598,7 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
                     //yell at reporters
                     if (reporters !== "") { //not a retracted report
                         const template = `${reporters}, the ad you reported in ${ad_channel} (<${message.url}>) seems to be on-topic since it's looking ${playtype}. What is wrong with it?`;
-                        util.sendTextMessage(channels["contact"], `${template} (marked unfounded by @${nickname})`);
+                        util.sendTextMessage(channels.contact, `${template} (marked unfounded by @${nickname})`);
                     }
                     //remove reactions from ad
                     for (const [, reaction] of message.reactions.cache) {
@@ -614,14 +608,14 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
                         }
                     }
                     //log in reports log
-                    util.sendTextMessage(channels["report-log"], new DiscordJS.MessageEmbed().setTimestamp(new Date().getTime())
+                    util.sendTextMessage(channels.report_log, new DiscordJS.MessageEmbed().setTimestamp(new Date().getTime())
                     .setDescription(`❌ Ad by ${message.author} ${reporters ? `reported by ${reporters}` : `with retracted report`} marked unfounded by ${user} concerning [this ad](${message.url})/[this report](${messagereaction.message.url}).`));
                     break;
                 }
                 case "✋":
                 {
                     //log in reports log
-                    util.sendTextMessage(channels["report-log"], new DiscordJS.MessageEmbed().setTimestamp(new Date().getTime())
+                    util.sendTextMessage(channels.report_log, new DiscordJS.MessageEmbed().setTimestamp(new Date().getTime())
                     .setDescription(`✋ Ad by ${message.author} ${reporters ? `reported by ${reporters}` : `with retracted report`} handled manually by ${user} concerning [this ad](${message.url})/[this report](${messagereaction.message.url}).`));
                     break;
                 }
@@ -630,7 +624,7 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
             }
         }
         else { //ad has already been deleted
-            util.sendTextMessage(channels["report-log"], new DiscordJS.MessageEmbed().setTimestamp(new Date().getTime())
+            util.sendTextMessage(channels.report_log, new DiscordJS.MessageEmbed().setTimestamp(new Date().getTime())
             .setDescription(`${reaction} Deleted ad handled by ${user} concerning [this report](${messagereaction.message.url}).`));
         }
         //remove own reactions from report
@@ -666,15 +660,7 @@ client.on("message", (message) => {
         return;
     }
     if (message.channel.type !== "text") return; // Ignore DMs
-    if (typeof channels.tinkering === "string" ||
-        typeof channels.general === "string" ||
-        typeof channels["irl-general"] === "string" ||
-        typeof channels["rp-general"] === "string" ||
-        typeof channels["nsfw-media"] === "string" ||
-        typeof channels["paranoia-plaza"] === "string" ||
-        typeof channels["contact"] === "string" ||
-        typeof channels["authentication-logs"] === "string" ||
-        typeof roles.No_Ping === "string") {
+    if (typeof roles.No_Ping === "string") {
         return;
     }
     if (_.isEqual(message.author.username, client.user.username)) return;
@@ -701,10 +687,10 @@ client.on("message", (message) => {
         (async () => {
             if (util.image_link_count(message) > 3) {
                 message.delete({reason: "More than 3 images in an RP ad"});
-                util.sendTextMessage(channels["contact"],
+                util.sendTextMessage(channels.contact,
                 `${message.author}, your roleplaying ad in ${message.channel} has been removed because it had more than 3 images.\n` +
-                `Please follow the rules as described in ${channels["type-info"]}.`);
-                util.sendTextMessage(channels["report-log"], new DiscordJS.MessageEmbed()
+                `Please follow the rules as described in ${channels.type_info}.`);
+                util.sendTextMessage(channels.report_log, new DiscordJS.MessageEmbed()
                 .setDescription(`✅ Deleted RP ad by ${message.author} in ${message.channel} because it contained more than 3 images.`)
                 .setTimestamp(new Date().getTime()));
                 return;
@@ -740,7 +726,7 @@ client.on("message", (message) => {
     }
 
     // delete links in general
-    if ([channels["general"].id, channels["irl-general"].id, channels["rp-general"].id].includes(message.channel.id)) {
+    if ([channels.general.id, channels.ooc_general.id, channels.rp_general.id].includes(message.channel.id)) {
         if (message.content.match(link_regex)) {
             if (util.isStaff(message)) { //have mercy on staff and don't delete messages
             util.react(message, emojis.bancat);
@@ -754,7 +740,7 @@ client.on("message", (message) => {
                 .catch((e) => {
                     util.log(`Failed to remove ${logBody}\nError: ${e.toString()}`, 'Automatic Link Removal', util.logLevel.ERROR);
                 });
-            util.sendTextMessage(message.channel, `${message.author} Sorry, no media or links of any kind in this channel. Put it in ${channels["nsfw-media"]} or another media channel please.`);
+            util.sendTextMessage(message.channel, `${message.author} Sorry, no media or links of any kind in this channel. Put it in ${channels.nsfw_media} or another media channel please.`);
             return;
         }
     }
@@ -762,7 +748,7 @@ client.on("message", (message) => {
     // delete links in Hentai Corner and Pornhub categories and nsfw-media
     if (!_.contains(["SOURCE", "NSFW-DISCUSSION", "EXTREME-FETISHES-BOT", "NSFW-BOT-IMAGES"], message.channel.name.toUpperCase()) &&
         !_.isNull(message.channel.parent) && _.contains(["HENTAI CORNER", "PORNHUB"], message.channel.parent?.name.toUpperCase()) ||
-        message.channel.id === channels["nsfw-media"].id
+        message.channel.id === channels.nsfw_media.id
     ) {
         if (util.isUserStaff(message.author)) return;
         if (!message.content.match(link_regex) && message.attachments.size < 1) {
@@ -774,9 +760,9 @@ client.on("message", (message) => {
                 .catch((e) => {
                     util.log(`Failed to remove ${logBody}\nError: ${e.toString()}`, 'Media Channel Text Filtering', util.logLevel.ERROR);
                 });
-            message.reply(message.channel.id === channels["nsfw-media"].id ?
-            `sorry, no messages without media allowed in this channel. Use ${channels["nsfw-media-discussion"]}.` :
-            `sorry, messages without media or links are removed in media channels. Please put it in ${channels["nsfw-discussion"]} instead.`)
+            message.reply(message.channel.id === channels.nsfw_media.id ?
+            `sorry, no messages without media allowed in this channel. Use ${channels.nsfw_media_discussion}.` :
+            `sorry, messages without media or links are removed in media channels. Please put it in ${channels.nsfw_discussion} instead.`)
                 .then(msg => {
                     setTimeout(()=> {
                         msg.delete();
@@ -787,13 +773,13 @@ client.on("message", (message) => {
     }
 
     //copy new account joins from auth log to paranoia plaza
-    if (message.channel.id === channels["authentication-logs"].id) {
+    if (message.channel.id === channels.authentication_logs.id) {
         if (!message.embeds) { //Stop chatting in the auth log channel :reeeee:
             return;
         }
         message.embeds.forEach(embed => {
             if ((embed.description?.indexOf("**NEW ACCOUNT**") || 0) > 0) {
-                (<DiscordJS.TextChannel>channels["paranoia-plaza"]).send(new DiscordJS.MessageEmbed(embed))
+                (<DiscordJS.TextChannel>channels.paranoia_plaza).send(new DiscordJS.MessageEmbed(embed))
                 .catch(console.error);
             }
         });
@@ -801,7 +787,7 @@ client.on("message", (message) => {
     }
 
     // If not from Mee6 and contains mentions
-    if (message.mentions.members?.size && !message.author.bot && message.channel.id !== channels["contact"].id && message.channel.id !== "737043345913675786") {
+    if (message.mentions.members?.size && !message.author.bot && message.channel.id !== channels.contact.id && message.channel.id !== "737043345913675786") {
         // react with :pingangry: to users who mention someone with the Don't Ping role
         const dontPingRole = roles.No_Ping;
         const no_ping_mentions = message.mentions.members.filter(member => (member.roles.cache.has(dontPingRole.id) && !_.isEqual(member.user, message.author)));
@@ -821,7 +807,7 @@ client.on("message", (message) => {
 
     if (message.mentions.members?.has(client.user.id)) {
         const args = message.content.trim().split(/ +/g).splice(1);
-        util.sendTextMessage(channels["logs"],
+        util.sendTextMessage(channels.logs,
             new DiscordJS.MessageEmbed()
             .setDescription(message.content)
             .addField("Details", `Mentioned by: ${message.author}\n[Link](${message.url})`));
@@ -952,6 +938,10 @@ client.on("message", (message) => {
                     break;
 
                 //RP By Type
+                case "ll-style":
+                    title = "ALL-STYLE RP";
+                    target = "RPs that don't fit elsewhere or you don't want to worry about finding the correct channel.";
+                    break;
                 case "vanilla":
                     title = "VANILLA RPs";
                     target = "People who like a more wholesome RP that does not involve hardcore themes.";
@@ -998,9 +988,9 @@ client.on("message", (message) => {
             const playing_with = channel.parent?.id === playing_with_category.id;
             const by_type = channel.parent?.id === by_type_category.id;
             const info_channel =
-            playing_as ? `${channels["playing-as-info"]}` :
-            playing_with ? `${channels["playing-with-info"]}` :
-            by_type ? `${channels["type-info"]}` :
+            playing_as ? `${channels.playing_as_info}` :
+            playing_with ? `${channels.playing_with_info}` :
+            by_type ? `${channels.type_info}` :
             ``;
             const rp_type_str =
             playing_as ? "Playing As" :
@@ -1012,9 +1002,7 @@ client.on("message", (message) => {
             playing_with ? "want to play with" :
             by_type ? "are looking for" :
             "";
-            if (typeof channels["extreme"] === "string") return;
-            if (typeof channels["real-life"] === "string") return;
-            const exclusive = [channels["extreme"].id, channels["real-life"].id].indexOf(message.channel.id) !== -1 ? "⚠️ __**If your ad is on-topic in this channel do not post it in other channels!**__\n\n" : "";
+            const exclusive = [channels.extreme.id, channels.real_life.id].indexOf(message.channel.id) !== -1 ? "⚠️ __**If your ad is on-topic in this channel do not post it in other channels!**__\n\n" : "";
             if (!(message.channel instanceof DiscordJS.TextChannel)) return;
             const lfpMsg =
                 `>>> __**${rp_type_str} ${title} Channel Info**__\n` +
@@ -1024,7 +1012,7 @@ client.on("message", (message) => {
                 `**${playing_as ? "Anyone wanting to play with " : ""}${target}**\n\n` +
                 `${exclusive}` +
                 `If you see posts which are __not clearly looking for these kinds of RP__ in this channel let the staff know by reacting with :x: (\`:x:\`) or reporting it in ${channels.reports}!\n\n` +
-                `If you want to **contact** someone, **please check their DM Roles** first! If they have **Ask to DM ⚠️** (🇩 🇲 ⚠️) or **DMs Closed ⛔** (🇩 🇲 ⛔) use ${channels["contact"]}!\n\n` +
+                `If you want to **contact** someone, **please check their DM Roles** first! If they have **Ask to DM ⚠️** (🇩 🇲 ⚠️) or **DMs Closed ⛔** (🇩 🇲 ⛔) use ${channels.contact}!\n\n` +
                 `*More info in:* ${info_channel}\n\n`
             ;
 
@@ -1036,7 +1024,7 @@ client.on("message", (message) => {
 
 client.on("guildMemberUpdate", (old_member, new_member) => {
     member_check(new_member);
-})
+});
 
 const permissions_map = new Map([
     ["ADMINISTRATOR", DiscordJS.Permissions.FLAGS.ADMINISTRATOR],
@@ -1773,7 +1761,7 @@ const cmd: Cmd = {
         if (!message) {
             return;
         }
-        const cult_info_channel = channels["cult-info"];
+        const cult_info_channel = channels.cult_info;
         if (typeof cult_info_channel === "string") {
             util.sendTextMessage(message.channel, "Error: cultinfo channel could not be resolved");
             return;
@@ -1972,7 +1960,7 @@ const cmd: Cmd = {
     },
     'trim_reacts': async function (commandmessage) {
         if (!commandmessage) return;
-        const roles_selection = channels["roles-selection"];
+        const roles_selection = channels.roles_selection;
         if (typeof roles_selection === "string") return;
         const messages = await roles_selection.messages.fetch();
         for (const [messageid, message] of messages) {
@@ -2360,9 +2348,7 @@ const fnct = {
     'approveChar': function(message: DiscordJS.Message, reaction: DiscordJS.ReactionEmoji, user: DiscordJS.User) {
         try {
             if (!(message.channel instanceof DiscordJS.TextChannel)) return;
-            if (typeof channels["char-sub"] === "string") return;
-            if (typeof channels["char-archive"] === "string") return;
-            if (_.isEqual(message.channel.name, channels["char-sub"].name) && util.isUserStaff(user)) {
+            if (_.isEqual(message.channel.name, channels.char_sub.name) && util.isUserStaff(user)) {
                 let msgType = _.isEqual(reaction.name, "⭐") ? 1 : _.isEqual(reaction.name, "✅") ? 2 : 0;
                 if (msgType === 0) {
                     return;
@@ -2372,18 +2358,17 @@ const fnct = {
                 _.each(msgAttachments, imgUrl => msgImagesString += imgUrl + "\n");
                 util.log(`${user} approved character message:\n ${message.content}\n ${msgImagesString}`, "approveCharacter", util.logLevel.INFO);
                 let msgContent = `User: ${message.author}\n${message.content}`;
-                channels["char-archive"].send(msgType === 1 ? msgContent : message.content, { files: msgAttachments })
+                channels.char_archive.send(msgType === 1 ? msgContent : message.content, { files: msgAttachments })
                     .then(msg => {
-                        if (typeof channels["char-index"] === "string") return;
                         if (msgType === 1) {
-                            channels["char-index"].send(`\`${message.author} Your character has been approved and can be found in the index under \"\".\``);
+                            channels.char_index.send(`\`${message.author} Your character has been approved and can be found in the index under \"\".\``);
                         }
                         let msgImages = msg.attachments.map(a => a.url);
                         let msgImagesString = "";
                         _.each(msgImages, imgUrl => msgImagesString += imgUrl + "\n");
-                        channels["char-index"].send(`\`r!addchar \"charName\"\n\``);
-                        channels["char-index"].send(`\`${message.content}\``);
-                        channels["char-index"].send(`${msgImagesString}`);
+                        channels.char_index.send(`\`r!addchar \"charName\"\n\``);
+                        channels.char_index.send(`\`${message.content}\``);
+                        channels.char_index.send(`${msgImagesString}`);
                     });
             }
         } catch (e) {
@@ -2549,7 +2534,6 @@ const util = {
         .setDescription(message)
         .setFooter(moduleName)
         .setTimestamp(new Date());
-        if (typeof channels.logs === "string") return;
         channels.logs.send(logEmbed);
 
         if (_.isUndefined(localConfig)) return;
