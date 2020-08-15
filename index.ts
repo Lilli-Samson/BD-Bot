@@ -20,19 +20,6 @@ const prefix = _.isUndefined(localConfig) ? process.env.PREFIX : localConfig.PRE
 const server_id = _.isUndefined(localConfig) ? process.env.SERVER_ID : localConfig.SERVER;
 let server: DiscordJS.Guild;
 
-type Str_to_Channel = {
-    [key: string]: string | DiscordJS.TextChannel
-}
-type Str_to_Role = {
-    [key: string]: string | DiscordJS.Role
-}
-type Str_to_Emoji = {
-    [key: string]: string | DiscordJS.GuildEmoji
-}
-type Str_to_Category = {
-    [key: string]: string | DiscordJS.CategoryChannel
-}
-
 let channels = {
     main: <unknown>"accalia-main" as DiscordJS.TextChannel,
     level: <unknown>"📈level-up-log" as DiscordJS.TextChannel,
@@ -85,33 +72,56 @@ let channels = {
     report_log: <unknown>"reported-lfp-warning-logs" as DiscordJS.TextChannel,
 };
 
-let categories: Str_to_Category = {
-    'playing-with': "RP Playing With",
-    'playing-as': "RP Playing As",
-    'by-type': "RP By Type",
+let categories = {
+    playing_with: <unknown>"RP Playing With" as DiscordJS.CategoryChannel,
+    playing_as: <unknown>"RP Playing As" as DiscordJS.CategoryChannel,
+    by_type: <unknown>"RP By Type" as DiscordJS.CategoryChannel,
 };
-let roles: Str_to_Role = {
-    "No_Ping": "DON'T PING⛔",
-    "Newcomer": "Newcomer",
-    "CustomRoles": "--Custom Roles--",
-    "NSFW": "NSFW",
-    "Ask_to_dm": "Ask to DM ⚠️",
-    "DMs_closed": "DMs Closed ⛔",
-    "DMs_open": "DMs Open ✔️",
-    "cult-leader": "Cult Leader",
-    "extreme": "Extreme",
+
+let roles = {
+    No_Ping: <unknown>"DON'T PING⛔" as DiscordJS.Role,
+    Newcomer: <unknown>"Newcomer" as DiscordJS.Role,
+    CustomRoles: <unknown>"--Custom Roles--" as DiscordJS.Role,
+    NSFW: <unknown>"NSFW" as DiscordJS.Role,
+    Ask_to_dm: <unknown>"Ask to DM ⚠️" as DiscordJS.Role,
+    DMs_closed: <unknown>"DMs Closed ⛔" as DiscordJS.Role,
+    DMs_open: <unknown>"DMs Open ✔️" as DiscordJS.Role,
+    Cult_leader: <unknown>"Cult Leader" as DiscordJS.Role,
+    Extreme: <unknown>"Extreme" as DiscordJS.Role,
+    WARN_1: <unknown>"Warned 1x" as DiscordJS.Role,
+    WARN_2: <unknown>"Warned 2x" as DiscordJS.Role,
+    INNOCENT: <unknown>"Innocent" as DiscordJS.Role,
+    ANCIENT: <unknown>"💠Ancient Member" as DiscordJS.Role,
+    STAFF: <unknown>"Staff" as DiscordJS.Role,
+    TRIALMOD: <unknown>"Trial-Moderator" as DiscordJS.Role,
 };
-let emojis: Str_to_Emoji = {
-    "bancat": "bancat",
-    "pingmad": "pingmad",
-    "pingangry": "pingangry",
+
+let emojis = {
+    bancat: <unknown>"bancat" as DiscordJS.GuildEmoji,
+    pingmad: <unknown>"pingmad" as DiscordJS.GuildEmoji,
+    pingangry: <unknown>"pingangry" as DiscordJS.GuildEmoji,
 };
+
+let lvl_roles = {
+    LVL_0: <unknown>"Lewd (Lvl 0+)" as DiscordJS.Role,
+    LVL_5: <unknown>"Pervert (Lvl 5+)" as DiscordJS.Role,
+    LVL_10: <unknown>"Tainted (Lvl 10+)" as DiscordJS.Role,
+    LVL_20: <unknown>"Slut (Lvl 20+)" as DiscordJS.Role,
+    LVL_30: <unknown>"Whore (Lvl 30+)" as DiscordJS.Role,
+    LVL_40: <unknown>"Cumdump (Lvl 40+)" as DiscordJS.Role,
+    LVL_50: <unknown>"Pornstar (Lvl 50+)" as DiscordJS.Role,
+    LVL_60: <unknown>"Sex-Toy (Lvl 60+)" as DiscordJS.Role,
+    LVL_70: <unknown>"Server Bus (Lvl 70+)" as DiscordJS.Role,
+    LVL_80: <unknown>"Doesn't leave bed (Lvl 80+)" as DiscordJS.Role,
+    LVL_90: <unknown>"Sperm Bank (Lvl 90+)" as DiscordJS.Role,
+    LVL_100: <unknown>"Retired Pornstar (Lvl 100+)" as DiscordJS.Role,
+};
+
 type LFP_Timer = {
     [key: string]: NodeJS.Timeout
 }
 let lfpTimer: LFP_Timer = {};
 let lfpChannels: DiscordJS.TextChannel[] = [];
-let AsheN: DiscordJS.User;
 let lockdown = false;
 let disableMentions = true;
 let ping_violation_reaction_emoji = emojis.pingangry;
@@ -248,31 +258,34 @@ const startUpMod = {
             for (const key in channels) {
                 const channel_name = <string>((channels as any)[key]);
                 assert((channels as any)[key] = server.channels.cache.find(ch => ch.name === channel_name), `failed finding channel ${channel_name}`);
-                assert((channels as any)[key] instanceof DiscordJS.TextChannel, `Failed initializing channels because ${(channels as any)[key]} is not a text channel`);
+                assert((channels as any)[key] instanceof DiscordJS.TextChannel, `Failed initializing channels because ${(channels as any)[key]} is not a channel`);
             }
-            _.each(categories, function (category, categoryID) {
-                const c = server.channels.cache.find(ch => _.isEqual(ch.name, categories[categoryID]));
-                if (!c) {
-                    console.log(`Error: Failed filling channel ${categories[categoryID]} because it was not found`)
-                }
-                else if (c.type === "category") {
-                    categories[categoryID] = c as DiscordJS.CategoryChannel;
-                }
-                else {
-                    console.log(`Error: Failed filling channel ${categories[categoryID]} because it's not a category channel`)
-                }
-            });
-            _.each(Object.keys(util.roles.LVL), role_name => util.roles.LVL[role_name] = <DiscordJS.Role>server.roles.cache.find(role => role.name === <string>util.roles.LVL[role_name]));
-            _.each(Object.keys(roles), role_name => roles[role_name] = <DiscordJS.Role>server.roles.cache.find(role => role.name === roles[role_name]));
-            _.each(Object.keys(emojis), emojiname => emojis[emojiname] = <DiscordJS.GuildEmoji>server.emojis.cache.find(emoji => emoji.name === emojiname));
+            for (const key in categories) {
+                const category_name = <string>((categories as any)[key]);
+                assert((categories as any)[key] = server.channels.cache.find(ch => ch.name === category_name), `failed finding category channel ${category_name}`);
+                assert((categories as any)[key] instanceof DiscordJS.CategoryChannel, `Failed initializing category channels because ${(categories as any)[key]} is not a category channel`);
+            }
+            for (const key in roles) {
+                const role_name = <string>((roles as any)[key]);
+                assert((roles as any)[key] = server.roles.cache.find(ch => ch.name === role_name), `failed finding role ${role_name}`);
+                assert((roles as any)[key] instanceof DiscordJS.Role, `Failed initializing roles because ${(roles as any)[key]} is not a role`);
+            }
+            for (const key in emojis) {
+                const emoji_name = <string>((emojis as any)[key]);
+                assert((emojis as any)[key] = server.emojis.cache.find(ch => ch.name === emoji_name), `failed finding emoji ${emoji_name}`);
+                assert((emojis as any)[key] instanceof DiscordJS.GuildEmoji, `Failed initializing emojis because ${(emojis as any)[key]} is not an emoji`);
+            }
+            for (const key in lvl_roles) {
+                const role_name = <string>((lvl_roles as any)[key]);
+                assert((lvl_roles as any)[key] = server.roles.cache.find(ch => ch.name === role_name), `failed finding level role ${role_name}`);
+                assert((lvl_roles as any)[key] instanceof DiscordJS.Role, `Failed initializing level roles because ${(roles as any)[key]} is not a role`);
+            }
 
-            client.users.fetch("528957906972835850") //"105301872818028544"));
-            .then(user => AsheN = user);
             if (!client.user) {
                 throw "I don't know what's happening";
             }
-            client.user.setActivity("Serving the Den").catch(util.reportToAsheN);
-            ping_violation_reaction_emoji = emojis[<string>ping_violation_reaction_emoji];
+            client.user.setActivity("Serving the Den").catch(error => console.error(`${error}`));
+            ping_violation_reaction_emoji = (emojis as any)[<string><unknown>ping_violation_reaction_emoji];
 
             util.sendTextMessage(channels.main, startUpMessage);
             util.log("INITIALIZED.", "Startup", util.logLevel.INFO);
@@ -308,7 +321,8 @@ const startUpMod = {
             this.startSchedules();
 
         } catch (e) {
-            if (!_.isUndefined(localConfig)) console.log(`(${moment().format('MMM DD YYYY - HH:mm:ss.SSS')}) Failed to start up.`);
+            console.log(`(${moment().format('MMM DD YYYY - HH:mm:ss.SSS')}) Failed to start up because ${e}.`);
+            process.exit();
         }
     },
     'startSchedules': function () {
@@ -459,13 +473,6 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
     const channel = messagereaction.message.channel;
     if (!(channel instanceof DiscordJS.TextChannel)) return;
     if (!channel.parent) return;
-    const playing_with_category = categories['playing-with'];
-    if (typeof playing_with_category === "string") return;
-    const playing_as_category = categories['playing-as'];
-    if (typeof playing_as_category === "string") return;
-    const type_category = categories['by-type'];
-    if (typeof type_category === "string") return;
-    if (typeof roles.extreme === "string") return;
     if (reaction === "❌" && lfpChannels.reduce((found, lfp_channel) => found || lfp_channel.id === channel.id, false)) { //RP ad got flagged
         //no self-reports
         if (messagereaction.message.author.id === client.user?.id) return;
@@ -474,9 +481,7 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
         //place own reaction
         await util.react(messagereaction.message, "❌");
         //make report
-        const report_channel = channels.reported_rps;
-        if (typeof report_channel === "string") return;
-        const report_message = await report_channel.send(new DiscordJS.MessageEmbed()
+        const report_message = await channels.reported_rps.send(new DiscordJS.MessageEmbed()
             .setDescription(messagereaction.message.content)
             .addField("Details",
             `Channel: ${channel}\n` +
@@ -494,7 +499,7 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
         messagereaction.message.attachments.forEach(attachment => {
             images.push(attachment.url);
         });
-        if (images.length) report_channel.send(images);
+        if (images.length) channels.reported_rps.send(images);
         await util.react(report_message, "✅");
         if (channel.id !== channels.extreme.id) await util.react(report_message, "✨");
         if (channel.id !== channels.real_life.id) await util.react(report_message, "🤝");
@@ -502,9 +507,7 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
         await util.react(report_message, "❌");
         await util.react(report_message, "✋");
     }
-    const report_channel = channels.reported_rps;
-    if (typeof report_channel === "string") return;
-    if (messagereaction.message.channel.id === report_channel.id) {
+    if (messagereaction.message.channel.id === channels.reported_rps.id) {
         if (!messagereaction.me) return;
         //get original ad
         const footer_text = messagereaction.message.embeds[0]?.footer?.text;
@@ -526,8 +529,8 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
             let playtype = "";
             if (ad_channel === channels.extreme) playtype = `for an extreme type roleplay`;
             else if (ad_channel === channels.as_furry) playtype = `to play as an anthro character`;
-            else if (ad_channel.parent?.id === playing_with_category.id) playtype = `to play with ${ad_channel.name.substr(7)} characters`;
-            else if (ad_channel.parent?.id === playing_as_category.id) playtype = `to play as a ${ad_channel.name.substr(5)} character`;
+            else if (ad_channel.parent?.id === categories.playing_with.id) playtype = `to play with ${ad_channel.name.substr(7)} characters`;
+            else if (ad_channel.parent?.id === categories.playing_as.id) playtype = `to play as a ${ad_channel.name.substr(5)} character`;
             else if (ad_channel === channels.real_life) playtype = `for real-life contacts`;
             else playtype = `for a ${ad_channel.name.substr(2)} type roleplay`;
             //get reporters
@@ -561,7 +564,7 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
                     await message.delete({reason: "Founded LFP-ad-report"});
                     //yell at author
                     const author_member = server.members.cache.get(message.author.id);
-                    const extreme_role_explanation = author_member?.roles.cache.has(roles.extreme.id) ? "" : ` You cannot see the channel because you don't have the Extreme role. You can get it in ${channels.roles_selection}.`;
+                    const extreme_role_explanation = author_member?.roles.cache.has(roles.Extreme.id) ? "" : ` You cannot see the channel because you don't have the Extreme role. You can get it in ${channels.roles_selection}.`;
                     const template = `<@${message.author.id}>, your ad does not fit in ${ad_channel} because it contains extreme kinks, so it has been removed. Please only post such ads in ${channels.extreme}.${extreme_role_explanation}`;
                     util.sendTextMessage(channels.contact, `${template} (confirmed by @${nickname})`);
                     //log in reports log
@@ -660,9 +663,6 @@ client.on("message", (message) => {
         return;
     }
     if (message.channel.type !== "text") return; // Ignore DMs
-    if (typeof roles.No_Ping === "string") {
-        return;
-    }
     if (_.isEqual(message.author.username, client.user.username)) return;
     if (message.author.bot) {
       if (!(
@@ -707,12 +707,9 @@ client.on("message", (message) => {
             if (user) {
                 await add_reaction("🇩");
                 await add_reaction("🇲");
-                if (typeof roles["DMs_open"] === "string") return;
-                if (typeof roles["DMs_closed"] === "string") return;
-                if (typeof roles["Ask_to_dm"] === "string") return;
-                if (user.roles.cache.has(roles["DMs_open"].id)) await add_reaction("✅");
-                else if (user.roles.cache.has(roles["DMs_closed"].id)) await add_reaction("⛔");
-                else if (user.roles.cache.has(roles["Ask_to_dm"].id)) await add_reaction("⚠️");
+                if (user.roles.cache.has(roles.DMs_open.id)) await add_reaction("✅");
+                else if (user.roles.cache.has(roles.DMs_closed.id)) await add_reaction("⛔");
+                else if (user.roles.cache.has(roles.Ask_to_dm.id)) await add_reaction("⚠️");
                 else await add_reaction("❔");
             }
         })();
@@ -838,7 +835,7 @@ client.on("message", (message) => {
                 return;
             }
             const userM = message.guild?.members.cache.get(usrid);
-            if (userM && userM.roles.cache.find(role => _.isEqual(role.name, util.roles.NEW))) {
+            if (userM && userM.roles.cache.has(roles.Newcomer.id)) {
                 util.log(`Attempting to ban Muted Newcomer: ${message.embeds[0].fields[0].value}`, 'Mute check', util.logLevel.INFO);
                 let options = {
                     reason: "Violating Automoderator chat rules as a Newcomer",
@@ -978,15 +975,9 @@ client.on("message", (message) => {
                     util.log(`Failed finding matchmaking channel ${channel.name.substr(2)}`, "Matchmaking", util.logLevel.ERROR);
                 }
 
-            const playing_as_category = categories["playing-as"];
-            const playing_with_category = categories["playing-with"];
-            const by_type_category = categories["by-type"];
-            if (typeof playing_as_category === "string") return;
-            if (typeof playing_with_category === "string") return;
-            if (typeof by_type_category === "string") return;
-            const playing_as = channel.parent?.id === playing_as_category.id;
-            const playing_with = channel.parent?.id === playing_with_category.id;
-            const by_type = channel.parent?.id === by_type_category.id;
+            const playing_as = channel.parent?.id === categories.playing_as.id;
+            const playing_with = channel.parent?.id === categories.playing_with.id;
+            const by_type = channel.parent?.id === categories.by_type.id;
             const info_channel =
             playing_as ? `${channels.playing_as_info}` :
             playing_with ? `${channels.playing_with_info}` :
@@ -1368,16 +1359,16 @@ const cmd: Cmd = {
                 return util.sendTextMessage(message.channel, `Please mention a valid member of this server! REEEEEEE`);
             if (member.roles.cache.find(role => _.isEqual(role.name, 'Staff')))
                 return util.sendTextMessage(message.channel, `I cannot warn ${member.user.username}... :thinking:`);
-            if (!server.roles.cache.find(role => _.isEqual(role.name, util.roles.WARN_1)))
-                return util.sendTextMessage(message.channel, `I can't find the role for '${util.roles.WARN_1}' ... :thinking:`);
-            if (!server.roles.cache.find(role => _.isEqual(role.name, util.roles.WARN_2)))
-                return util.sendTextMessage(message.channel, `I can't find the role for '${util.roles.WARN_2}' ... :thinking:`);
+            if (!server.roles.cache.find(role => _.isEqual(role.name, roles.WARN_1)))
+                return util.sendTextMessage(message.channel, `I can't find the role for '${roles.WARN_1}' ... :thinking:`);
+            if (!server.roles.cache.find(role => _.isEqual(role.name, roles.WARN_2)))
+                return util.sendTextMessage(message.channel, `I can't find the role for '${roles.WARN_2}' ... :thinking:`);
 
-            let innocentRole = server.roles.cache.find(role => _.isEqual(role.name, util.roles.INNOCENT));
-            let warnRole1 = server.roles.cache.find(role => _.isEqual(role.name, util.roles.WARN_1));
-            let warnRole2 = server.roles.cache.find(role => _.isEqual(role.name, util.roles.WARN_2));
-            let hasWarn1 = member.roles.cache.find(role => _.isEqual(role.name, util.roles.WARN_1));
-            let hasWarn2 = member.roles.cache.find(role => _.isEqual(role.name, util.roles.WARN_2));
+            let innocentRole = server.roles.cache.find(role => _.isEqual(role.name, roles.INNOCENT));
+            let warnRole1 = server.roles.cache.find(role => _.isEqual(role.name, roles.WARN_1));
+            let warnRole2 = server.roles.cache.find(role => _.isEqual(role.name, roles.WARN_2));
+            let hasWarn1 = member.roles.cache.find(role => _.isEqual(role.name, roles.WARN_1));
+            let hasWarn2 = member.roles.cache.find(role => _.isEqual(role.name, roles.WARN_2));
             let level = 0;
             let reason = message.content.substring(message.content.indexOf(args[0]) + args[0].length + 1);
             let err = false;
@@ -1461,15 +1452,6 @@ const cmd: Cmd = {
             util.log('Enabling responses to non-staff mentions', 'enable mentions', util.logLevel.INFO);
         }
     },
-    'quit': function (message) {
-        if (!message) {
-            return;
-        }
-        if (message.author === AsheN) {
-            lockdown = true;
-            util.log('Locking down...', 'quit', util.logLevel.FATAL);
-        }
-    },
     'cn': function (message) {
         if (message && !util.isStaff(message)) {
             return;
@@ -1487,10 +1469,6 @@ const cmd: Cmd = {
         }
         const newcomerMembers = newcomerRole.members.map(m => m.user);
         const channel = message ? message.channel : channels.main;
-        if (typeof channel === "string") {
-            console.log("Fucking channels are strings and not channels :reeee:");
-            return;
-        }
         _.each(newcomerMembers, (member, index) => {
             try {
                 if ((new Date().getTime() - (server.member(member)?.joinedAt?.getTime() || 0))/1000/60 <= 10) { // joined less than 10 minutes ago
@@ -1530,7 +1508,7 @@ const cmd: Cmd = {
             return;
         }
         if (util.isStaff(message!)) {
-            const ancientrole = server.roles.cache.find(role => _.isEqual(role.name, util.roles.ANCIENT));
+            const ancientrole = server.roles.cache.find(role => _.isEqual(role.name, roles.ANCIENT));
             if (!ancientrole) {
                 console.error(`Ancient role not found!`);
                 return;
@@ -1539,7 +1517,7 @@ const cmd: Cmd = {
             util.sendTextMessage(message!.channel, `Threshold for "Ancient Member" is at: ${ancientTimeThreshold.toString()}`);
 
             let ancientMembers = server.members.cache.filter(m => {
-                return ((m.joinedTimestamp || 0) <= ancientTimeThreshold.getTime()) && (!m.user.bot) && _.isNull(m.roles.cache.find(r => _.isEqual(r.name, util.roles.ANCIENT)));
+                return ((m.joinedTimestamp || 0) <= ancientTimeThreshold.getTime()) && (!m.user.bot) && _.isNull(m.roles.cache.find(r => _.isEqual(r.name, roles.ANCIENT)));
             });
 
             ancientMembers.forEach(member => {
@@ -1630,7 +1608,7 @@ const cmd: Cmd = {
                 const ancient_string = member_age.getTime() < ancientTimeThreshold.getTime() ? "Yes" : `on ${ancient_date.toUTCString()} in ${util.time(ancient_date.getTime() - new Date().getTime())}`;
                 embed.addField("Joined", `${member_age.toUTCString()}`);
                 embed.addField("Member Since", `${util.time(new Date().getTime() - member_age.getTime())}`);
-                embed.addField(`Eligible For **${util.roles.ANCIENT}**`, `${ancient_string}`);
+                embed.addField(`Eligible For **${roles.ANCIENT}**`, `${ancient_string}`);
             }
             util.sendTextMessage(message.channel, embed);
         });
@@ -1761,14 +1739,9 @@ const cmd: Cmd = {
         if (!message) {
             return;
         }
-        const cult_info_channel = channels.cult_info;
-        if (typeof cult_info_channel === "string") {
-            util.sendTextMessage(message.channel, "Error: cultinfo channel could not be resolved");
-            return;
-        }
         message.channel.startTyping();
         try {
-            const messages = await cult_info_channel.messages.fetch({limit: 1});
+            const messages = await channels.cult_info.messages.fetch({limit: 1});
             let cultMsg = messages.first();
             if (!cultMsg || !cultMsg.mentions.roles) {
                 message.channel.stopTyping();
@@ -1896,11 +1869,6 @@ const cmd: Cmd = {
         if (message.author.id !== "591241625737494538") return;
         const matches = message.content.match(/(?:\d){18}/g);
         if (!matches) return;
-        const cultleader = roles["cult-leader"];
-        if (typeof cultleader === "string") {
-            util.log("Failed finding cult leader role", "Cult cleanup", util.logLevel.ERROR);
-            return;
-        }
         for (const index in matches) {
             let counter = 0;
             const match = matches[index];
@@ -1910,7 +1878,7 @@ const cmd: Cmd = {
                 continue;
             }
             for (const [, member] of server.members.cache) {
-                if (member.roles.cache.has(match) && !member.roles.cache.has(cultleader.id)) {
+                if (member.roles.cache.has(match) && !member.roles.cache.has(roles.Cult_leader.id)) {
                     await member.roles.remove(match);
                     counter++;
                 }
@@ -1944,10 +1912,6 @@ const cmd: Cmd = {
             util.sendTextMessage(message.channel, `Call the mods!`);
             return;
         }
-        if (typeof roles.NSFW === "string") {
-            util.log(`Failed resolving NSFW role`, "Raid", util.logLevel.ERROR);
-            return;
-        }
         await roles.NSFW.setPermissions(roles.NSFW.permissions.bitfield & ~DiscordJS.Permissions.FLAGS.CREATE_INSTANT_INVITE, "Raid");
         server.fetchInvites()
         .then(invs => {
@@ -1960,9 +1924,7 @@ const cmd: Cmd = {
     },
     'trim_reacts': async function (commandmessage) {
         if (!commandmessage) return;
-        const roles_selection = channels.roles_selection;
-        if (typeof roles_selection === "string") return;
-        const messages = await roles_selection.messages.fetch();
+        const messages = await channels.roles_selection.messages.fetch();
         for (const [messageid, message] of messages) {
             util.sendTextMessage(commandmessage.channel, `Trimming ${message.url}`);
             for (const [reactionid, reaction] of message.reactions.cache) {
@@ -2390,8 +2352,7 @@ const split_text_message = (message: string) => {
 };
 
 const util = {
-    'sendTextMessage': function (channel: DiscordJS.TextChannel | DiscordJS.DMChannel | DiscordJS.NewsChannel | string, message: DiscordJS.MessageEmbed | string) {
-        if (!channel || typeof channel === "string") return;
+    'sendTextMessage': function (channel: DiscordJS.TextChannel | DiscordJS.DMChannel | DiscordJS.NewsChannel, message: DiscordJS.MessageEmbed | string) {
         try {
             channel.startTyping();
             const message_pieces = split_text_message(typeof message === "string" ? message : message.description || "");
@@ -2438,72 +2399,14 @@ const util = {
         }
     },
     'isStaff': function (message: DiscordJS.Message) {
-        const member = server.members.cache.get(message.author.id);
-        if (member && member.permissions.has(DiscordJS.Permissions.FLAGS.ADMINISTRATOR)) return true;
-        return message.author.lastMessage?.member?.roles.cache.find(role => _.isEqual(role.name, this.roles.STAFF) || _.isEqual(role.name, this.roles.TRIALMOD)) || message.author === AsheN;
+        return this.isUserStaff(message.author);
     },
 
     'isUserStaff': function (user: DiscordJS.User) {
-        const staffRole = server.roles.cache.find(role => role.name === util.roles.STAFF);
-        const trialModRole = server.roles.cache.find(role => role.name === util.roles.TRIALMOD);
-        let isStaff = false;
-        if (staffRole && staffRole.id) {
-            isStaff = (server.roles.cache.get(staffRole.id)?.members.map(m => m.user).filter(staffMember => _.isEqual(staffMember, user)).length || 0) > 0;
-        }
-        if (!isStaff && trialModRole && trialModRole.id) {
-            isStaff = (server.roles.cache.get(trialModRole.id)?.members.map(m => m.user).filter(staffMember => _.isEqual(staffMember, user)).length || 0) > 0;
-        }
-        return isStaff;
-    },
-
-    'roles': {
-        'DONTPING': "DON'T PING⛔",
-        'STAFF': "Staff",
-        'TRIALMOD': "Trial-Moderator",
-        'ANCIENT': "💠Ancient Member",
-        'NEW': "Newcomer",
-        'NSFW': "NSFW",
-        'MUTED': "Muted",
-        'INNOCENT': "Innocent",
-        'WARN_1': "Warned 1x",
-        'WARN_2': "Warned 2x",
-        'LVL': <Str_to_Role>{
-            'LVL_0': "Lewd (Lvl 0+)",
-            'LVL_5': "Pervert (Lvl 5+)",
-            'LVL_10': "Tainted (Lvl 10+)",
-            'LVL_20': "Slut (Lvl 20+)",
-            'LVL_30': "Whore (Lvl 30+)",
-            'LVL_40': "Cumdump (Lvl 40+)",
-            'LVL_50': "Pornstar (Lvl 50+)",
-            'LVL_60': "Sex-Toy (Lvl 60+)",
-            'LVL_70': "Server Bus (Lvl 70+)",
-            'LVL_80': "Doesn't leave bed (Lvl 80+)",
-            'LVL_90': "Sperm Bank (Lvl 90+)",
-            'LVL_100': "Retired Pornstar (Lvl 100+)",
-        },
-        'LFP_BANNED': "Banned from LFP",
-        'LFP': {
-            'VANILLA': "Vanilla",
-            'BI': "Bi/Pansexual",
-            'GAY': "Gay",
-            'LESBIAN': "Lesbian",
-            'FUTA': "Futa",
-            'RPFUTA': "RP with Futas",
-            'FURRY': "Furry",
-            'RPFURRY': "RP with Furries",
-            'BEAST': "Beast",
-            'HYBRID': "Hybrid",
-            'RPBEAST': "RP with Beasts",
-            'EXTREME': "Extreme",
-        }
-    },
-
-    'reportToAsheN': function (errMsg: string) {
-        try {
-            AsheN.send(errMsg);
-        } catch (e) {
-            if (!_.isUndefined(localConfig)) console.log("(" + moment().format('MMM DD YYYY - HH:mm:ss.SSS') + ") Failed to start up.");
-        }
+        const member = server.members.cache.get(user.id);
+        if (!member) return;
+        if (member.permissions.has(DiscordJS.Permissions.FLAGS.ADMINISTRATOR)) return true;
+        return member.roles.cache.has(roles.STAFF.id) || member.roles.cache.has(roles.TRIALMOD.id);
     },
 
     'log': function (message: string, moduleName: string, level: string) {
@@ -2526,8 +2429,6 @@ const util = {
         let currDateTime = moment().format('MMM DD YYYY - HH:mm:ss.SSS');
         let logMessage = level + " | " + currDateTime + " | " + moduleName + ": " + message;
 
-        if (_.isEqual(level, this.logLevel.FATAL)) this.reportToAsheN(message);
-        // channels.logs.send(logMessage);
         let logEmbed = new DiscordJS.MessageEmbed()
         .setAuthor(level)
         .setColor(embedColor)
@@ -2535,8 +2436,6 @@ const util = {
         .setFooter(moduleName)
         .setTimestamp(new Date());
         channels.logs.send(logEmbed);
-
-        if (_.isUndefined(localConfig)) return;
         console.log(logMessage);
     },
 
@@ -2552,33 +2451,30 @@ const util = {
     },
 
     'level_to_role': function (level: number) {
-        let result: DiscordJS.Role | string;
         if (level < 5) {
-            result = util.roles.LVL.LVL_0;
+            return lvl_roles.LVL_0;
         } else if (level < 10) {
-            result = util.roles.LVL.LVL_5;
+            return lvl_roles.LVL_5;
         } else if (level < 20) {
-            result = util.roles.LVL.LVL_10;
+            return lvl_roles.LVL_10;
         } else if (level < 30) {
-            result = util.roles.LVL.LVL_20;
+            return lvl_roles.LVL_20;
         } else if (level < 40) {
-            result = util.roles.LVL.LVL_30;
+            return lvl_roles.LVL_30;
         } else if (level < 50) {
-            result = util.roles.LVL.LVL_40;
+            return lvl_roles.LVL_40;
         } else if (level < 60) {
-            result = util.roles.LVL.LVL_50;
+            return lvl_roles.LVL_50;
         } else if (level < 70) {
-            result = util.roles.LVL.LVL_60;
+            return lvl_roles.LVL_60;
         } else if (level < 80) {
-            result = util.roles.LVL.LVL_70;
+            return lvl_roles.LVL_70;
         } else if (level < 90) {
-            result = util.roles.LVL.LVL_80;
+            return lvl_roles.LVL_80;
         } else if (level < 100) {
-            result = util.roles.LVL.LVL_90;
-        } else {
-            result = util.roles.LVL.LVL_100;
+            return lvl_roles.LVL_90;
         }
-        return <DiscordJS.Role>result;
+        return lvl_roles.LVL_100;
     },
 
     'handle_level_up': async function(message: DiscordJS.Message) {
@@ -2591,8 +2487,8 @@ const util = {
 
         const new_role = util.level_to_role(level);
         const is_lvl_role = (role_id: DiscordJS.Snowflake) => {
-            for (const name in util.roles.LVL) {
-                if (role_id === (<DiscordJS.Role>util.roles.LVL[name]).id) return true;
+            for (const name in lvl_roles) {
+                if (role_id === (<DiscordJS.Role>(lvl_roles as any)[name]).id) return true;
             }
             return false;
         }
