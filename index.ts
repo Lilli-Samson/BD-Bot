@@ -1,23 +1,27 @@
-let localConfig: any;
-try { localConfig = require("./localConfig"); } catch (e) { }
-
+import assert = require('assert');
 import * as DiscordJS from "discord.js";
 const client = new DiscordJS.Client({ partials: ['MESSAGE', 'CHANNEL', 'REACTION'] });
-import _ = require("underscore");
 import moment = require("moment");
-import assert = require('assert');
 import schedule = require('node-schedule');
+
+let localConfig: any;
+try {
+    assert(localConfig = require("./localConfig"), "Failed loading config file");
+} catch (e) {
+    console.error(`${e}`);
+    process.exit();
+}
 
 const debug = false;
 
 const MongoClient = require('mongodb').MongoClient;
-const db_name = (_.isUndefined(localConfig)) ? process.env.DB_NAME : debug ? localConfig.DB.TESTNAME : localConfig.DB.NAME;
-const db_user = (_.isUndefined(localConfig)) ? process.env.DB_USER : localConfig.DB.USER;
-const db_pw = (_.isUndefined(localConfig)) ? process.env.DB_PW : localConfig.DB.PW;
+const db_name = debug ? localConfig.DB.TESTNAME : localConfig.DB.NAME;
+const db_user = localConfig.DB.USER;
+const db_pw = localConfig.DB.PW;
 const url = `mongodb+srv://${db_user}:${db_pw}@cluster0-c0kzw.mongodb.net/${db_name}?retryWrites=true&w=majority`;
 
-const prefix = _.isUndefined(localConfig) ? process.env.PREFIX : localConfig.PREFIX;
-const server_id = _.isUndefined(localConfig) ? process.env.SERVER_ID : localConfig.SERVER;
+const prefix = localConfig.PREFIX;
+const server_id = localConfig.SERVER;
 let server: DiscordJS.Guild;
 
 let channels = {
@@ -188,7 +192,7 @@ const dbMod = {
 
                         util.sendTextMessage(channels.warnings,
                             `${member} | **${lvlMsg[level-1]}**\n`+
-                            `__Reason:__ ${!_.isEmpty(reason) ? reason : 'Not specified'} (Warned by ${warner})\n` +
+                            `__Reason:__ ${reason || 'Not specified'} (Warned by ${warner})\n` +
                             `__When:__ ${moment().format(dateFormat)}\n`+
                             `__Ends:__ ${warnDate[level-1]}\n`+
                             `-------------------`
@@ -253,8 +257,8 @@ async function fetch_invites() {
 const startUpMod = {
     'initialize': function (startUpMessage:string) {
         try {
-            if (!_.isUndefined(localConfig)) server = localConfig.SERVER;
             server = <DiscordJS.Guild>client.guilds.resolve(server_id);
+            assert(server);
             for (const key in channels) {
                 const channel_name = <string>((channels as any)[key]);
                 assert((channels as any)[key] = server.channels.cache.find(ch => ch.name === channel_name), `failed finding channel ${channel_name}`);
@@ -465,7 +469,7 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
     if (messagereaction.message.guild?.id !== server.id) return;
     const reaction = messagereaction.emoji.name;
     if (messagereaction.emoji instanceof DiscordJS.GuildEmoji) return;
-    if (_.isEqual(reaction, "⭐") || _.isEqual(reaction, "✅")) {
+    if (reaction === "⭐" || reaction === "✅") {
         fnct.approveChar(messagereaction.message, messagereaction.emoji, user);
     }
     if (user.id === client.user?.id) return; //don't react to our own reactions
@@ -663,13 +667,13 @@ client.on("message", (message) => {
         return;
     }
     if (message.channel.type !== "text") return; // Ignore DMs
-    if (_.isEqual(message.author.username, client.user.username)) return;
+    if (message.author.username === client.user.username) return;
     if (message.author.bot) {
-      if (!(
-          (_.isEqual(message.author.id, "159985870458322944") && _.isEqual(message.channel.name, "📈level-up-log")) ||
-          (_.isEqual(message.author.id, "155149108183695360") && _.isEqual(message.channel.name, "🚨reports-log")) ||
-          (_.isEqual(message.author.username, "Carl-bot Logging") && _.isEqual(message.channel.name, "🎫authentication-logs"))
-      )) {
+      if (
+          (message.author.id !== "159985870458322944" || message.channel.name !== "📈level-up-log") &&
+          (message.author.id !== "155149108183695360" || message.channel.name !== "🚨reports-log") &&
+          (message.author.username !== "Carl-bot Logging" || message.channel.name !== "🎫authentication-logs")
+      ) {
           return;
       }
     }
@@ -678,7 +682,7 @@ client.on("message", (message) => {
     if (lockdown) return;
 
     // Prefix as first character -> command
-    if (_.isEqual(message.content.indexOf(prefix), 0)) {
+    if (message.content.indexOf(prefix) === 0) {
         cmd.call(message);
     }
 
@@ -743,8 +747,8 @@ client.on("message", (message) => {
     }
 
     // delete links in Hentai Corner and Pornhub categories and nsfw-media
-    if (!_.contains(["SOURCE", "NSFW-DISCUSSION", "EXTREME-FETISHES-BOT", "NSFW-BOT-IMAGES"], message.channel.name.toUpperCase()) &&
-        !_.isNull(message.channel.parent) && _.contains(["HENTAI CORNER", "PORNHUB"], message.channel.parent?.name.toUpperCase()) ||
+    if (["SOURCE", "NSFW-DISCUSSION", "EXTREME-FETISHES-BOT", "NSFW-BOT-IMAGES"].indexOf(message.channel.name.toUpperCase()) !== -1 &&
+        message.channel.parent && ["HENTAI CORNER", "PORNHUB"].indexOf(message.channel.parent?.name.toUpperCase()) !== -1 ||
         message.channel.id === channels.nsfw_media.id
     ) {
         if (util.isUserStaff(message.author)) return;
@@ -787,18 +791,18 @@ client.on("message", (message) => {
     if (message.mentions.members?.size && !message.author.bot && message.channel.id !== channels.contact.id && message.channel.id !== "737043345913675786") {
         // react with :pingangry: to users who mention someone with the Don't Ping role
         const dontPingRole = roles.No_Ping;
-        const no_ping_mentions = message.mentions.members.filter(member => (member.roles.cache.has(dontPingRole.id) && !_.isEqual(member.user, message.author)));
+        const no_ping_mentions = message.mentions.members.filter(member => (member.roles.cache.has(dontPingRole.id) && member.user.id !== message.author.id));
         if (no_ping_mentions.size !== 0) {
             const no_ping_mentions_string = no_ping_mentions.reduce((prev_member, next_member) => prev_member + `${next_member} `, "");
             const log_message = `${message.author} pinged people with <@&${dontPingRole.id}>:\n${no_ping_mentions_string}\n[Message Link](${message.url})`;
             if (!util.isUserStaff(message.author)) { // exclude staff
                 util.log(log_message, "Ping role violation", util.logLevel.INFO);
-                util.react(message, !_.isNull(ping_violation_reaction_emoji) ? ping_violation_reaction_emoji : '🚫');
+                util.react(message, ping_violation_reaction_emoji);
             }
         }
     }
 
-    if (_.isEqual(message.channel.name, "📈level-up-log")) {
+    if (message.channel.name === "📈level-up-log") {
         util.handle_level_up(message);
     }
 
@@ -826,7 +830,7 @@ client.on("message", (message) => {
             }
         }
     }
-    if (_.isEqual(message.channel.name, "🚨reports-log")) {
+    if (message.channel.name === "🚨reports-log") {
         const was_mute = message.embeds[0].author?.name?.indexOf('Mute');
         if (was_mute) {
             const usr = message.embeds[0].fields[0].value;
@@ -855,15 +859,15 @@ client.on("message", (message) => {
 
 
     // Post the LFP rules in LFP channels
-    if (_.contains(lfpChannels, message.channel)) {
+    if (lfpChannels.indexOf(message.channel) !== -1) {
         const channel = message.channel;
-        if (!_.isUndefined(lfpTimer[channel.name])) {
+        if (lfpTimer[channel.name]) {
             clearTimeout(lfpTimer[channel.name]);
         }
         lfpTimer[channel.name] = setTimeout(() => {
             channel.messages.fetch()
             .then(messages => {
-                let msg = messages.filter(m => _.isEqual(m.author.id, client.user?.id));
+                let msg = messages.filter(m => m.author.id === client.user?.id);
                 if (msg.size !== 1) {
                     util.log(`Deleting ${msg.size} of my messages in ${channel} which shouldn't happen.`, "lfpInfo", util.logLevel.WARN);
                 }
@@ -1252,7 +1256,7 @@ const audit_send_result = (target_string: string, string: string, channel: Disco
     if (!Array.isArray(message_pieces)) {
         message_pieces = [message_pieces];
     }
-    _.forEach(message_pieces, message_piece => {
+    message_pieces.forEach(message_piece => {
         channel.send(new DiscordJS.MessageEmbed().setDescription(message_piece));
     });
 };
@@ -1357,38 +1361,27 @@ const cmd: Cmd = {
             let member = message.mentions.members?.first() || message.guild?.members.cache.get(args[0]);
             if (!member)
                 return util.sendTextMessage(message.channel, `Please mention a valid member of this server! REEEEEEE`);
-            if (member.roles.cache.find(role => _.isEqual(role.name, 'Staff')))
+            if (member.roles.cache.has(roles.STAFF.id))
                 return util.sendTextMessage(message.channel, `I cannot warn ${member.user.username}... :thinking:`);
-            if (!server.roles.cache.find(role => _.isEqual(role.name, roles.WARN_1)))
-                return util.sendTextMessage(message.channel, `I can't find the role for '${roles.WARN_1}' ... :thinking:`);
-            if (!server.roles.cache.find(role => _.isEqual(role.name, roles.WARN_2)))
-                return util.sendTextMessage(message.channel, `I can't find the role for '${roles.WARN_2}' ... :thinking:`);
 
-            let innocentRole = server.roles.cache.find(role => _.isEqual(role.name, roles.INNOCENT));
-            let warnRole1 = server.roles.cache.find(role => _.isEqual(role.name, roles.WARN_1));
-            let warnRole2 = server.roles.cache.find(role => _.isEqual(role.name, roles.WARN_2));
-            let hasWarn1 = member.roles.cache.find(role => _.isEqual(role.name, roles.WARN_1));
-            let hasWarn2 = member.roles.cache.find(role => _.isEqual(role.name, roles.WARN_2));
+                
+            const hasWarn1 = member.roles.cache.has(roles.WARN_1.id);
+            const hasWarn2 = member.roles.cache.has(roles.WARN_2.id);
             let level = 0;
             let reason = message.content.substring(message.content.indexOf(args[0]) + args[0].length + 1);
             let err = false;
-
-            if (!warnRole1 || !warnRole2) {
-                console.log("Error in warnings: Warning roles are not defined!");
-                return;
-            }
 
             // Warn functionality
             if (hasWarn2) {
                 level = 3;
             } else if (hasWarn1) {
-                await member.roles.add(warnRole2)
+                await member.roles.add(roles.WARN_2)
                     .then(() => {
-                        if (!member || !warnRole1) {
-                            console.log("Error in warnings: Member or warning roles are not defined!");
+                        if (!member) {
+                            console.log("Error in warnings: Member not found!");
                             return;
                         }
-                        member.roles.remove(warnRole1)
+                        member.roles.remove(roles.WARN_1)
                             .catch(() => {
                                 util.log(`Failed to remove Warning level 1 from ${member}.`, 'Warn: remove level 1', util.logLevel.ERROR);
                                 err = true;
@@ -1400,13 +1393,13 @@ const cmd: Cmd = {
                         util.log(`Failed to add Warning level 2 to ${member}.`, 'Warn: 1->2', util.logLevel.ERROR);
                     });
             } else {
-                await member.roles.add(warnRole1)
+                await member.roles.add(roles.WARN_1)
                     .then(() => {
-                        if (!member || !innocentRole) {
-                            console.log("Error in warnings: Member or warning roles are not defined!");
+                        if (!member) {
+                            console.log("Error in warnings: Member not found!");
                             return;
                         }
-                        member.roles.remove(innocentRole)
+                        member.roles.remove(roles.INNOCENT)
                             .catch(() => {
                                 util.log(`Failed to remove Innocent role from ${member}.`, 'Warn: remove Innocent role', util.logLevel.ERROR);
                                 err = true;
@@ -1469,7 +1462,7 @@ const cmd: Cmd = {
         }
         const newcomerMembers = newcomerRole.members.map(m => m.user);
         const channel = message ? message.channel : channels.main;
-        _.each(newcomerMembers, (member, index) => {
+        newcomerMembers.forEach((member, index) => {
             try {
                 if ((new Date().getTime() - (server.member(member)?.joinedAt?.getTime() || 0))/1000/60 <= 10) { // joined less than 10 minutes ago
                     return;
@@ -1477,7 +1470,7 @@ const cmd: Cmd = {
                 util.log(`Clearing newcomer role from: <@${member.id}> (${index+1} / ${newcomerMembers.length})`, "clearNewcomer", util.logLevel.INFO);
                 server.member(member)?.roles.remove(newcomerRole)
                     .then((guildMember) => {
-                        if (_.isNull(guildMember.roles.cache.find(role => role.name === "NSFW")) && ((new Date().getTime() - (guildMember.joinedAt?.getTime() || 0))/1000/60 > 10)) { // joined more than 10 minutes ago
+                        if (!guildMember.roles.cache.has(roles.NSFW.id) && ((new Date().getTime() - (guildMember.joinedAt?.getTime() || 0))/1000/60 > 10)) { // joined more than 10 minutes ago
                             const reason = guildMember + " kicked from not having NSFW role for a longer period of time.";
                             guildMember.kick(reason)
                                 .then(() => util.log(reason, 'clearNewcomer', util.logLevel.INFO))
@@ -1508,20 +1501,15 @@ const cmd: Cmd = {
             return;
         }
         if (util.isStaff(message!)) {
-            const ancientrole = server.roles.cache.find(role => _.isEqual(role.name, roles.ANCIENT));
-            if (!ancientrole) {
-                console.error(`Ancient role not found!`);
-                return;
-            }
             let ancientTimeThreshold = new Date(server.createdTimestamp + (new Date().getTime() - server.createdTimestamp) / 5);
             util.sendTextMessage(message!.channel, `Threshold for "Ancient Member" is at: ${ancientTimeThreshold.toString()}`);
 
             let ancientMembers = server.members.cache.filter(m => {
-                return ((m.joinedTimestamp || 0) <= ancientTimeThreshold.getTime()) && (!m.user.bot) && _.isNull(m.roles.cache.find(r => _.isEqual(r.name, roles.ANCIENT)));
+                return ((m.joinedTimestamp || 0) <= ancientTimeThreshold.getTime()) && (!m.user.bot) && !m.roles.cache.has(roles.ANCIENT.id);
             });
 
             ancientMembers.forEach(member => {
-                member.roles.add(ancientrole!).then();
+                member.roles.add(roles.ANCIENT);
                 console.log(member.user.username + ", last message: " + (member.lastMessage?.createdAt || " too old"));
             });
         } else {
@@ -1813,7 +1801,7 @@ const cmd: Cmd = {
             return;
         }
         let sortOrder = "";
-        if (args && _.isEqual(args[0], "list")) {
+        if (args && args[0] === "list") {
             sortOrder = "list";
         }
         let roles = new DiscordJS.Collection<DiscordJS.Snowflake, number>();
@@ -1893,8 +1881,8 @@ const cmd: Cmd = {
         const args = message.content.slice(prefix.length).trim().split(/ +/g);
         const command = args.shift()?.toLowerCase() || "";
         try {
-            if (_.isEqual(command, "call")) return;
-            if (_.isUndefined(this[command])) return;
+            if (command === "call") return;
+            if (!this[command]) return;
             if (command in this) {
                 this[command](message, args);
                 util.log(`${message.author} is calling command: \`${message.content}\`\n[link](${message.url})`, command, util.logLevel.INFO);
@@ -2261,7 +2249,7 @@ ${util.isStaff(message) ? staff_commands : ""}`))},
 const fnct = {
     'serverStats': function (modes: string[]) {
         try {
-            _.forEach(modes, mode => {
+            modes.forEach(mode => {
                 let channel = "";
                 let str = "";
                 switch (mode) {
@@ -2271,7 +2259,7 @@ const fnct = {
                         break;
                     case 'online':
                         channel = "582321302837133313";
-                        str = "📊Online users: " + server.members.cache.filter(member => !member.user.bot && !_.isEqual(member.user.presence.status, "offline")).size;
+                        str = "📊Online users: " + server.members.cache.filter(member => !member.user.bot && member.user.presence.status !== "offline").size;
                         break;
                     case 'new':
                         channel = "582309343274205209";
@@ -2310,14 +2298,14 @@ const fnct = {
     'approveChar': function(message: DiscordJS.Message, reaction: DiscordJS.ReactionEmoji, user: DiscordJS.User) {
         try {
             if (!(message.channel instanceof DiscordJS.TextChannel)) return;
-            if (_.isEqual(message.channel.name, channels.char_sub.name) && util.isUserStaff(user)) {
-                let msgType = _.isEqual(reaction.name, "⭐") ? 1 : _.isEqual(reaction.name, "✅") ? 2 : 0;
+            if (message.channel.name === channels.char_sub.name && util.isUserStaff(user)) {
+                const msgType = reaction.name === "⭐" ? 1 : reaction.name === "✅" ? 2 : 0;
                 if (msgType === 0) {
                     return;
                 }
                 let msgAttachments = message.attachments.map(a => a.url);
                 let msgImagesString = "";
-                _.each(msgAttachments, imgUrl => msgImagesString += imgUrl + "\n");
+                msgAttachments.forEach(imgUrl => msgImagesString += imgUrl + "\n");
                 util.log(`${user} approved character message:\n ${message.content}\n ${msgImagesString}`, "approveCharacter", util.logLevel.INFO);
                 let msgContent = `User: ${message.author}\n${message.content}`;
                 channels.char_archive.send(msgType === 1 ? msgContent : message.content, { files: msgAttachments })
@@ -2327,7 +2315,7 @@ const fnct = {
                         }
                         let msgImages = msg.attachments.map(a => a.url);
                         let msgImagesString = "";
-                        _.each(msgImages, imgUrl => msgImagesString += imgUrl + "\n");
+                        msgImages.forEach(imgUrl => msgImagesString += imgUrl + "\n");
                         channels.char_index.send(`\`r!addchar \"charName\"\n\``);
                         channels.char_index.send(`\`${message.content}\``);
                         channels.char_index.send(`${msgImagesString}`);
@@ -2357,7 +2345,7 @@ const util = {
             channel.startTyping();
             const message_pieces = split_text_message(typeof message === "string" ? message : message.description || "");
             setTimeout(function(){
-                _.forEach(message_pieces, message_piece => {
+                message_pieces.forEach(message_piece => {
                     if (message instanceof DiscordJS.MessageEmbed) {
                         channel.send(new DiscordJS.MessageEmbed(message).setDescription(message_piece));
                     }
@@ -2381,7 +2369,7 @@ const util = {
             channel.startTyping();
             const message_pieces = split_text_message(message);
             setTimeout(function(){
-                _.forEach(message_pieces, message_piece => {
+                message_pieces.forEach(message_piece => {
                     if (embed) {
                         channel.send(new DiscordJS.MessageEmbed(embed).setDescription(message_piece))
                             .then(d => setTimeout(() => d.delete(), 5000));
@@ -2410,8 +2398,6 @@ const util = {
     },
 
     'log': function (message: string, moduleName: string, level: string) {
-        if (_.isUndefined(channels.logs)) return;
-        level = ((_.isUndefined(level)) ? this.logLevel.INFO : level);
         let embedColor = 0xE0FFFF;
         switch (level) {
             case util.logLevel.WARN:
@@ -2561,4 +2547,4 @@ const util = {
     }
 };
 
-client.login(_.isUndefined(localConfig) ? process.env.BOT_TOKEN : localConfig.TOKEN);
+client.login(localConfig.TOKEN);
