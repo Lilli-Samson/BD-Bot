@@ -746,9 +746,10 @@ client.on("message", (message) => {
         }
     }
 
-    // delete links in Hentai Corner and Pornhub categories and nsfw-media
-    if (["SOURCE", "NSFW-DISCUSSION", "EXTREME-FETISHES-BOT", "NSFW-BOT-IMAGES"].indexOf(message.channel.name.toUpperCase()) !== -1 &&
-        message.channel.parent && ["HENTAI CORNER", "PORNHUB"].indexOf(message.channel.parent?.name.toUpperCase()) !== -1 ||
+    // delete non-media in Hentai Corner and Pornhub categories and nsfw-media
+    if (["SOURCE", "NSFW-DISCUSSION", "EXTREME-FETISHES-BOT", "NSFW-BOT-IMAGES"].indexOf(message.channel.name.toUpperCase()) === -1 &&
+        message.channel.parent &&
+        ["HENTAI CORNER", "PORNHUB"].indexOf(message.channel.parent.name.toUpperCase()) !== -1 ||
         message.channel.id === channels.nsfw_media.id
     ) {
         if (util.isUserStaff(message.author)) return;
