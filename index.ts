@@ -2199,7 +2199,10 @@ Display the profile picture of a user in big.
 Displays a list of the current cults and their symbol, cult role, leader and number of members sorted by members.
 
 **\`_stats\`** \`[#channel|#category|prefix|ID]*\`
-Displays a list of channels and the number of messages, chatters and readers for the specified channel(s) for the last 28-ish days. Try \`_stats #💬ooc-general #🧚rp-general\` to compare the general chats or \`_stats 🐎\` to see how active the Ram Ranch cult is.
+Displays a list of channels and the number of messages, chatters and readers for the specified channel(s) for the last 28 days. Try \`_stats #💬ooc-general #🧚rp-general\` to compare the general chats or \`_stats 🐎\` to see how active the Ram Ranch cult is. Note that this only updates once every few days or so.
+
+**\`_inactive\`**
+Displays a list of channels that are currently considered inactive and may get deleted next weekend. Note that this only updates every couple of days and that new channels get a grace period.
 
 **\`_help\`**
 Display this text.`
