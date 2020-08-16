@@ -136,7 +136,7 @@ class Invites extends DiscordJS.Collection<Invite_code, {uses: number | null, ma
 let invites: Invites;
 
 const dbMod = {
-    'warnUser': function (member: DiscordJS.User, level: number, warner: DiscordJS.GuildMember, reason?: string) {
+    warnUser: function (member: DiscordJS.User, level: number, warner: DiscordJS.GuildMember, reason?: string) {
         util.log(`Calling DB Module`, 'DB/warnUser', util.logLevel.INFO);
         try {
             util.log(`Attempting to connect to DB`, 'DB/warnUser', util.logLevel.INFO);
@@ -206,7 +206,7 @@ const dbMod = {
             util.log('Failed to do "warnUser": ' + err, 'DB/warnUser', util.logLevel.FATAL);
         }
     },
-    'checkWarnings': function () {
+    checkWarnings: function () {
         util.log(`Calling DB Module`, 'DB/checkWarnings', util.logLevel.INFO);
         try {
             return;
@@ -226,7 +226,7 @@ const dbMod = {
             util.log('Failed to do "checkWarnings":' + err, 'DB/checkWarnings', util.logLevel.FATAL);
         }
     },
-    'connect': function (callback: (db: any) => any) {
+    connect: function (callback: (db: any) => any) {
         MongoClient.connect(url, { useNewUrlParser: true }, (err: any, client: any) => {
             if (err) util.log(err, 'DB/connect', util.logLevel.FATAL);
             else {
@@ -255,7 +255,7 @@ async function fetch_invites() {
 }
 
 const startUpMod = {
-    'initialize': function (startUpMessage:string) {
+    initialize: function (startUpMessage:string) {
         try {
             server = <DiscordJS.Guild>client.guilds.resolve(server_id);
             assert(server);
@@ -329,7 +329,7 @@ const startUpMod = {
             process.exit();
         }
     },
-    'startSchedules': function () {
+    startSchedules: function () {
         // Cron-format: second 0-59 optional; minute 0-59; hour 0-23; day of month 1-31; month 1-12; day of week 0-7
         let j = schedule.scheduleJob('*/60 * * * *', function(fireDate){
             cmd.cn();
@@ -1319,7 +1319,7 @@ type Cmd = {
     [key: string]: (arg1?: DiscordJS.Message, arg2?: string[]) => void
 };
 const cmd: Cmd = {
-    'ping': async function (message) {
+    ping: async function (message) {
         if (!message) {
             return;
         }
@@ -1331,7 +1331,7 @@ const cmd: Cmd = {
             util.log('Failed to process command (ping)', 'ping', util.logLevel.ERROR);
         }
     },
-    'staff': async function (message) {
+    staff: async function (message) {
         if (!message) {
             return;
         }
@@ -1344,7 +1344,7 @@ const cmd: Cmd = {
             util.log('Failed to process command (staff)', 'staff', util.logLevel.ERROR);
         }
     },
-    'warn': async function (message, args) {
+    warn: async function (message, args) {
         if (!message) {
             return;
         }
@@ -1425,7 +1425,7 @@ const cmd: Cmd = {
             util.log('Failed to process command (warn)', 'warn', util.logLevel.ERROR);
         }
     },
-    'stopmention': function (message) {
+    stopmention: function (message) {
         if (!message) {
             return;
         }
@@ -1435,7 +1435,7 @@ const cmd: Cmd = {
             util.log('Disabling responses to non-staff mentions ...', 'disable mentions', util.logLevel.INFO);
         }
     },
-    'startmention': function (message) {
+    startmention: function (message) {
         if (!message) {
             return;
         }
@@ -1445,7 +1445,7 @@ const cmd: Cmd = {
             util.log('Enabling responses to non-staff mentions', 'enable mentions', util.logLevel.INFO);
         }
     },
-    'cn': function (message) {
+    cn: function (message) {
         if (message && !util.isStaff(message)) {
             return;
         }
@@ -1495,7 +1495,7 @@ const cmd: Cmd = {
             }
         });
     },
-    'ancient': function(message) {
+    ancient: function(message) {
         return;
         if (!message) {
             return;
@@ -1516,7 +1516,7 @@ const cmd: Cmd = {
             util.sendTextMessage(message!.channel, "Shoo! You don't have permissions for that!");
         }
     },
-    'clear': function(message, args) {
+    clear: function(message, args) {
         if (!message) {
             return;
         }
@@ -1543,7 +1543,7 @@ const cmd: Cmd = {
             }
         }
     },
-    'age': function (message) {
+    age: function (message) {
         if (!message) {
             return;
         }
@@ -1601,7 +1601,7 @@ const cmd: Cmd = {
             util.sendTextMessage(message.channel, embed);
         });
     },
-    'pfp': function (message) { //display profile picture of a user
+    pfp: function (message) { //display profile picture of a user
         if (!message) {
             return;
         }
@@ -1617,7 +1617,7 @@ const cmd: Cmd = {
             }).catch(error => util.sendTextMessage(message.channel, `Invalid user ID: <@${snowflake}>`));
         });
     },
-    'audit': function (message) {
+    audit: function (message) {
         if (!message) {
             return;
         }
@@ -1656,7 +1656,7 @@ const cmd: Cmd = {
             }
         });
     },
-    'slowmode': async function (message) {
+    slowmode: async function (message) {
         if (!message) return;
         if (!util.isStaff(message)) {
             util.sendTextMessage(message.channel, `${message.author} Too slow!`);
@@ -1720,10 +1720,10 @@ const cmd: Cmd = {
             util.sendTextMessage(message.channel, `Successfully set slowmode in${target_channels.reduce((curr, id) => `${curr} <#${id}>`, "")} to ${time_str}.`);
         }
     },
-    'sm': function (message) {
+    sm: function (message) {
         cmd.slowmode(message);
     },
-    'cultinfo': async function (message) {
+    cultinfo: async function (message) {
         if (!message) {
             return;
         }
@@ -1770,10 +1770,10 @@ const cmd: Cmd = {
             message.channel.stopTyping();
         }
     },
-    'role': function(message, args) {
+    role: function(message, args) {
         return cmd.roles(message, args);
     },
-    'roles': function (message, args) {
+    roles: function (message, args) {
         if (!message) {
             return;
         }
@@ -1796,7 +1796,7 @@ const cmd: Cmd = {
         }
         util.sendTempTextMessage(message.channel, 'That didn\'t work out... maybe try `_roles who <roleID>` or `_roles usage` or `_roles usage list`');
     },
-    'roles usage': function (message, args) { //list all the roles and their usage; args can only be "list"
+    "roles usage": function (message, args) { //list all the roles and their usage; args can only be "list"
         if (!message) {
             return;
         }
@@ -1831,7 +1831,7 @@ const cmd: Cmd = {
         const roles_str = roles.reduce((current, count, role) => current + `${server.roles.cache.get(role)}: ${count}\n`, "");
         util.sendTextMessage(message.channel, new DiscordJS.MessageEmbed().setDescription(`${roles.size}/250 roles:\n${roles_str}`));
     },
-    'roles who': function (message) { //list the members who have a certain role
+    "roles who": function (message) { //list the members who have a certain role
         if (!message) {
             return;
         }
@@ -1852,7 +1852,7 @@ const cmd: Cmd = {
             util.sendTextMessage(message.channel, new DiscordJS.MessageEmbed().setDescription(`Users with role ${role}:\n${users_str}`));
         });
     },
-    'roles purge': async function (message) {
+    "roles purge": async function (message) {
         if (!message) return;
         if (message.author.id !== "591241625737494538") return;
         const matches = message.content.match(/(?:\d){18}/g);
@@ -1874,7 +1874,7 @@ const cmd: Cmd = {
             util.sendTextMessage(message.channel, new DiscordJS.MessageEmbed().setDescription(`Removed <@&${match}> from ${counter} members.`));
         }
     },
-    'call': async function (message) {
+    call: async function (message) {
         if (!message) {
             return;
         }
@@ -1891,10 +1891,10 @@ const cmd: Cmd = {
             util.log(`Failed to process (${command})`, command, util.logLevel.ERROR);
         }
     },
-    'stop_typing': function (message) {
+    stop_typing: function (message) {
         message?.channel.stopTyping(true);
     },
-    'raid': async function(message) {
+    raid: async function(message) {
         if (!message) return;
         if (!util.isStaff(message)) {
             util.sendTextMessage(message.channel, `Call the mods!`);
@@ -1910,7 +1910,7 @@ const cmd: Cmd = {
         util.react(message, '✅');
         util.log(`Disabled invite creation and deleted invites`, "Raid", util.logLevel.WARN);
     },
-    'trim_reacts': async function (commandmessage) {
+    trim_reacts: async function (commandmessage) {
         if (!commandmessage) return;
         const messages = await channels.roles_selection.messages.fetch();
         for (const [messageid, message] of messages) {
@@ -1926,10 +1926,10 @@ const cmd: Cmd = {
         }
         util.react(commandmessage, "✅");
     },
-    'ca': async function (message) {
+    ca: async function (message) {
         return this.chararchive(message);
     },
-    'chararchive': async function (message) {
+    chararchive: async function (message) {
         if (!message) {
             return;
         }
@@ -1954,7 +1954,7 @@ const cmd: Cmd = {
         }
         dead_char_search(snowflake, message, archive_channel);
     },
-    'banish': function (message) { //banish ID|Mention Channel|ChannelID|CategoryID|"Prefix"+
+    banish: function (message) { //banish ID|Mention Channel|ChannelID|CategoryID|"Prefix"+
         if (!message) {
             return;
         }
@@ -2024,7 +2024,7 @@ const cmd: Cmd = {
         }, "")
         util.sendTextMessage(message.channel, new DiscordJS.MessageEmbed().setDescription(`Banished <@${target}> from ${summary}`));
     },
-    'perms': async function (message) {
+    perms: async function (message) {
         if (!message) {
             return;
         }
@@ -2178,7 +2178,7 @@ const cmd: Cmd = {
                 `in channel(s)${applied_channels.reduce((curr, channel) => `${curr} ${channel}`, "")}`));
         }
     },
-    'help': function (message) {
+    help: function (message) {
         if (!message) {
             return;
         }
@@ -2197,6 +2197,9 @@ Display the profile picture of a user in big.
 
 **\`_cultinfo\`**
 Displays a list of the current cults and their symbol, cult role, leader and number of members sorted by members.
+
+**\`_stats\`** \`[#channel|#category|prefix|ID]*\`
+Displays a list of channels and the number of messages, chatters and readers for the specified channel(s) for the last 28-ish days. Try \`_stats #💬ooc-general #🧚rp-general\` to compare the general chats or \`_stats 🐎\` to see how active the Ram Ranch cult is.
 
 **\`_help\`**
 Display this text.`
@@ -2247,37 +2250,37 @@ ${util.isStaff(message) ? staff_commands : ""}`))},
 };
 
 const fnct = {
-    'serverStats': function (modes: string[]) {
+    serverStats: function (modes: string[]) {
         try {
             modes.forEach(mode => {
                 let channel = "";
                 let str = "";
                 switch (mode) {
-                    case 'users':
+                    case "users":
                         channel = "582321301142896652";
                         str = "📊User Count: " + server.members.cache.filter(member => !member.user.bot).size;
                         break;
-                    case 'online':
+                    case "online":
                         channel = "582321302837133313";
                         str = "📊Online users: " + server.members.cache.filter(member => !member.user.bot && member.user.presence.status !== "offline").size;
                         break;
-                    case 'new':
+                    case "new":
                         channel = "582309343274205209";
                         str = "📈New users: " + server.members.cache.filter(member => !member.user.bot && ((new Date().getTime() - (member.joinedTimestamp || 0)) / 1000 / 60 / 60 / 24) <= 1).size;
                         break;
-                    case 'bots':
+                    case "bots":
                         channel = "582309344608124941";
                         str = "🤖Bot Count: " + server.members.cache.filter(member => member.user.bot).size;
                         break;
-                    case 'roles':
+                    case "roles":
                         channel = "606773795142893568";
                         str = "🎲Roles: " + server.roles.cache.size;
                         break;
-                    case 'channels':
+                    case "channels":
                         channel = "606773807306506240";
                         str = "📇Channels: " + server.channels.cache.size;
                         break;
-                    case 'age':
+                    case "age":
                         channel = "606773822284365874";
                         let age = Math.floor((new Date().getTime() - server.createdTimestamp) / 1000 / 60 / 60 / 24);
                         let ageDays = age % 365;
@@ -2295,7 +2298,7 @@ const fnct = {
             util.log(`Failed to update server stats for ${modes}: ${e}`, 'Server Stats', util.logLevel.ERROR);
         }
     },
-    'approveChar': function(message: DiscordJS.Message, reaction: DiscordJS.ReactionEmoji, user: DiscordJS.User) {
+    approveChar: function(message: DiscordJS.Message, reaction: DiscordJS.ReactionEmoji, user: DiscordJS.User) {
         try {
             if (!(message.channel instanceof DiscordJS.TextChannel)) return;
             if (message.channel.name === channels.char_sub.name && util.isUserStaff(user)) {
@@ -2340,7 +2343,7 @@ const split_text_message = (message: string) => {
 };
 
 const util = {
-    'sendTextMessage': function (channel: DiscordJS.TextChannel | DiscordJS.DMChannel | DiscordJS.NewsChannel, message: DiscordJS.MessageEmbed | string) {
+    sendTextMessage: function (channel: DiscordJS.TextChannel | DiscordJS.DMChannel | DiscordJS.NewsChannel, message: DiscordJS.MessageEmbed | string) {
         try {
             channel.startTyping();
             const message_pieces = split_text_message(typeof message === "string" ? message : message.description || "");
@@ -2361,7 +2364,7 @@ const util = {
             channel.stopTyping();
         }
     },
-    'sendTempTextMessage': function (channel: DiscordJS.TextChannel | DiscordJS.DMChannel | DiscordJS.NewsChannel, message: string, embed?: DiscordJS.MessageEmbed) {
+    sendTempTextMessage: function (channel: DiscordJS.TextChannel | DiscordJS.DMChannel | DiscordJS.NewsChannel, message: string, embed?: DiscordJS.MessageEmbed) {
         try {
             if (!channel) {
                 return;
@@ -2386,18 +2389,18 @@ const util = {
             channel.stopTyping();
         }
     },
-    'isStaff': function (message: DiscordJS.Message) {
+    isStaff: function (message: DiscordJS.Message) {
         return this.isUserStaff(message.author);
     },
 
-    'isUserStaff': function (user: DiscordJS.User) {
+    isUserStaff: function (user: DiscordJS.User) {
         const member = server.members.cache.get(user.id);
         if (!member) return;
         if (member.permissions.has(DiscordJS.Permissions.FLAGS.ADMINISTRATOR)) return true;
         return member.roles.cache.has(roles.STAFF.id) || member.roles.cache.has(roles.TRIALMOD.id);
     },
 
-    'log': function (message: string, moduleName: string, level: string) {
+    log: function (message: string, moduleName: string, level: string) {
         let embedColor = 0xE0FFFF;
         switch (level) {
             case util.logLevel.WARN:
@@ -2425,18 +2428,18 @@ const util = {
         console.log(logMessage);
     },
 
-    'logLevel': {
-        'INFO':  "INFO",
-        'WARN':  "WARN",
-        'ERROR': "**ERROR**",
-        'FATAL': "__**FATAL**__",
+    logLevel: {
+        INFO:  "INFO",
+        WARN:  "WARN",
+        ERROR: "**ERROR**",
+        FATAL: "__**FATAL**__",
     },
 
-    'image_link_count': function (message: DiscordJS.Message) {
+    image_link_count: function (message: DiscordJS.Message) {
         return message.embeds.length + message.attachments.size;
     },
 
-    'level_to_role': function (level: number) {
+    level_to_role: function (level: number) {
         if (level < 5) {
             return lvl_roles.LVL_0;
         } else if (level < 10) {
@@ -2463,7 +2466,7 @@ const util = {
         return lvl_roles.LVL_100;
     },
 
-    'handle_level_up': async function(message: DiscordJS.Message) {
+    handle_level_up: async function(message: DiscordJS.Message) {
         const member = await message.mentions.members?.first()?.fetch();
         if (!member) return;
         const user = member.user;
@@ -2512,7 +2515,7 @@ const util = {
         await util.react(message, '✅');
     },
 
-    'time': function(time_ms: number) {
+    time: function(time_ms: number) {
         let time = ~~(time_ms / 1000);
         const s = ~~time % 60;
         time /= 60;
@@ -2538,7 +2541,7 @@ const util = {
         return `${s}s`;
     },
 
-    'react': async function(message: DiscordJS.Message, emote: string | DiscordJS.GuildEmoji) {
+    react: async function(message: DiscordJS.Message, emote: string | DiscordJS.GuildEmoji) {
         try {
             await message.react(emote);
         } catch (error) {
