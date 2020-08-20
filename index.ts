@@ -510,6 +510,7 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
         await util.react(report_message, "👶");
         await util.react(report_message, "❌");
         await util.react(report_message, "✋");
+        await util.react(report_message, "🧨");
     }
     if (messagereaction.message.channel.id === channels.reported_rps.id) {
         if (!messagereaction.me) return;
@@ -559,7 +560,7 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
                     util.sendTextMessage(channels.contact, `${template} (confirmed by @${nickname})`);
                     //log in reports log
                     util.sendTextMessage(channels.report_log, new DiscordJS.MessageEmbed().setTimestamp(new Date().getTime())
-                    .setDescription(`✅ Removed ad by ${message.author} reported by ${reporters} confirmed by ${user} concerning [this report](${messagereaction.message.url}).`));
+                    .setDescription(`${reaction} Removed ad by ${message.author} reported by ${reporters} confirmed by ${user} concerning [this report](${messagereaction.message.url}).`));
                     break;
                 }
                 case "✨": //extreme
@@ -573,7 +574,7 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
                     util.sendTextMessage(channels.contact, `${template} (confirmed by @${nickname})`);
                     //log in reports log
                     util.sendTextMessage(channels.report_log, new DiscordJS.MessageEmbed().setTimestamp(new Date().getTime())
-                    .setDescription(`✨ Removed ad by ${message.author} reported by ${reporters} confirmed by ${user} concerning [this report](${messagereaction.message.url}).`));
+                    .setDescription(`${reaction} Removed ad by ${message.author} reported by ${reporters} confirmed by ${user} concerning [this report](${messagereaction.message.url}).`));
                     break;
                 }
                 case "🤝": //irl request
@@ -585,7 +586,7 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
                     util.sendTextMessage(channels.contact, `${template} (confirmed by @${nickname})`);
                     //log in reports log
                     util.sendTextMessage(channels.report_log, new DiscordJS.MessageEmbed().setTimestamp(new Date().getTime())
-                    .setDescription(`🤝 Removed ad by ${message.author} reported by ${reporters} confirmed by ${user} concerning [this report](${messagereaction.message.url}).`));
+                    .setDescription(`${reaction} Removed ad by ${message.author} reported by ${reporters} confirmed by ${user} concerning [this report](${messagereaction.message.url}).`));
                     break;
                 }
                 case "👶": //underage
@@ -597,7 +598,7 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
                     util.sendTextMessage(channels.contact, `${template} (confirmed by @${nickname})`);
                     //log in reports log
                     util.sendTextMessage(channels.report_log, new DiscordJS.MessageEmbed().setTimestamp(new Date().getTime())
-                    .setDescription(`👶 Removed ad by ${message.author} reported by ${reporters} confirmed by ${user} concerning [this report](${messagereaction.message.url}).`));
+                    .setDescription(`${reaction} Removed ad by ${message.author} reported by ${reporters} confirmed by ${user} concerning [this report](${messagereaction.message.url}).`));
                     break;
                 }
                 case "❌": //unfounded report
@@ -616,14 +617,23 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
                     }
                     //log in reports log
                     util.sendTextMessage(channels.report_log, new DiscordJS.MessageEmbed().setTimestamp(new Date().getTime())
-                    .setDescription(`❌ Ad by ${message.author} ${reporters ? `reported by ${reporters}` : `with retracted report`} marked unfounded by ${user} concerning [this ad](${message.url})/[this report](${messagereaction.message.url}).`));
+                    .setDescription(`${reaction} Ad by ${message.author} ${reporters ? `reported by ${reporters}` : `with retracted report`} marked unfounded by ${user} concerning [this ad](${message.url})/[this report](${messagereaction.message.url}).`));
                     break;
                 }
                 case "✋":
                 {
                     //log in reports log
                     util.sendTextMessage(channels.report_log, new DiscordJS.MessageEmbed().setTimestamp(new Date().getTime())
-                    .setDescription(`✋ Ad by ${message.author} ${reporters ? `reported by ${reporters}` : `with retracted report`} handled manually by ${user} concerning [this ad](${message.url})/[this report](${messagereaction.message.url}).`));
+                    .setDescription(`${reaction} Ad by ${message.author} ${reporters ? `reported by ${reporters}` : `with retracted report`} handled manually by ${user} concerning [this ad](${message.url})/[this report](${messagereaction.message.url}).`));
+                    break;
+                }
+                case "🧨":
+                {
+                    //delete original message
+                    await message.delete({reason: "Founded LFP-ad-report"});
+                    //log in reports log
+                    util.sendTextMessage(channels.report_log, new DiscordJS.MessageEmbed().setTimestamp(new Date().getTime())
+                    .setDescription(`${reaction} Ad by ${message.author} ${reporters ? `reported by ${reporters}` : `with retracted report`} deleted without message by ${user} concerning [this report](${messagereaction.message.url}).`));
                     break;
                 }
                 default: //don't react with random emojis reeeeeee
