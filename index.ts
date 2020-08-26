@@ -460,7 +460,8 @@ function get_ad_report(message: DiscordJS.Message, user: DiscordJS.User | Discor
     `Channel: ${message.channel}\n` +
     `Post author: ${message.author}\n` +
     `Reported by: ${user}\n` +
-    `${message.deleted ? "~~Link to ad~~ (deleted)" : `[Link to ad](${message.url})\n${channels.contact}`}`)
+    `${message.deleted ? "~~Link to ad~~ (deleted)" : `[Link to ad](${message.url})`}\n` +
+    `${channels.contact}`)
     .setFooter(`${message.channel.id}/${message.id}`)
     .setTimestamp(new Date().getTime());
 }
