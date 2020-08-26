@@ -1661,7 +1661,7 @@ const cmd: Cmd = {
                 const ancient_string = member_age.getTime() < ancientTimeThreshold.getTime() ? "Yes" : `on ${ancient_date.toUTCString()} in ${util.time(ancient_date.getTime() - new Date().getTime())}`;
                 embed.addField("Joined", `${member_age.toUTCString()}`);
                 embed.addField("Member Since", `${util.time(new Date().getTime() - member_age.getTime())}`);
-                embed.addField(`Eligible For **${roles.ANCIENT}**`, `${ancient_string}`);
+                embed.addField(`Eligible For Ancient Role`, `${ancient_string}`);
             }
             util.sendTextMessage(message.channel, embed);
         });
