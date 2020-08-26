@@ -659,6 +659,7 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
         else { //ad has already been deleted
             util.sendTextMessage(channels.report_log, new DiscordJS.MessageEmbed().setTimestamp(new Date().getTime())
             .setDescription(`${reaction} Deleted ad handled by ${user} concerning [this report](${messagereaction.message.url}).`));
+            remove_own_reactions(messagereaction.message);
         }
         if (messagereaction.emoji.name === "✋" || messagereaction.emoji.name === "❌") {
             remove_own_reactions(messagereaction.message); //otherwise the deletion of the message will remove the reactions
