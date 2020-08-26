@@ -660,7 +660,9 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
             util.sendTextMessage(channels.report_log, new DiscordJS.MessageEmbed().setTimestamp(new Date().getTime())
             .setDescription(`${reaction} Deleted ad handled by ${user} concerning [this report](${messagereaction.message.url}).`));
         }
-        remove_own_reactions(messagereaction.message);
+        if (messagereaction.emoji.name === "✋" || messagereaction.emoji.name === "❌") {
+            remove_own_reactions(messagereaction.message); //otherwise the deletion of the message will remove the reactions
+        }
     }
 });
 
@@ -706,7 +708,7 @@ client.on("messageDelete", async (deleted_message) => {
         if (deleted_message instanceof DiscordJS.Message) {
             await old_report.edit(null, get_ad_report(deleted_message, reporter));
         }
-        await old_report.reactions.removeAll();
+        await remove_own_reactions(old_report);
     }
 });
 
