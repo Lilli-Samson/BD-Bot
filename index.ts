@@ -2138,27 +2138,28 @@ const cmd: Cmd = {
             util.sendTextMessage(message.channel, `${message.author} Sorry, you need to be an administrator to hand out manage channel permissions.`);
             return;
         }
+        function getOverwrites(allow: number, deny: number, reset: number, original: number): DiscordJS.PermissionOverwriteOption {
+            let result: DiscordJS.PermissionOverwriteOption = {};
+            for (const [name, perm] of permissions_map) {
+                if (perm & allow) {
+                    (result as any)[name] = true;
+                    continue;
+                }
+                if (perm & deny) {
+                    (result as any)[name] = false;
+                    continue;
+                }
+                if (perm & reset) {
+                    (result as any)[name] = null;
+                    continue;
+                }
+                (result as any)[name] = perm & original;
+            }
+            return result;
+        }
+        message.channel.startTyping();
         for (const channel of applied_channels) {
             for (const member_or_role of applied_targets) {
-                function getOverwrites(allow: number, deny: number, reset: number, original: number): DiscordJS.PermissionOverwriteOption {
-                    let result: DiscordJS.PermissionOverwriteOption = {};
-                    for (const [name, perm] of permissions_map) {
-                        if (perm & allow) {
-                            (result as any)[name] = true;
-                            continue;
-                        }
-                        if (perm & deny) {
-                            (result as any)[name] = false;
-                            continue;
-                        }
-                        if (perm & reset) {
-                            (result as any)[name] = null;
-                            continue;
-                        }
-                        (result as any)[name] = perm & original;
-                    }
-                    return result;
-                }
                 try {
                     if (clearing) {
                         channel.permissionOverwrites.delete(member_or_role.id);
@@ -2168,19 +2169,20 @@ const cmd: Cmd = {
                         await channel.updateOverwrite(member_or_role, getOverwrites(granted_permissions, denied_permissions, neutral_permissions, channel.permissionsFor(member_or_role.id)?.valueOf() || 0), `perms command ${message.channel.id}/${message.id}`);
                     }
                 } catch(error) {
-                    util.sendTextMessage(message.channel, new DiscordJS.MessageEmbed().setDescription(`Error setting permissions for ${member_or_role} in ${channel} because ${error}.`));
+                    await message.channel.send(new DiscordJS.MessageEmbed().setDescription(`Error setting permissions for ${member_or_role} in ${channel} because ${error}.`));
+                    message.channel.stopTyping();
                     return;
                 }
             }
         }
         if (clearing) {
-            util.sendTextMessage(message.channel, new DiscordJS.MessageEmbed().setDescription(
+            await message.channel.send(new DiscordJS.MessageEmbed().setDescription(
                 `Permissions cleared ` +
                 `for${applied_targets.reduce((curr, member_or_roll) => `${curr} ${member_or_roll}`, "")} ` +
                 `in channel(s)${applied_channels.reduce((curr, channel) => `${curr} ${channel}`, "")}`));
         }
         else {
-            util.sendTextMessage(message.channel, new DiscordJS.MessageEmbed().setDescription(
+            await message.channel.send(new DiscordJS.MessageEmbed().setDescription(
                 `Permission(s) ` +
                 `${granted_permissions ? `[${permission_to_string(granted_permissions)}] **granted** ` : ""}` +
                 `${denied_permissions ? `[${permission_to_string(denied_permissions)}] **denied** ` : ""}` +
@@ -2188,6 +2190,7 @@ const cmd: Cmd = {
                 `for${applied_targets.reduce((curr, member_or_roll) => `${curr} ${member_or_roll}`, "")} ` +
                 `in channel(s)${applied_channels.reduce((curr, channel) => `${curr} ${channel}`, "")}`));
         }
+        message.channel.stopTyping();
     },
     help: function (message) {
         if (!message) {
