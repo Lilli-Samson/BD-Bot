@@ -453,6 +453,32 @@ client.on("guildUpdate", (oldGuild, newGuild) => {
     fnct.serverStats(['users', 'online', 'new', 'bots', 'roles', 'channels', 'age']);
 });
 
+function get_ad_report(message: DiscordJS.Message, user: DiscordJS.User | DiscordJS.PartialUser) {
+    return new DiscordJS.MessageEmbed()
+    .setDescription(message.content)
+    .addField("Details",
+    `Channel: ${message.channel}\n` +
+    `Post author: ${message.author}\n` +
+    `Reported by: ${user}\n` +
+    `${message.deleted ? "~~Link to ad~~ (deleted)" : `[Link to ad](${message.url})\n${channels.contact}`}`)
+    .setFooter(`${message.channel.id}/${message.id}`)
+    .setTimestamp(new Date().getTime());
+}
+
+async function remove_own_reactions(message: DiscordJS.Message) {
+    for (const [id, reaction] of message.reactions.cache) {
+        if (reaction.me) {
+            await reaction.users.fetch(); //need to do this, otherwise reaction.users is empty
+            for (const [id] of reaction.users.cache) {
+                if (id === client.user?.id) {
+                    reaction.users.remove(id);
+                    break;
+                }
+            }
+        }
+    }
+}
+
 client.on('messageReactionAdd', async (messagereaction, user) => {
     if (user === client.user) return;
     if (!(user instanceof DiscordJS.User)) {
@@ -485,17 +511,7 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
         //place own reaction
         await util.react(messagereaction.message, "❌");
         //make report
-        const report_message = await channels.reported_rps.send(new DiscordJS.MessageEmbed()
-            .setDescription(messagereaction.message.content)
-            .addField("Details",
-            `Channel: ${channel}\n` +
-            `Post author: ${messagereaction.message.author}\n` +
-            `Reported by: ${user}\n` +
-            `[Link to post](${messagereaction.message.url})\n` +
-            `${channels.contact}`)
-            .setFooter(`${channel.id}/${messagereaction.message.id}`)
-            .setTimestamp(new Date().getTime())
-        );
+        const report_message = await channels.reported_rps.send(get_ad_report(messagereaction.message, user));
         let images: string[] = [];
         messagereaction.message.embeds.forEach(emb => {
             if (emb.url) images.push(emb.url);
@@ -644,18 +660,53 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
             util.sendTextMessage(channels.report_log, new DiscordJS.MessageEmbed().setTimestamp(new Date().getTime())
             .setDescription(`${reaction} Deleted ad handled by ${user} concerning [this report](${messagereaction.message.url}).`));
         }
-        //remove own reactions from report
-        for (const [id, reaction] of messagereaction.message.reactions.cache) {
-            if (reaction.me) {
-                await reaction.users.fetch(); //need to do this, otherwise reaction.users is empty
-                for (const [id] of reaction.users.cache) {
-                    if (id === client.user?.id) {
-                        reaction.users.remove(id);
-                        break;
-                    }
-                }
-            }
+        remove_own_reactions(messagereaction.message);
+    }
+});
+
+client.on("messageUpdate", async (old_message, new_message) => {
+    if (!(new_message instanceof DiscordJS.Message)) {
+        new_message = await new_message.fetch();
+    }
+    if (lfpChannels.reduce((found, lfp_channel) => found || lfp_channel.id === new_message.channel.id, false)) {
+        if (channels.reported_rps.messages.cache.size < 10) await channels.reported_rps.messages.fetch({limit: 100});
+        const old_report = channels.reported_rps.messages.cache.find((message) => {
+            const footer_text = message.embeds[0]?.footer?.text;
+            if (!footer_text) return false;
+            const [channelID, messageID] = footer_text.split("/");
+            return messageID === new_message.id && channelID === new_message.channel.id;
+        });
+        if (!old_report) return;
+        const details = old_report.embeds[0]?.fields[0];
+        if (!details) return;
+        const reporter_id = details.value.match(/Reported by: <@!?(\d{18})>\n/)?.[1];
+        if (!reporter_id) return;
+        const reporter = client.users.cache.get(reporter_id);
+        if (!reporter) return;
+        await old_report.edit(null, get_ad_report(new_message, reporter));
+    }
+});
+
+client.on("messageDelete", async (deleted_message) => {
+    if (lfpChannels.reduce((found, lfp_channel) => found || lfp_channel.id === deleted_message.channel.id, false)) {
+        if (channels.reported_rps.messages.cache.size < 10) await channels.reported_rps.messages.fetch({limit: 100});
+        const old_report = channels.reported_rps.messages.cache.find((message) => {
+            const footer_text = message.embeds[0]?.footer?.text;
+            if (!footer_text) return false;
+            const [channelID, messageID] = footer_text.split("/");
+            return messageID === deleted_message.id && channelID === deleted_message.channel.id;
+        });
+        if (!old_report) return;
+        const details = old_report.embeds[0]?.fields[0];
+        if (!details) return;
+        const reporter_id = details.value.match(/Reported by: <@!?(\d{18})>\n/)?.[1];
+        if (!reporter_id) return;
+        const reporter = client.users.cache.get(reporter_id);
+        if (!reporter) return;
+        if (deleted_message instanceof DiscordJS.Message) {
+            await old_report.edit(null, get_ad_report(deleted_message, reporter));
         }
+        await old_report.reactions.removeAll();
     }
 });
 
