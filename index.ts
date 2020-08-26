@@ -332,7 +332,7 @@ const startUpMod = {
     startSchedules: function () {
         // Cron-format: second 0-59 optional; minute 0-59; hour 0-23; day of month 1-31; month 1-12; day of week 0-7
         let j = schedule.scheduleJob('*/60 * * * *', function(fireDate){
-            cmd.cn();
+            cmd.cn(null as unknown as DiscordJS.Message);
         });
     }
 };
@@ -1381,13 +1381,10 @@ const dead_char_search = async (start_message_id: string, message: DiscordJS.Mes
 }
 
 type Cmd = {
-    [key: string]: (arg1?: DiscordJS.Message, arg2?: string[]) => void
+    [key: string]: (arg1: DiscordJS.Message, arg2?: string[]) => void
 };
 const cmd: Cmd = {
     ping: async function (message) {
-        if (!message) {
-            return;
-        }
         try {
             const m = await message.channel.send("Ping!");
             m.edit(`Pong! Latency is ${m.createdTimestamp - message.createdTimestamp}ms. API Latency is ${Math.round(client.ws.ping)}ms`);
@@ -1397,9 +1394,6 @@ const cmd: Cmd = {
         }
     },
     staff: async function (message) {
-        if (!message) {
-            return;
-        }
         try {
             const m = await message.channel.send("Checking!");
             let isStaff = util.isStaff(message);
@@ -1410,9 +1404,6 @@ const cmd: Cmd = {
         }
     },
     warn: async function (message, args) {
-        if (!message) {
-            return;
-        }
         if (message.channel.id === "737043345913675786") return;
         try {
             if (!util.isStaff(message)) {
@@ -1491,9 +1482,6 @@ const cmd: Cmd = {
         }
     },
     stopmention: function (message) {
-        if (!message) {
-            return;
-        }
         if (util.isStaff(message)) {
             disableMentions = true;
             util.sendTextMessage(message.channel, 'No longer listening to non-staff mentions... :(');
@@ -1501,9 +1489,6 @@ const cmd: Cmd = {
         }
     },
     startmention: function (message) {
-        if (!message) {
-            return;
-        }
         if (util.isStaff(message)) {
             disableMentions = false;
             util.sendTextMessage(message.channel, 'Start listening to non-staff mentions... :3');
@@ -1560,31 +1545,21 @@ const cmd: Cmd = {
             }
         });
     },
-    ancient: function(message) {
-        return;
-        if (!message) {
-            return;
-        }
-        if (util.isStaff(message!)) {
-            let ancientTimeThreshold = new Date(server.createdTimestamp + (new Date().getTime() - server.createdTimestamp) / 5);
-            util.sendTextMessage(message!.channel, `Threshold for "Ancient Member" is at: ${ancientTimeThreshold.toString()}`);
-
+    ancient: async function(message) {
+        if (util.isStaff(message)) {
+            const now = new Date().getTime();
             let ancientMembers = server.members.cache.filter(m => {
-                return ((m.joinedTimestamp || 0) <= ancientTimeThreshold.getTime()) && (!m.user.bot) && !m.roles.cache.has(roles.ANCIENT.id);
+                if (!m.joinedTimestamp) return false;
+                return m.joinedTimestamp + 365*24*60*60*1000 <= now && !m.user.bot && !m.roles.cache.has(roles.ANCIENT.id);
             });
-
-            ancientMembers.forEach(member => {
-                member.roles.add(roles.ANCIENT);
-                console.log(member.user.username + ", last message: " + (member.lastMessage?.createdAt || " too old"));
-            });
+            for (const [, ancient_member] of ancientMembers) {
+                await ancient_member.roles.add(roles.ANCIENT);
+            }
         } else {
-            util.sendTextMessage(message!.channel, "Shoo! You don't have permissions for that!");
+            util.sendTextMessage(message.channel, "🤨");
         }
     },
     clear: function(message, args) {
-        if (!message) {
-            return;
-        }
         if (util.isStaff(message)) {
             if (!args?.[0]) {
                 return;
@@ -1609,9 +1584,6 @@ const cmd: Cmd = {
         }
     },
     age: function (message) {
-        if (!message) {
-            return;
-        }
        const snowflakes = (message.content.match(/\d+/g) || [message.author.id]).filter(match => match.length > 15);
         snowflakes.forEach(async snowflake => {
             const deconstructed_snowflake = DiscordJS.SnowflakeUtil.deconstruct(snowflake);
@@ -1656,9 +1628,8 @@ const cmd: Cmd = {
             const member = server.members.cache.get(snowflake);
             const member_age = member ? member.joinedAt : null;
             if (member_age) { //add member fields Joined, Member Since and Eligible
-                const ancientTimeThreshold = new Date(server.createdTimestamp + (new Date().getTime() - server.createdTimestamp) / 5);
-                const ancient_date = new Date(server.createdTimestamp + (member_age.getTime() - server.createdTimestamp) * 5);
-                const ancient_string = member_age.getTime() < ancientTimeThreshold.getTime() ? "Yes" : `on ${ancient_date.toUTCString()} in ${util.time(ancient_date.getTime() - new Date().getTime())}`;
+                const ancient_date = new Date(member_age.getTime() + 365*24*60*60*1000);
+                const ancient_string = ancient_date <= member_age ? "Yes" : `on ${ancient_date.toUTCString()} in ${util.time(ancient_date.getTime() - new Date().getTime())}`;
                 embed.addField("Joined", `${member_age.toUTCString()}`);
                 embed.addField("Member Since", `${util.time(new Date().getTime() - member_age.getTime())}`);
                 embed.addField(`Eligible For Ancient Role`, `${ancient_string}`);
@@ -1667,9 +1638,6 @@ const cmd: Cmd = {
         });
     },
     pfp: function (message) { //display profile picture of a user
-        if (!message) {
-            return;
-        }
         const snowflakes = (message.content.match(/\d+/g) || [message.author.id]).filter(match => match.length > 15);
         snowflakes.forEach(snowflake => {
             client.users.fetch(snowflake).then(user => {
@@ -1683,9 +1651,6 @@ const cmd: Cmd = {
         });
     },
     audit: function (message) {
-        if (!message) {
-            return;
-        }
         if (!util.isStaff(message)) {
             util.sendTextMessage(message.channel, `${message.author} You audition for a porn movie where you get used like a slut.\n` +
                 `The audition video sells well, but you never hear from them again.`);
@@ -1722,7 +1687,6 @@ const cmd: Cmd = {
         });
     },
     slowmode: async function (message) {
-        if (!message) return;
         if (!util.isStaff(message)) {
             util.sendTextMessage(message.channel, `${message.author} Too slow!`);
             return;
@@ -1789,10 +1753,7 @@ const cmd: Cmd = {
         cmd.slowmode(message);
     },
     cultinfo: async function (message) {
-        if (!message) {
-            return;
-        }
-        message.channel.startTyping();
+       message.channel.startTyping();
         try {
             const messages = await channels.cult_info.messages.fetch({limit: 1});
             let cultMsg = messages.first();
@@ -1839,9 +1800,6 @@ const cmd: Cmd = {
         return cmd.roles(message, args);
     },
     roles: function (message, args) {
-        if (!message) {
-            return;
-        }
         if (!util.isStaff(message)) { //the commands are really spammy
             return;
         }
@@ -1862,9 +1820,6 @@ const cmd: Cmd = {
         util.sendTempTextMessage(message.channel, 'That didn\'t work out... maybe try `_roles who <roleID>` or `_roles usage` or `_roles usage list`');
     },
     "roles usage": function (message, args) { //list all the roles and their usage; args can only be "list"
-        if (!message) {
-            return;
-        }
         let sortOrder = "";
         if (args && args[0] === "list") {
             sortOrder = "list";
@@ -1897,9 +1852,6 @@ const cmd: Cmd = {
         util.sendTextMessage(message.channel, new DiscordJS.MessageEmbed().setDescription(`${roles.size}/250 roles:\n${roles_str}`));
     },
     "roles who": function (message) { //list the members who have a certain role
-        if (!message) {
-            return;
-        }
         const ids = message.content.match(/\d+/g);
         if (!ids) {
             util.sendTempTextMessage(message.channel, 'Please specify the ID of the role you want to check on!');
@@ -1918,7 +1870,6 @@ const cmd: Cmd = {
         });
     },
     "roles purge": async function (message) {
-        if (!message) return;
         if (message.author.id !== "591241625737494538") return;
         const matches = message.content.match(/(?:\d){18}/g);
         if (!matches) return;
@@ -1940,9 +1891,6 @@ const cmd: Cmd = {
         }
     },
     call: async function (message) {
-        if (!message) {
-            return;
-        }
         const args = message.content.slice(prefix.length).trim().split(/ +/g);
         const command = args.shift()?.toLowerCase() || "";
         try {
@@ -1960,7 +1908,6 @@ const cmd: Cmd = {
         message?.channel.stopTyping(true);
     },
     raid: async function(message) {
-        if (!message) return;
         if (!util.isStaff(message)) {
             util.sendTextMessage(message.channel, `Call the mods!`);
             return;
@@ -1976,7 +1923,6 @@ const cmd: Cmd = {
         util.log(`Disabled invite creation and deleted invites`, "Raid", util.logLevel.WARN);
     },
     trim_reacts: async function (commandmessage) {
-        if (!commandmessage) return;
         const messages = await channels.roles_selection.messages.fetch();
         for (const [messageid, message] of messages) {
             util.sendTextMessage(commandmessage.channel, `Trimming ${message.url}`);
@@ -1995,9 +1941,6 @@ const cmd: Cmd = {
         return this.chararchive(message);
     },
     chararchive: async function (message) {
-        if (!message) {
-            return;
-        }
         if (!util.isStaff(message)) {
             util.sendTextMessage(message.channel, `<#534863007860129792>`);
             return;
@@ -2020,9 +1963,6 @@ const cmd: Cmd = {
         dead_char_search(snowflake, message, archive_channel);
     },
     banish: function (message) { //banish ID|Mention Channel|ChannelID|CategoryID|"Prefix"+
-        if (!message) {
-            return;
-        }
         if (!util.isStaff(message)) {
             util.sendTextMessage(message.channel, `${message.author} has been banished to the shadow realm!`);
             return;
@@ -2090,9 +2030,6 @@ const cmd: Cmd = {
         util.sendTextMessage(message.channel, new DiscordJS.MessageEmbed().setDescription(`Banished <@${target}> from ${summary}`));
     },
     perms: async function (message) {
-        if (!message) {
-            return;
-        }
         if (!util.isStaff(message)) {
             util.sendTextMessage(message.channel, `${message.author} had their horny license revoked!`);
             return;
@@ -2247,9 +2184,6 @@ const cmd: Cmd = {
         message.channel.stopTyping();
     },
     help: function (message) {
-        if (!message) {
-            return;
-        }
         const public_commands = `
 **\`_ping\`**
 Show practical reaction delay and Discord delay.
