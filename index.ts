@@ -74,6 +74,7 @@ let channels = {
     roles_selection: <unknown>"🎲roles-selection" as DiscordJS.TextChannel,
     reported_rps: <unknown>"☣reported-rp-ads" as DiscordJS.TextChannel,
     report_log: <unknown>"reported-lfp-warning-logs" as DiscordJS.TextChannel,
+    rp_ad_feedback: <unknown>"🔖rp-ad-feedback" as DiscordJS.TextChannel,
 };
 
 let categories = {
@@ -461,7 +462,7 @@ function get_ad_report(message: DiscordJS.Message, user: DiscordJS.User | Discor
     `Post author: ${message.author}\n` +
     `Reported by: ${user}\n` +
     `${message.deleted ? "~~Link to ad~~ (deleted)" : `[Link to ad](${message.url})`}\n` +
-    `${channels.contact}`)
+    `${channels.rp_ad_feedback}`)
     .setFooter(`${message.channel.id}/${message.id}`)
     .setTimestamp(new Date().getTime());
 }
@@ -574,7 +575,7 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
                     await message.delete({reason: "Founded LFP-ad-report"});
                     //yell at author
                     const template = `<@${message.author.id}>, your ad does not fit in ${ad_channel} because it doesn't explicitly look ${playtype}, so it has been removed.`;
-                    util.sendTextMessage(channels.contact, `${template} (confirmed by @${nickname})`);
+                    util.sendTextMessage(channels.rp_ad_feedback, `${template} (confirmed by @${nickname})`);
                     //log in reports log
                     util.sendTextMessage(channels.report_log, new DiscordJS.MessageEmbed().setTimestamp(new Date().getTime())
                     .setDescription(`${reaction} Removed ad by ${message.author} reported by ${reporters} confirmed by ${user} concerning [this report](${messagereaction.message.url}).`));
@@ -588,7 +589,7 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
                     const author_member = server.members.cache.get(message.author.id);
                     const extreme_role_explanation = author_member?.roles.cache.has(roles.Extreme.id) ? "" : ` You cannot see the channel because you don't have the Extreme role. You can get it in ${channels.roles_selection}.`;
                     const template = `<@${message.author.id}>, your ad does not fit in ${ad_channel} because it contains extreme kinks, so it has been removed. Please only post such ads in ${channels.extreme}.${extreme_role_explanation}`;
-                    util.sendTextMessage(channels.contact, `${template} (confirmed by @${nickname})`);
+                    util.sendTextMessage(channels.rp_ad_feedback, `${template} (confirmed by @${nickname})`);
                     //log in reports log
                     util.sendTextMessage(channels.report_log, new DiscordJS.MessageEmbed().setTimestamp(new Date().getTime())
                     .setDescription(`${reaction} Removed ad by ${message.author} reported by ${reporters} confirmed by ${user} concerning [this report](${messagereaction.message.url}).`));
@@ -600,7 +601,7 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
                     await message.delete({reason: "Founded LFP-ad-report"});
                     //yell at author
                     const template = `<@${message.author.id}>, your ad does not fit in ${ad_channel} because it is looking for real-life elements, so it has been removed. Please only post such ads in ${channels.real_life}.`;
-                    util.sendTextMessage(channels.contact, `${template} (confirmed by @${nickname})`);
+                    util.sendTextMessage(channels.rp_ad_feedback, `${template} (confirmed by @${nickname})`);
                     //log in reports log
                     util.sendTextMessage(channels.report_log, new DiscordJS.MessageEmbed().setTimestamp(new Date().getTime())
                     .setDescription(`${reaction} Removed ad by ${message.author} reported by ${reporters} confirmed by ${user} concerning [this report](${messagereaction.message.url}).`));
@@ -612,7 +613,7 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
                     await message.delete({reason: "Founded LFP-ad-report"});
                     //yell at author
                     const template = `<@${message.author.id}>, your ad does not fit in ${ad_channel} because it containes references to or images of underage characters which is not allowed, so the ad has been removed. If you have ageplay as a kink please specify that you are not looking to play with underage characters.`;
-                    util.sendTextMessage(channels.contact, `${template} (confirmed by @${nickname})`);
+                    util.sendTextMessage(channels.rp_ad_feedback, `${template} (confirmed by @${nickname})`);
                     //log in reports log
                     util.sendTextMessage(channels.report_log, new DiscordJS.MessageEmbed().setTimestamp(new Date().getTime())
                     .setDescription(`${reaction} Removed ad by ${message.author} reported by ${reporters} confirmed by ${user} concerning [this report](${messagereaction.message.url}).`));
@@ -623,7 +624,7 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
                     //yell at reporters
                     if (reporters !== "") { //not a retracted report
                         const template = `${reporters}, the ad you reported in ${ad_channel} (<${message.url}>) seems to be on-topic since it's looking ${playtype}. What is wrong with it?`;
-                        util.sendTextMessage(channels.contact, `${template} (marked unfounded by @${nickname})`);
+                        util.sendTextMessage(channels.rp_ad_feedback, `${template} (marked unfounded by @${nickname})`);
                     }
                     //remove reactions from ad
                     for (const [, reaction] of message.reactions.cache) {
@@ -756,7 +757,7 @@ client.on("message", (message) => {
         (async () => {
             if (util.image_link_count(message) > 3) {
                 message.delete({reason: "More than 3 images in an RP ad"});
-                util.sendTextMessage(channels.contact,
+                util.sendTextMessage(channels.rp_ad_feedback,
                 `${message.author}, your roleplaying ad in ${message.channel} has been removed because it had more than 3 images.\n` +
                 `Please follow the rules as described in ${channels.type_info}.`);
                 util.sendTextMessage(channels.report_log, new DiscordJS.MessageEmbed()
