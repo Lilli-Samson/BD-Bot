@@ -37,30 +37,25 @@ let channels = {
     with_male: <unknown>"🍆with-male" as DiscordJS.TextChannel,
     with_female: <unknown>"🍑with-female" as DiscordJS.TextChannel,
     with_femboy: <unknown>"🍌with-femboy" as DiscordJS.TextChannel,
-    with_trans: <unknown>"🌽with-trans" as DiscordJS.TextChannel,
     with_furry: <unknown>"😺with-anthro" as DiscordJS.TextChannel,
     with_beast: <unknown>"🦄with-beast" as DiscordJS.TextChannel,
     with_futa_herm: <unknown>"🥕with-futa-herm" as DiscordJS.TextChannel,
     as_male: <unknown>"🍆as-male" as DiscordJS.TextChannel,
     as_female: <unknown>"🍑as-female" as DiscordJS.TextChannel,
     as_femboy: <unknown>"🍌as-femboy" as DiscordJS.TextChannel,
-    as_trans: <unknown>"🌽as-trans" as DiscordJS.TextChannel,
     as_furry: <unknown>"😺as-anthro" as DiscordJS.TextChannel,
     as_beast: <unknown>"🦄as-beast" as DiscordJS.TextChannel,
     as_futa_herm: <unknown>"🥕as-futa-herm" as DiscordJS.TextChannel,
-    type_info: <unknown>"📌type-info" as DiscordJS.TextChannel,
     vanilla: <unknown>"🍦vanilla" as DiscordJS.TextChannel,
     gay: <unknown>"👬gay" as DiscordJS.TextChannel,
     lesbian: <unknown>"👭lesbian" as DiscordJS.TextChannel,
-    extreme: <unknown>"✨extreme" as DiscordJS.TextChannel,
+    extreme: <unknown>"☠extreme" as DiscordJS.TextChannel,
     group: <unknown>"👥group" as DiscordJS.TextChannel,
     long_term_plot: <unknown>"📰long-term-plot" as DiscordJS.TextChannel,
     gm_style: <unknown>"🧙gm-style" as DiscordJS.TextChannel,
     real_life: <unknown>"🤝real-life" as DiscordJS.TextChannel,
     all_style: <unknown>"✥all-style" as DiscordJS.TextChannel,
     contact: <unknown>"💬ask-to-dm" as DiscordJS.TextChannel,
-    playing_as_info: <unknown>"📌playing-as-info" as DiscordJS.TextChannel,
-    playing_with_info: <unknown>"📌playing-with-info" as DiscordJS.TextChannel,
     general: <unknown>"🔞general" as DiscordJS.TextChannel,
     ooc_general: <unknown>"💬ooc-general" as DiscordJS.TextChannel,
     rp_general: <unknown>"🧚rp-general" as DiscordJS.TextChannel,
@@ -74,13 +69,14 @@ let channels = {
     roles_selection: <unknown>"🎲roles-selection" as DiscordJS.TextChannel,
     reported_rps: <unknown>"☣reported-rp-ads" as DiscordJS.TextChannel,
     report_log: <unknown>"reported-lfp-warning-logs" as DiscordJS.TextChannel,
-    rp_ad_feedback: <unknown>"🔖rp-ad-feedback" as DiscordJS.TextChannel,
+    lfp_moderation: <unknown>"🏷lfp-moderation" as DiscordJS.TextChannel,
+    lfp_info: <unknown>"📌lfp-posting-rules" as DiscordJS.TextChannel,
 };
 
 let categories = {
-    playing_with: <unknown>"RP Playing With" as DiscordJS.CategoryChannel,
-    playing_as: <unknown>"RP Playing As" as DiscordJS.CategoryChannel,
-    by_type: <unknown>"RP By Type" as DiscordJS.CategoryChannel,
+    playing_with: <unknown>"LFP Playing With" as DiscordJS.CategoryChannel,
+    playing_as: <unknown>"LFP Playing As" as DiscordJS.CategoryChannel,
+    by_type: <unknown>"LFP By Type" as DiscordJS.CategoryChannel,
 };
 
 let roles = {
@@ -300,14 +296,12 @@ const startUpMod = {
             lfpChannels.push(channels.with_male);
             lfpChannels.push(channels.with_female);
             lfpChannels.push(channels.with_femboy);
-            lfpChannels.push(channels.with_trans);
             lfpChannels.push(channels.with_furry);
             lfpChannels.push(channels.with_beast);
             lfpChannels.push(channels.with_futa_herm);
             lfpChannels.push(channels.as_male);
             lfpChannels.push(channels.as_female);
             lfpChannels.push(channels.as_femboy);
-            lfpChannels.push(channels.as_trans);
             lfpChannels.push(channels.as_furry);
             lfpChannels.push(channels.as_beast);
             lfpChannels.push(channels.as_futa_herm);
@@ -462,7 +456,7 @@ function get_ad_report(message: DiscordJS.Message, user: DiscordJS.User | Discor
     `Post author: ${message.author}\n` +
     `Reported by: ${user}\n` +
     `${message.deleted ? "~~Link to ad~~ (deleted)" : `[Link to ad](${message.url})`}\n` +
-    `${channels.rp_ad_feedback}`)
+    `${channels.lfp_moderation}`)
     .setFooter(`${message.channel.id}/${message.id}`)
     .setTimestamp(new Date().getTime());
 }
@@ -522,13 +516,15 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
             images.push(attachment.url);
         });
         if (images.length) channels.reported_rps.send(images);
-        await util.react(report_message, "✅");
-        if (channel.id !== channels.extreme.id) await util.react(report_message, "✨");
-        if (channel.id !== channels.real_life.id) await util.react(report_message, "🤝");
+        if (channel.id !== channels.all_style.id) {
+            await util.react(report_message, "✅");
+            if (channel.id !== channels.extreme.id) await util.react(report_message, "☠");
+            if (channel.id !== channels.real_life.id) await util.react(report_message, "🤝");
+        }
         await util.react(report_message, "👶");
-        await util.react(report_message, "❌");
+        await util.react(report_message, "❔");
         await util.react(report_message, "✋");
-        await util.react(report_message, "🧨");
+        await util.react(report_message, "🗑");
     }
     if (messagereaction.message.channel.id === channels.reported_rps.id) {
         if (!messagereaction.me) return;
@@ -575,13 +571,13 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
                     await message.delete({reason: "Founded LFP-ad-report"});
                     //yell at author
                     const template = `<@${message.author.id}>, your ad does not fit in ${ad_channel} because it doesn't explicitly look ${playtype}, so it has been removed.`;
-                    util.sendTextMessage(channels.rp_ad_feedback, `${template} (confirmed by @${nickname})`);
+                    util.sendTextMessage(channels.lfp_moderation, `${template} (confirmed by @${nickname})`);
                     //log in reports log
                     util.sendTextMessage(channels.report_log, new DiscordJS.MessageEmbed().setTimestamp(new Date().getTime())
                     .setDescription(`${reaction} Removed ad by ${message.author} reported by ${reporters} confirmed by ${user} concerning [this report](${messagereaction.message.url}).`));
                     break;
                 }
-                case "✨": //extreme
+                case "☠": //extreme
                 {
                     //delete original message
                     await message.delete({reason: "Founded LFP-ad-report"});
@@ -589,7 +585,7 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
                     const author_member = server.members.cache.get(message.author.id);
                     const extreme_role_explanation = author_member?.roles.cache.has(roles.Extreme.id) ? "" : ` You cannot see the channel because you don't have the Extreme role. You can get it in ${channels.roles_selection}.`;
                     const template = `<@${message.author.id}>, your ad does not fit in ${ad_channel} because it contains extreme kinks, so it has been removed. Please only post such ads in ${channels.extreme}.${extreme_role_explanation}`;
-                    util.sendTextMessage(channels.rp_ad_feedback, `${template} (confirmed by @${nickname})`);
+                    util.sendTextMessage(channels.lfp_moderation, `${template} (confirmed by @${nickname})`);
                     //log in reports log
                     util.sendTextMessage(channels.report_log, new DiscordJS.MessageEmbed().setTimestamp(new Date().getTime())
                     .setDescription(`${reaction} Removed ad by ${message.author} reported by ${reporters} confirmed by ${user} concerning [this report](${messagereaction.message.url}).`));
@@ -601,7 +597,7 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
                     await message.delete({reason: "Founded LFP-ad-report"});
                     //yell at author
                     const template = `<@${message.author.id}>, your ad does not fit in ${ad_channel} because it is looking for real-life elements, so it has been removed. Please only post such ads in ${channels.real_life}.`;
-                    util.sendTextMessage(channels.rp_ad_feedback, `${template} (confirmed by @${nickname})`);
+                    util.sendTextMessage(channels.lfp_moderation, `${template} (confirmed by @${nickname})`);
                     //log in reports log
                     util.sendTextMessage(channels.report_log, new DiscordJS.MessageEmbed().setTimestamp(new Date().getTime())
                     .setDescription(`${reaction} Removed ad by ${message.author} reported by ${reporters} confirmed by ${user} concerning [this report](${messagereaction.message.url}).`));
@@ -613,18 +609,18 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
                     await message.delete({reason: "Founded LFP-ad-report"});
                     //yell at author
                     const template = `<@${message.author.id}>, your ad does not fit in ${ad_channel} because it containes references to or images of underage characters which is not allowed, so the ad has been removed. If you have ageplay as a kink please specify that you are not looking to play with underage characters.`;
-                    util.sendTextMessage(channels.rp_ad_feedback, `${template} (confirmed by @${nickname})`);
+                    util.sendTextMessage(channels.lfp_moderation, `${template} (confirmed by @${nickname})`);
                     //log in reports log
                     util.sendTextMessage(channels.report_log, new DiscordJS.MessageEmbed().setTimestamp(new Date().getTime())
                     .setDescription(`${reaction} Removed ad by ${message.author} reported by ${reporters} confirmed by ${user} concerning [this report](${messagereaction.message.url}).`));
                     break;
                 }
-                case "❌": //unfounded report
+                case "❔": //unfounded report
                 {
                     //yell at reporters
                     if (reporters !== "") { //not a retracted report
                         const template = `${reporters}, the ad you reported in ${ad_channel} (<${message.url}>) seems to be on-topic since it's looking ${playtype}. What is wrong with it?`;
-                        util.sendTextMessage(channels.rp_ad_feedback, `${template} (marked unfounded by @${nickname})`);
+                        util.sendTextMessage(channels.lfp_moderation, `${template} (marked unfounded by @${nickname})`);
                     }
                     //remove reactions from ad
                     for (const [, reaction] of message.reactions.cache) {
@@ -645,7 +641,7 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
                     .setDescription(`${reaction} Ad by ${message.author} ${reporters ? `reported by ${reporters}` : `with retracted report`} handled manually by ${user} concerning [this ad](${message.url})/[this report](${messagereaction.message.url}).`));
                     break;
                 }
-                case "🧨":
+                case "🗑":
                 {
                     //delete original message
                     await message.delete({reason: "Founded LFP-ad-report"});
@@ -663,7 +659,7 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
             .setDescription(`${reaction} Deleted ad handled by ${user} concerning [this report](${messagereaction.message.url}).`));
             remove_own_reactions(messagereaction.message);
         }
-        if (messagereaction.emoji.name === "✋" || messagereaction.emoji.name === "❌") {
+        if (messagereaction.emoji.name === "✋" || messagereaction.emoji.name === "❔") {
             remove_own_reactions(messagereaction.message); //otherwise the deletion of the message will remove the reactions
         }
     }
@@ -757,9 +753,9 @@ client.on("message", (message) => {
         (async () => {
             if (util.image_link_count(message) > 3) {
                 message.delete({reason: "More than 3 images in an RP ad"});
-                util.sendTextMessage(channels.rp_ad_feedback,
+                util.sendTextMessage(channels.lfp_moderation,
                 `${message.author}, your roleplaying ad in ${message.channel} has been removed because it had more than 3 images.\n` +
-                `Please follow the rules as described in ${channels.type_info}.`);
+                `Please follow the rules as described in ${channels.lfp_info}.`);
                 util.sendTextMessage(channels.report_log, new DiscordJS.MessageEmbed()
                 .setDescription(`✅ Deleted RP ad by ${message.author} in ${message.channel} because it contained more than 3 images.`)
                 .setTimestamp(new Date().getTime()));
@@ -958,10 +954,6 @@ client.on("message", (message) => {
                     title = "FEMBOY Characters";
                     target = "People with the \"Trap/Femboy\" role";
                     break;
-                case "with-trans":
-                    title = "TRANS Characters";
-                    target = "People with the MtF or FtM roles";
-                    break;
                 case "with-anthro":
                     title = "ANTHRO Characters";
                     target = "Anthromorphs, furries and similar (not beasts/bestiality rp)";
@@ -987,10 +979,6 @@ client.on("message", (message) => {
                 case "as-femboy":
                     title = "FEMBOY Characters";
                     target = "People with the \"Trap/Femboy\" role";
-                    break;
-                case "as-trans":
-                    title = "TRANS Characters";
-                    target = "People who want to play as gender-transitioned characters or make gender-bending a major theme in the RP.";
                     break;
                 case "as-anthro":
                     title = "ANTHRO Characters";
@@ -1022,7 +1010,7 @@ client.on("message", (message) => {
                     title = "LESBIAN RPs";
                     target = "People looking for RPs involving sexual relationships between females.";
                     break;
-                case "xtreme": //the unicode symbol for extreme is 1 byte long instead of 2, so the e gets removed along with the symbol
+                case "extreme":
                     title = "EXTREME RPs";
                     target = "People looking for an RP with more hardcore kinks like vore, gore and scat.";
                     break;
@@ -1049,11 +1037,6 @@ client.on("message", (message) => {
             const playing_as = channel.parent?.id === categories.playing_as.id;
             const playing_with = channel.parent?.id === categories.playing_with.id;
             const by_type = channel.parent?.id === categories.by_type.id;
-            const info_channel =
-            playing_as ? `${channels.playing_as_info}` :
-            playing_with ? `${channels.playing_with_info}` :
-            by_type ? `${channels.type_info}` :
-            ``;
             const rp_type_str =
             playing_as ? "Playing As" :
             playing_with ? "Playing With" :
@@ -1070,15 +1053,25 @@ client.on("message", (message) => {
                 `>>> __**${rp_type_str} ${title} Channel Info**__\n` +
                 `🔹 __What posts are to be expected and to be posted in this channel?__\n` +
                 `LFP ads which explicitly state that they **${rp_with_as_looking_for} ${title}**.\n\n` +
-                `🔹 __Target Audience for LFP posts:__\n` +
+                `🔹 __Target Audience for LFP posts in this channel:__\n` +
                 `**${playing_as ? "Anyone wanting to play with " : ""}${target}**\n\n` +
                 `${exclusive}` +
                 `If you see posts which are __not clearly looking for these kinds of RP__ in this channel let the staff know by reacting with :x: (\`:x:\`) or reporting it in ${channels.reports}!\n\n` +
                 `If you want to **contact** someone, **please check their DM Roles** first! If they have **Ask to DM ⚠️** (🇩 🇲 ⚠️) or **DMs Closed ⛔** (🇩 🇲 ⛔) use ${channels.contact}!\n\n` +
-                `*More info in:* ${info_channel}\n\n`
+                `*More info in:* ${channels.lfp_info}\n\n`
+            ;
+            const lfpAllstyleMsg =
+                `>>> __**${rp_type_str} ${title} Channel Info**__\n` +
+                `🔹 __What posts are to be expected and to be posted in this channel?__\n` +
+                `Any LFP ad that that doesn't contain disallowed content such as underage characters.\n\n` +
+                `🔹 __Target Audience for LFP posts in this channel:__\n` +
+                `**Anyone looking to browse diverse ads**\n\n` +
+                `If you see posts which are looking to play with or as underage characters let the staff know by reacting with :x: (\`:x:\`) or reporting it in ${channels.reports}!\n\n` +
+                `If you want to **contact** someone, **please check their DM Roles** first! If they have **Ask to DM ⚠️** (🇩 🇲 ⚠️) or **DMs Closed ⛔** (🇩 🇲 ⛔) use ${channels.contact}!\n\n` +
+                `*More info in:* ${channels.lfp_info}\n\n`
             ;
 
-            channel.send(lfpMsg)
+            channel.send(channel.id === channels.all_style.id ? lfpAllstyleMsg : lfpMsg)
             .catch(error => util.log(`Failed updating lfp info in ${channel} because ${error}`, "lfpInfo", util.logLevel.ERROR));
         }, 2000);
     }
