@@ -2186,6 +2186,14 @@ const cmd: Cmd = {
         }
         message.channel.stopTyping();
     },
+    adban: function (message) {
+        message.content = `${message.content} -VIEW_CHANNEL ${categories.playing_with} ${categories.playing_as} ${categories.by_type}`;
+        cmd.perms(message);
+    },
+    adunban: function (message) {
+        message.content = `${message.content} clear ${categories.playing_with} ${categories.playing_as} ${categories.by_type}`;
+        cmd.perms(message);
+    },
     help: function (message) {
         const public_commands = `
 **\`_ping\`**
@@ -2251,7 +2259,13 @@ Hides the given channels from the given user. The channels can be specified dire
 ***\`_perms\`*** \`([user]|[role])+ ([channel]|[category]|["prefix"])+ [+|-|/[PERMISSION])|clear]+\`
 Sets the given permission(s) for the user and/or role in the given channel(s). You can [look up valid [PERMISSIONS] here in the "Bitwise Permission Flags" table](https://discord.com/developers/docs/topics/permissions#permissions-bitwise-permission-flags). Note that permissions only work in text channels if there is a T in the last column and in voice channels only if there is a V in the last column.
 Alternatively you can use \`clear\` as the [PERMISSION] which will remove the user(s)/role(s) from the channel(s) permission list.
-Example: \`_perms @Lilli -ADD_REACTIONS #tinkering\``
+Example: \`_perms @Lilli -ADD_REACTIONS #tinkering\`
+
+***\`_adban\`*** \`[userID]+\`
+Hides the playing with/as/type categories from the specified user(s).
+
+***\`_adunban\`*** \`[userID]+\`
+Hides the playing with/as/type categories from the specified user(s).`;
         util.sendTextMessage(message.channel, new DiscordJS.MessageEmbed().setDescription(`I understand the following commands:
 ${public_commands}
 ${util.isStaff(message) ? staff_commands : ""}`))},
