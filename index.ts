@@ -37,13 +37,13 @@ let channels = {
     with_male: <unknown>"🍆with-male" as DiscordJS.TextChannel,
     with_female: <unknown>"🍑with-female" as DiscordJS.TextChannel,
     with_femboy: <unknown>"🍌with-femboy" as DiscordJS.TextChannel,
-    with_furry: <unknown>"😺with-anthro" as DiscordJS.TextChannel,
+    with_furry: <unknown>"😺with-furry" as DiscordJS.TextChannel,
     with_beast: <unknown>"🦄with-beast" as DiscordJS.TextChannel,
     with_futa_herm: <unknown>"🥕with-futa-herm" as DiscordJS.TextChannel,
     as_male: <unknown>"🍆as-male" as DiscordJS.TextChannel,
     as_female: <unknown>"🍑as-female" as DiscordJS.TextChannel,
     as_femboy: <unknown>"🍌as-femboy" as DiscordJS.TextChannel,
-    as_furry: <unknown>"😺as-anthro" as DiscordJS.TextChannel,
+    as_furry: <unknown>"😺as-furry" as DiscordJS.TextChannel,
     as_beast: <unknown>"🦄as-beast" as DiscordJS.TextChannel,
     as_futa_herm: <unknown>"🥕as-futa-herm" as DiscordJS.TextChannel,
     vanilla: <unknown>"🍦vanilla" as DiscordJS.TextChannel,
@@ -954,9 +954,9 @@ client.on("message", (message) => {
                     title = "FEMBOY Characters";
                     target = "People with the \"Trap/Femboy\" role";
                     break;
-                case "with-anthro":
-                    title = "ANTHRO Characters";
-                    target = "Anthromorphs, furries and similar (not beasts/bestiality rp)";
+                case "with-furry":
+                    title = "FURRY Characters";
+                    target = "Furries and scalies, not beasts, ferals or robots";
                     break;
                 case "with-beast":
                     title = "BEAST Characters";
@@ -980,9 +980,9 @@ client.on("message", (message) => {
                     title = "FEMBOY Characters";
                     target = "People with the \"Trap/Femboy\" role";
                     break;
-                case "as-anthro":
-                    title = "ANTHRO Characters";
-                    target = "Anthromorphs, furries and similar (not beasts/bestiality rp)";
+                case "as-furry":
+                    title = "Furry Characters";
+                    target = "Furries and scalies, not beasts, ferals or robots";
                     break;
                 case "as-beast":
                     title = "BEAST Characters";
