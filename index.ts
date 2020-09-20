@@ -39,13 +39,13 @@ let channels = {
     with_femboy: <unknown>"🍌with-femboy" as DiscordJS.TextChannel,
     with_furry: <unknown>"😺with-furry" as DiscordJS.TextChannel,
     with_beast: <unknown>"🦄with-beast" as DiscordJS.TextChannel,
-    with_futa_herm: <unknown>"🥕with-futa-herm" as DiscordJS.TextChannel,
+    with_futa_herm: <unknown>"🥕with-futa" as DiscordJS.TextChannel,
     as_male: <unknown>"🍆as-male" as DiscordJS.TextChannel,
     as_female: <unknown>"🍑as-female" as DiscordJS.TextChannel,
     as_femboy: <unknown>"🍌as-femboy" as DiscordJS.TextChannel,
     as_furry: <unknown>"😺as-furry" as DiscordJS.TextChannel,
     as_beast: <unknown>"🦄as-beast" as DiscordJS.TextChannel,
-    as_futa_herm: <unknown>"🥕as-futa-herm" as DiscordJS.TextChannel,
+    as_futa_herm: <unknown>"🥕as-futa" as DiscordJS.TextChannel,
     vanilla: <unknown>"🍦vanilla" as DiscordJS.TextChannel,
     gay: <unknown>"👬gay" as DiscordJS.TextChannel,
     lesbian: <unknown>"👭lesbian" as DiscordJS.TextChannel,
@@ -69,8 +69,10 @@ let channels = {
     roles_selection: <unknown>"🎲roles-selection" as DiscordJS.TextChannel,
     reported_rps: <unknown>"☣reported-rp-ads" as DiscordJS.TextChannel,
     report_log: <unknown>"reported-lfp-warning-logs" as DiscordJS.TextChannel,
-    lfp_moderation: <unknown>"🏷lfp-moderation" as DiscordJS.TextChannel,
-    lfp_info: <unknown>"📌lfp-posting-rules" as DiscordJS.TextChannel,
+    lfp_moderation: <unknown>"🏷ad-moderation" as DiscordJS.TextChannel,
+    lfp_info: <unknown>"📌posting-rules" as DiscordJS.TextChannel,
+    rp_ad_feedback: <unknown>"🔖ad-feedback" as DiscordJS.TextChannel,
+    extreme_definition: <unknown>"💀extreme-definition" as DiscordJS.TextChannel,
 };
 
 let categories = {
@@ -570,7 +572,7 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
                     //delete original message
                     await message.delete({reason: "Founded LFP-ad-report"});
                     //yell at author
-                    const template = `<@${message.author.id}>, your ad does not fit in ${ad_channel} because it doesn't explicitly look ${playtype}, so it has been removed.`;
+                    const template = `<@${message.author.id}>, your ad does not fit in ${ad_channel} because it doesn't explicitly look ${playtype}, so it has been removed.${ad_channel === channels.extreme ? ` Please specify at least one extreme kink to make your ad on topic. See ${channels.extreme_definition} for a list of extreme kinks.` : ""}`;
                     util.sendTextMessage(channels.lfp_moderation, `${template} (confirmed by @${nickname})`);
                     //log in reports log
                     util.sendTextMessage(channels.report_log, new DiscordJS.MessageEmbed().setTimestamp(new Date().getTime())
@@ -1010,7 +1012,7 @@ client.on("message", (message) => {
                     title = "LESBIAN RPs";
                     target = "People looking for RPs involving sexual relationships between females.";
                     break;
-                case "extreme":
+                case "xtreme":
                     title = "EXTREME RPs";
                     target = "People looking for an RP with more hardcore kinks like vore, gore and scat.";
                     break;
