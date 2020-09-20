@@ -1629,11 +1629,13 @@ const cmd: Cmd = {
             embed.addField("Created", `${deconstructed_snowflake.date.toUTCString()}`);
             embed.addField("Age", `${util.time((new Date).getTime() - deconstructed_snowflake.timestamp)}`);
             const member = server.members.cache.get(snowflake);
-            const member_age = member ? member.joinedAt : null;
+            let ant_date = new Date();
+            ant_date.setFullYear(2019, 7, 5);
+            const member_age = member ? (snowflake === "201478077749002240" ? ant_date : member.joinedAt) : null;
             if (member_age) { //add member fields Joined, Member Since and Eligible
                 const now = new Date().getTime();
                 const ancient_date = new Date(member_age.getTime() + 365*24*60*60*1000);
-                const ancient_string = ((ancient_date.getTime() <= now) || (snowflake === "201478077749002240")) ? "Yes" : `on ${ancient_date.toUTCString()} in ${util.time(ancient_date.getTime() - now)}`;
+                const ancient_string = ancient_date.getTime() <= now ? "Yes" : `on ${ancient_date.toUTCString()} in ${util.time(ancient_date.getTime() - now)}`;
                 embed.addField("Joined", `${member_age.toUTCString()}`);
                 embed.addField("Member Since", `${util.time(new Date().getTime() - member_age.getTime())}`);
                 embed.addField(`Eligible For Ancient Role`, `${ancient_string}`);
