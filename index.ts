@@ -966,9 +966,9 @@ client.on("message", (message) => {
                     title = "BEAST Characters";
                     target = "People playing Beasts who are interested in Bestiality RP (not anthros)";
                     break;
-                case "with-futa-herm":
+                case "with-futa":
                     title = "FUTANARI / HERMAPHRODITE Characters";
-                    target = "Futanari and Hermaphrodites (not trans)";
+                    target = "Futanari and Hermaphrodites";
                     break;
 
                 //RP Playing As
@@ -992,9 +992,9 @@ client.on("message", (message) => {
                     title = "BEAST Characters";
                     target = "Beasts and people interested in Bestiality RP (not anthros)";
                     break;
-                case "as-futa-herm":
+                case "as-futa":
                     title = "FUTANARI / HERMAPHRODITE Characters";
-                    target = "Futanari and Hermaphrodites (not trans)";
+                    target = "Futanari and Hermaphrodites";
                     break;
 
                 //RP By Type
