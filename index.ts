@@ -526,7 +526,7 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
         await util.react(report_message, "👶");
         await util.react(report_message, "❔");
         await util.react(report_message, "✋");
-        await util.react(report_message, "🗑");
+        await util.react(report_message, "🧨");
     }
     if (messagereaction.message.channel.id === channels.reported_rps.id) {
         if (!messagereaction.me) return;
@@ -643,7 +643,7 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
                     .setDescription(`${reaction} Ad by ${message.author} ${reporters ? `reported by ${reporters}` : `with retracted report`} handled manually by ${user} concerning [this ad](${message.url})/[this report](${messagereaction.message.url}).`));
                     break;
                 }
-                case "🗑":
+                case "🧨":
                 {
                     //delete original message
                     await message.delete({reason: "Founded LFP-ad-report"});
