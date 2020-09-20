@@ -55,6 +55,7 @@ let channels = {
     gm_style: <unknown>"🧙gm-style" as DiscordJS.TextChannel,
     real_life: <unknown>"🤝real-life" as DiscordJS.TextChannel,
     all_style: <unknown>"✥all-style" as DiscordJS.TextChannel,
+    breeding: <unknown>"🐇breeding" as DiscordJS.TextChannel,
     contact: <unknown>"💬ask-to-dm" as DiscordJS.TextChannel,
     general: <unknown>"🔞general" as DiscordJS.TextChannel,
     ooc_general: <unknown>"💬ooc-general" as DiscordJS.TextChannel,
@@ -316,6 +317,7 @@ const startUpMod = {
             lfpChannels.push(channels.long_term_plot);
             lfpChannels.push(channels.gm_style);
             lfpChannels.push(channels.real_life);
+            lfpChannels.push(channels.breeding);
 
             fetch_invites().then(invs => invites = invs);
 
@@ -1031,6 +1033,10 @@ client.on("message", (message) => {
                 case "real-life":
                     title = "REAL LIFE Contacts";
                     target = "People who want some form of real life contact, be it dating, sharing images, talking in voice chat or similar.";
+                    break;
+                case "breeding":
+                    title = "BREEDING";
+                    target = "People wanting an RP focused on sex for the purpose of procreation as opposed to joy.";
                     break;
                 default:
                     util.log(`Failed finding matchmaking channel ${channel.name.substr(2)}`, "Matchmaking", util.logLevel.ERROR);
