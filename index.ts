@@ -1633,7 +1633,7 @@ const cmd: Cmd = {
             if (member_age) { //add member fields Joined, Member Since and Eligible
                 const now = new Date().getTime();
                 const ancient_date = new Date(member_age.getTime() + 365*24*60*60*1000);
-                const ancient_string = ancient_date.getTime() <= now ? "Yes" : `on ${ancient_date.toUTCString()} in ${util.time(ancient_date.getTime() - now)}`;
+                const ancient_string = (ancient_date.getTime() <= now || snowflake === "201478077749002240") ? "Yes" : `on ${ancient_date.toUTCString()} in ${util.time(ancient_date.getTime() - now)}`;
                 embed.addField("Joined", `${member_age.toUTCString()}`);
                 embed.addField("Member Since", `${util.time(new Date().getTime() - member_age.getTime())}`);
                 embed.addField(`Eligible For Ancient Role`, `${ancient_string}`);
