@@ -1331,7 +1331,7 @@ const audit_send_result = (target_string: string, string: string, channel: Disco
 
 const audit_log_search = (target_string: string, message: DiscordJS.Message, snowflake: DiscordJS.Snowflake, result_string = "", latest_entry?: string, counter = 0) => {
     const counter_limit = 50; //How many sets of 100 audit logs will be requested from Discord. Increasing the number usually gives more results and also makes it slower.
-    const character_limit = 5000; //How long the result message must be before we consider it enough to avoid the command to be too spammy. The limit can be raised past 2000 in which case multiple messages will be posted.
+    const character_limit = 10000; //How long the result message must be before we consider it enough to avoid the command to be too spammy. The limit can be raised past 2000 in which case multiple messages will be posted.
     if (counter === 0) {
         message.channel.startTyping();
     }
