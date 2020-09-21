@@ -1318,40 +1318,45 @@ const audits_to_string = (audits: DiscordJS.GuildAuditLogs, snowflake: DiscordJS
     }, "");
 };
 
-const audit_send_result = (target_string: string, string: string, channel: DiscordJS.TextChannel | DiscordJS.DMChannel | DiscordJS.NewsChannel) => {
+const audit_send_result = async (target_string: string, string: string, channel: DiscordJS.TextChannel | DiscordJS.DMChannel | DiscordJS.NewsChannel) => {
     const result_string = `**Audit for ${target_string}**:\n` + string;
     let message_pieces = DiscordJS.Util.splitMessage(result_string);
     if (!Array.isArray(message_pieces)) {
         message_pieces = [message_pieces];
     }
-    message_pieces.forEach(message_piece => {
-        channel.send(new DiscordJS.MessageEmbed().setDescription(message_piece));
-    });
+    for (const message_piece of message_pieces) {
+        try {
+            await channel.send(new DiscordJS.MessageEmbed().setDescription(message_piece));
+        }
+        catch (error) {
+            console.log(`Failed sending audit log piece because of error ${error}:\n${message_piece}`);
+            util.log(`Failed sending audit log piece because ${error}`, "Audit command", util.logLevel.ERROR);
+        }
+    }
 };
 
-const audit_log_search = (target_string: string, message: DiscordJS.Message, snowflake: DiscordJS.Snowflake, result_string = "", latest_entry?: string, counter = 0) => {
+const audit_log_search = async (target_string: string, message: DiscordJS.Message, snowflake: DiscordJS.Snowflake, result_string = "", latest_entry?: string, counter = 0) => {
     const counter_limit = 50; //How many sets of 100 audit logs will be requested from Discord. Increasing the number usually gives more results and also makes it slower.
     const character_limit = 10000; //How long the result message must be before we consider it enough to avoid the command to be too spammy. The limit can be raised past 2000 in which case multiple messages will be posted.
     if (counter === 0) {
         message.channel.startTyping();
     }
-    server.fetchAuditLogs(latest_entry ? {limit: 100, before: latest_entry} : {limit: 100})
-    .then(audits => {
+    try {
+        const audits = await server.fetchAuditLogs(latest_entry ? {limit: 100, before: latest_entry} : {limit: 100});
         result_string = audits_to_string(audits, snowflake) + result_string;
 
         if (result_string.length > character_limit || audits.entries.size < 100 || counter > counter_limit) {
-            audit_send_result(target_string, result_string, message.channel);
+            await audit_send_result(target_string, result_string, message.channel);
             message.channel.stopTyping();
         }
         else {
-            audit_log_search(target_string, message, snowflake, result_string, audits.entries.lastKey(), counter + 1);
+            await audit_log_search(target_string, message, snowflake, result_string, audits.entries.lastKey(), counter + 1);
         }
-    }).catch(error => {
-        message.channel.send(new DiscordJS.MessageEmbed()
-        .setDescription(`Results so far for ${target_string}:\n${result_string}`)
-        .setAuthor(`Failed fetching more audits because ${error}`));
+    }
+    catch (error) {
+        await audit_send_result(target_string, result_string + `\nFailed fetching more audits because ${error}`, message.channel);
         message.channel.stopTyping();
-    });
+    }
 };
 
 const dead_char_search = async (start_message_id: string, message: DiscordJS.Message, archive_channel: DiscordJS.TextChannel) => {
