@@ -40,12 +40,14 @@ let channels = {
     with_furry: <unknown>"😺with-furry" as DiscordJS.TextChannel,
     with_beast: <unknown>"🦄with-beast" as DiscordJS.TextChannel,
     with_futa_herm: <unknown>"🥕with-futa" as DiscordJS.TextChannel,
+    with_humanoid: <unknown>"👹with-humanoid" as DiscordJS.TextChannel,
     as_male: <unknown>"🍆as-male" as DiscordJS.TextChannel,
     as_female: <unknown>"🍑as-female" as DiscordJS.TextChannel,
     as_femboy: <unknown>"🍌as-femboy" as DiscordJS.TextChannel,
     as_furry: <unknown>"😺as-furry" as DiscordJS.TextChannel,
     as_beast: <unknown>"🦄as-beast" as DiscordJS.TextChannel,
     as_futa_herm: <unknown>"🥕as-futa" as DiscordJS.TextChannel,
+    as_humanoid: <unknown>"👹as-humanoid" as DiscordJS.TextChannel,
     vanilla: <unknown>"🍦vanilla" as DiscordJS.TextChannel,
     gay: <unknown>"👬gay" as DiscordJS.TextChannel,
     lesbian: <unknown>"👭lesbian" as DiscordJS.TextChannel,
@@ -302,12 +304,14 @@ const startUpMod = {
             lfpChannels.push(channels.with_furry);
             lfpChannels.push(channels.with_beast);
             lfpChannels.push(channels.with_futa_herm);
+            lfpChannels.push(channels.with_humanoid);
             lfpChannels.push(channels.as_male);
             lfpChannels.push(channels.as_female);
             lfpChannels.push(channels.as_femboy);
             lfpChannels.push(channels.as_furry);
             lfpChannels.push(channels.as_beast);
             lfpChannels.push(channels.as_futa_herm);
+            lfpChannels.push(channels.as_humanoid);
             lfpChannels.push(channels.all_style);
             lfpChannels.push(channels.vanilla);
             lfpChannels.push(channels.gay);
@@ -1261,7 +1265,7 @@ const audits_to_string = (audits: DiscordJS.GuildAuditLogs, snowflake: DiscordJS
         if (audit.target instanceof DiscordJS.Invite) { //can't audit invites because invites don't have an ID
             return current;
         }
-        if (audit.target?.id != snowflake) { //not an entry where something was done to the target
+        if (audit.target?.id !== snowflake) { //not an entry where something was done to the target
             return current;
         }
         let curr = `**${util.time(new Date().getTime() - audit.createdAt.getTime())} ago:** `;
