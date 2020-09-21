@@ -974,6 +974,10 @@ client.on("message", (message) => {
                     title = "FUTANARI / HERMAPHRODITE Characters";
                     target = "Futanari and Hermaphrodites";
                     break;
+                case "with-humanoid":
+                    title = "Humanoid Characters";
+                    target = "Humanoids such as demons, orcs, vampires and similar";
+                    break;
 
                 //RP Playing As
                 case "as-male":
@@ -999,6 +1003,10 @@ client.on("message", (message) => {
                 case "as-futa":
                     title = "FUTANARI / HERMAPHRODITE Characters";
                     target = "Futanari and Hermaphrodites";
+                    break;
+                case "as-humanoid":
+                    title = "Humanoid Characters";
+                    target = "Humanoids such as demons, orcs, vampires and similar";
                     break;
 
                 //RP By Type
