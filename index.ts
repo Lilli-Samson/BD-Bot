@@ -1050,6 +1050,7 @@ client.on("message", (message) => {
                     title = "BREEDING";
                     target = "People wanting an RP focused on sex for the purpose of procreation as opposed to joy.";
                     break;
+
                 default:
                     util.log(`Failed finding matchmaking channel ${channel.name.substr(2)}`, "Matchmaking", util.logLevel.ERROR);
                 }
