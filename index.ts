@@ -2546,8 +2546,7 @@ const util = {
                 await user.send("__**Congratulations!**__ :tada:\n\nYou have reached `Level 5` in the Breeding Den Server! You're now able to submit characters and join Voice Channels if you want to!" +
                     "\n\n(_P.S. I'm a bot, so please don't reply!_)");
             } else if (level === 20) {
-                await user.send("__**Congratulations!**__ :tada:\n\nYou have reached `Level 20` in the Breeding Den Server! You've unlocked the <#560869811157073920> " +
-                    "and you're able to create your own cult, as long as certain criterias are met too!" +
+                await user.send("__**Congratulations!**__ :tada:\n\nYou have reached `Level 20` in the Breeding Den Server! You can now create your own cult, as long as certain criterias are met too!" +
                     "For more detailed information, please check out the very top message in <#538901164897337347>" +
                     "\nIf you're interested, simply ask a Staff member and they will guide you through the process!\n\n(_P.S. I'm a bot, so please don't reply!_)");
             } else if (level === 30) {
