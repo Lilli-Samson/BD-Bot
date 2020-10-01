@@ -1520,24 +1520,23 @@ const cmd: Cmd = {
         if (message && !util.isStaff(message)) {
             return;
         }
-        const newcomerRole = roles.Newcomer;
-        const newcomerMembers = server.members.cache.filter(member => !member.user.bot && !member.roles.cache.has(roles.NSFW.id));
+        const newcomerMembers = server.members.cache.filter(member => !member.user.bot && (member.roles.cache.has(roles.Newcomer.id) || !member.roles.cache.has(roles.NSFW.id)));
         let index = 0;
         let report = "";
-        for (const [id, member] of newcomerMembers) {
+        for (const [, member] of newcomerMembers) {
             index++;
             try {
                 if ((new Date().getTime() - (server.member(member)?.joinedAt?.getTime() || 0))/1000/60 <= 90) { // joined less than 90 minutes ago
                     report += `${index}/${newcomerMembers.size} Skipped ${member} because they only recently joined\n`;
                     return;
                 }
-                if (member.roles.cache.has(roles.Newcomer.id)) {
-                    await member.roles.remove(newcomerRole);
-                    report += `${index}/${newcomerMembers.size} Removed newcomer role from ${member}\n`;
-                }
-                else {
+                if (!member.roles.cache.has(roles.NSFW.id)) {
                     await member.kick(`Not having NSFW role for 90+ minutes`);
                     report += `${index}/${newcomerMembers.size} Kicked ${member} for not clicking the ✅\n`;
+                }
+                else {
+                    await member.roles.remove(roles.Newcomer);
+                    report += `${index}/${newcomerMembers.size} Removed newcomer role from ${member}\n`;
                 }
             }
             catch (e) {
