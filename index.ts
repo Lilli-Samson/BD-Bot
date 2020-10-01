@@ -1543,14 +1543,14 @@ const cmd: Cmd = {
             catch (e) {
                 report += `⚠️ ${index}/${newcomerMembers.size} Error handling ${member}: ${e}\n`;
             }
-            if (report.length) {
-                util.log(report, 'clearNewcomer', util.logLevel.INFO);
-            }
-            else {
-                util.log("No newcomers found", 'clearNewcomer', util.logLevel.INFO);
-            }
         }
-    },
+        if (report.length) {
+            util.log(report, 'clearNewcomer', util.logLevel.INFO);
+        }
+        else {
+            util.log("No newcomers found", 'clearNewcomer', util.logLevel.INFO);
+        }
+},
     ancient: async function(message) {
         if (util.isStaff(message)) {
             const now = new Date().getTime();
@@ -2446,13 +2446,12 @@ const util = {
         let currDateTime = moment().format('MMM DD YYYY - HH:mm:ss.SSS');
         let logMessage = level + " | " + currDateTime + " | " + moduleName + ": " + message;
 
-        let logEmbed = new DiscordJS.MessageEmbed()
+        util.sendTextMessage(channels.logs, new DiscordJS.MessageEmbed()
         .setAuthor(level)
         .setColor(embedColor)
         .setDescription(message)
         .setFooter(moduleName)
-        .setTimestamp(new Date());
-        channels.logs.send(logEmbed);
+        .setTimestamp(new Date()));
         console.log(logMessage);
     },
 
