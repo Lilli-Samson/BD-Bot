@@ -1516,55 +1516,40 @@ const cmd: Cmd = {
             util.log('Enabling responses to non-staff mentions', 'enable mentions', util.logLevel.INFO);
         }
     },
-    cn: function (message) {
+    cn: async function (message) {
         if (message && !util.isStaff(message)) {
             return;
         }
-        let successCount = 0;
-        let kickCount = 0;
-        let errorCount = 0;
-        const newcomerRole = server.roles.cache.find(role => role.name === "Newcomer");
-        if (!newcomerRole) {
-            util.log(`Failed finding newcomer role`, "Clear Newcomers", util.logLevel.ERROR);
-            if (message) {
-                util.sendTextMessage(message.channel, `Failed finding newcomer role`);
-            }
-            return;
-        }
-        const newcomerMembers = newcomerRole.members.map(m => m.user);
-        const channel = message ? message.channel : channels.main;
-        newcomerMembers.forEach((member, index) => {
+        const newcomerRole = roles.Newcomer;
+        const newcomerMembers = server.members.cache.filter(member => !member.user.bot && !member.roles.cache.has(roles.NSFW.id));
+        let index = 0;
+        let report = "";
+        for (const [id, member] of newcomerMembers) {
+            index++;
             try {
-                if ((new Date().getTime() - (server.member(member)?.joinedAt?.getTime() || 0))/1000/60 <= 10) { // joined less than 10 minutes ago
+                if ((new Date().getTime() - (server.member(member)?.joinedAt?.getTime() || 0))/1000/60 <= 90) { // joined less than 90 minutes ago
+                    report += `${index}/${newcomerMembers.size} Skipped ${member} because they only recently joined\n`;
                     return;
                 }
-                util.log(`Clearing newcomer role from: <@${member.id}> (${index+1} / ${newcomerMembers.length})`, "clearNewcomer", util.logLevel.INFO);
-                server.member(member)?.roles.remove(newcomerRole)
-                    .then((guildMember) => {
-                        if (!guildMember.roles.cache.has(roles.NSFW.id) && ((new Date().getTime() - (guildMember.joinedAt?.getTime() || 0))/1000/60 > 10)) { // joined more than 10 minutes ago
-                            const reason = guildMember + " kicked from not having NSFW role for a longer period of time.";
-                            guildMember.kick(reason)
-                                .then(() => util.log(reason, 'clearNewcomer', util.logLevel.INFO))
-                                .catch(() => util.log("Failed to kick inactive member: " + guildMember, 'clearNewcomer', util.logLevel.WARN));
-                            kickCount++;
-                        } else {
-                            successCount++;
-                        }
-                        if (index+1 === newcomerMembers.length) {
-                            const logText = successCount + '/' + (successCount + errorCount) + " users cleared of Newcomer role. " + kickCount + " users kicked from not having the NSFW role until now.";
-                            util.log(logText, 'clearNewcomer', util.logLevel.INFO);
-                        }
-                    });
-            } catch (e) {
-                errorCount++;
-                util.log("Couldn't remove Newcomer from: " + member + "\n" + e, 'clearNewcomer', util.logLevel.ERROR);
-                if (index+1 === newcomerMembers.length) {
-                    const logText = successCount + '/' + (successCount + errorCount) + " users cleared of Newcomer role. " + kickCount + " users kicked from not having the NSFW role until now.";
-                    util.log(logText, 'clearNewcomer', util.logLevel.INFO);
-                    channel.send(logText);
+                if (member.roles.cache.has(roles.Newcomer.id)) {
+                    await member.roles.remove(newcomerRole);
+                    report += `${index}/${newcomerMembers.size} Removed newcomer role from ${member}\n`;
+                }
+                else {
+                    report += `${index}/${newcomerMembers.size} Would kick ${member} for not clicking the ✅\n`;
+                    //await member.kick(`Not having NSFW role for a longer period of time`);
                 }
             }
-        });
+            catch (e) {
+                report += `⚠️ ${index}/${newcomerMembers.size} Error handling ${member}: ${e}\n`;
+            }
+            if (report.length) {
+                util.log(report, 'clearNewcomer', util.logLevel.INFO);
+            }
+            else {
+                util.log("No newcomers found", 'clearNewcomer', util.logLevel.INFO);
+            }
+        }
     },
     ancient: async function(message) {
         if (util.isStaff(message)) {
