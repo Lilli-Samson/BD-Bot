@@ -1536,8 +1536,8 @@ const cmd: Cmd = {
                     report += `${index}/${newcomerMembers.size} Removed newcomer role from ${member}\n`;
                 }
                 else {
-                    report += `${index}/${newcomerMembers.size} Would kick ${member} for not clicking the ✅\n`;
-                    //await member.kick(`Not having NSFW role for a longer period of time`);
+                    await member.kick(`Not having NSFW role for 90+ minutes`);
+                    report += `${index}/${newcomerMembers.size} Kicked ${member} for not clicking the ✅\n`;
                 }
             }
             catch (e) {
@@ -1550,7 +1550,7 @@ const cmd: Cmd = {
         else {
             util.log("No newcomers found", 'clearNewcomer', util.logLevel.INFO);
         }
-},
+    },
     ancient: async function(message) {
         if (util.isStaff(message)) {
             const now = new Date().getTime();
