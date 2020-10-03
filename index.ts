@@ -76,6 +76,7 @@ let channels = {
     lfp_info: <unknown>"📌posting-rules" as DiscordJS.TextChannel,
     rp_ad_feedback: <unknown>"🔖ad-feedback" as DiscordJS.TextChannel,
     extreme_definition: <unknown>"💀extreme-definition" as DiscordJS.TextChannel,
+    promotion: <unknown>"🎈promotion" as DiscordJS.TextChannel,
 };
 
 let categories = {
@@ -756,6 +757,18 @@ client.on("message", (message) => {
         cmd.call(message);
     }
 
+    //delete previous promotion
+    if (message.channel === channels.promotion) {
+        //Delete previous message
+        (async () => {
+            const messages = await message.channel.messages.fetch({ "before": message.id, "limit": 100 });
+            for (const [message_id, old_message] of messages) {
+                if (old_message.author.id === message.author.id && old_message.id !== message.id) await old_message.delete({reason: "Repeat post in promotion"});
+            }
+        })();
+    }
+
+    //LFP rule enforcement
     if (lfpChannels.includes(message.channel)) {
         //Check for 3+ images
         (async () => {
