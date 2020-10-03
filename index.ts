@@ -324,6 +324,10 @@ const startUpMod = {
             lfpChannels.push(channels.real_life);
             lfpChannels.push(channels.breeding);
 
+            for (const lfpchannel of lfpChannels) {
+                lfpchannel.messages.fetch({ "limit": 100 });
+            }
+
             fetch_invites().then(invs => invites = invs);
 
             this.startSchedules();
@@ -770,6 +774,7 @@ client.on("message", (message) => {
 
     //LFP rule enforcement
     if (lfpChannels.includes(message.channel)) {
+        const ad_limit = 4;
         //Check for 3+ images
         (async () => {
             if (util.image_link_count(message) > 3) {
@@ -800,11 +805,32 @@ client.on("message", (message) => {
                 else await add_reaction("❔");
             }
         })();
-        //Delete previous message
+
+        //Delete previous messages
         (async () => {
-            const messages = await message.channel.messages.fetch({ "before": message.id, "limit": 100 });
-            for (const [message_id, old_message] of messages) {
-                if (old_message.author.id === message.author.id && old_message.id !== message.id) await old_message.delete({reason: "New ad posted in LFP channel"});
+            //delete old ad
+            const messages = message.channel.messages.cache;
+            for (const [, old_message] of messages) {
+                if (old_message.author.id === message.author.id && old_message.id !== message.id) {
+                    await old_message.delete({reason: "New ad posted in LFP channel"});
+                }
+            }
+            //Delete ad spam
+            let old_messages : DiscordJS.Message[] = [];
+            for (const lfpchannel of lfpChannels) {
+                const channel_messages = lfpchannel.messages.cache;
+                for (const [, old_message] of channel_messages) {
+                    if (old_message.author.id === message.author.id) {
+                        old_messages.push(old_message);
+                    }
+                }
+            }
+            if (old_messages.length > ad_limit) {
+                const sorted_messages = old_messages.sort((m1, m2) => m2.createdTimestamp - m1.createdTimestamp);
+                for (const old_message of sorted_messages.splice(ad_limit)) {
+                    util.log(`Deleted ad by ${old_message.author} in ${old_message.channel} because of breaking ${ad_limit} ad limit`, `Ad moderation`, util.logLevel.INFO);
+                    await old_message.delete({reason: "Ad spam"});
+                }
             }
         })();
     }
