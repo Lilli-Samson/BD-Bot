@@ -1556,7 +1556,7 @@ const cmd: Cmd = {
         }
     },
     cn: async function (message) {
-        if (message && !util.isStaff(message)) {
+        if (!util.isStaff(message)) {
             return;
         }
         const newcomerMembers = server.members.cache.filter(member => !member.user.bot && (member.roles.cache.has(roles.Newcomer.id) || !member.roles.cache.has(roles.NSFW.id)));
@@ -1574,7 +1574,7 @@ const cmd: Cmd = {
                     report += `${index}/${newcomerMembers.size} Kicked ${member} for not clicking the ✅\n`;
                 }
                 else {
-                    await member.roles.remove(roles.Newcomer);
+                    member.roles.remove(roles.Newcomer);
                     report += `${index}/${newcomerMembers.size} Removed newcomer role from ${member}\n`;
                 }
             }
@@ -1584,9 +1584,6 @@ const cmd: Cmd = {
         }
         if (report.length) {
             util.log(report, 'clearNewcomer', util.logLevel.INFO);
-        }
-        else {
-            util.log("No newcomers found", 'clearNewcomer', util.logLevel.INFO);
         }
     },
     ancient: async function(message) {
