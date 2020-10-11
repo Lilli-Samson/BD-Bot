@@ -1561,7 +1561,7 @@ const cmd: Cmd = {
         }
     },
     cn: async function (message) {
-        if (!util.isStaff(message)) {
+        if (!message || !util.isStaff(message)) {
             return;
         }
         const newcomerMembers = server.members.cache.filter(member => !member.user.bot && (member.roles.cache.has(roles.Newcomer.id) || !member.roles.cache.has(roles.NSFW.id)));
