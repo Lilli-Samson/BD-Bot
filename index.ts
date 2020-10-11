@@ -414,10 +414,12 @@ const process_member_join = (member: DiscordJS.GuildMember | DiscordJS.PartialGu
     }, "");
 }
 
-function member_check(member: DiscordJS.GuildMember | DiscordJS.PartialGuildMember) {
-    if (member.user?.username === "Jonathan Galindo" || member.nickname === "Jonathan Galindo") {
-        member.ban({reason: "Jonathan Galindo -> Whale challenge"});
-        util.sendTextMessage(channels.warnings, `Banned ${member} for being named Jonathan Galindo referring to the whale challenge.`);
+async function member_check(member_: DiscordJS.GuildMember | DiscordJS.PartialGuildMember) {
+    const member = member_ instanceof DiscordJS.GuildMember ? member_ : await member_.fetch();
+    const banned_names = ["jonathan galindo", "nigga", "nigger"];
+    if (banned_names.find(name => (member.user.username.toLocaleLowerCase().indexOf(name) !== -1) || (member.displayName.toLocaleLowerCase().indexOf(name) !== -1))) {
+        util.sendTextMessage(channels.warnings, `Banned ${member} for having disallowed name/nickname (${member.user.username}/${member.displayName}).`);
+        member.ban({reason: `Name contained bad phrase`});
     }
 }
 
@@ -1138,6 +1140,9 @@ client.on("message", (message) => {
 });
 
 client.on("guildMemberUpdate", (old_member, new_member) => {
+    if (new_member.guild?.id !== server.id) { //ignore non-main servers
+        return;
+    }
     member_check(new_member);
 });
 
