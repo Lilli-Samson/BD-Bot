@@ -831,6 +831,9 @@ client.on("message", (message) => {
             if (old_messages.length > ad_limit) {
                 const sorted_messages = old_messages.sort((m1, m2) => m2.createdTimestamp - m1.createdTimestamp);
                 for (const old_message of sorted_messages.splice(ad_limit)) {
+                    if (old_message.createdTimestamp > new Date().getTime() - 10 * 60 * 1000) {
+                        await channels.lfp_moderation.send(`${old_message.author} Please note that you can only post 4 ads in total across all the LFP channels. If you post a 5th, the oldest gets automatically deleted, which applied to your ad in ${old_message.channel}.`);
+                    }
                     util.log(`Deleted ad by ${old_message.author} in ${old_message.channel} because of breaking ${ad_limit} ad limit`, `Ad moderation`, util.logLevel.INFO);
                     await old_message.delete({reason: "Ad spam"});
                 }
