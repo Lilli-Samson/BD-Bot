@@ -586,7 +586,8 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
                     await message.delete({reason: "Founded LFP-ad-report"});
                     //yell at author
                     const template = `<@${message.author.id}>, your ad does not fit in ${ad_channel} because it doesn't explicitly look ${playtype}, so it has been removed.${ad_channel === channels.extreme ? ` Please specify at least one extreme kink to make your ad on topic. See ${channels.extreme_definition} for a list of extreme kinks.` : ""}`;
-                    util.sendTextMessage(channels.lfp_moderation, `${template} (confirmed by @${nickname})`);
+                    channels.lfp_moderation.send(`${template} (confirmed by @${nickname})`)
+                    .then(message => message.edit(`${template} (confirmed by ${user})`));
                     //log in reports log
                     util.sendTextMessage(channels.report_log, new DiscordJS.MessageEmbed().setTimestamp(new Date().getTime())
                     .setDescription(`${reaction} Removed ad by ${message.author} reported by ${reporters} confirmed by ${user} concerning [this report](${messagereaction.message.url}).`));
