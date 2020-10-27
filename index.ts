@@ -601,7 +601,8 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
                     const author_member = server.members.cache.get(message.author.id);
                     const extreme_role_explanation = author_member?.roles.cache.has(roles.Extreme.id) ? "" : ` You cannot see the channel because you don't have the Extreme role. You can get it in ${channels.roles_selection}.`;
                     const template = `<@${message.author.id}>, your ad does not fit in ${ad_channel} because it contains extreme kinks, so it has been removed. Please only post such ads in ${channels.extreme}.${extreme_role_explanation}`;
-                    util.sendTextMessage(channels.lfp_moderation, `${template} (confirmed by @${nickname})`);
+                    channels.lfp_moderation.send(`${template} (confirmed by @${nickname})`)
+                    .then(message => message.edit(`${template} (confirmed by ${user})`));
                     //log in reports log
                     util.sendTextMessage(channels.report_log, new DiscordJS.MessageEmbed().setTimestamp(new Date().getTime())
                     .setDescription(`${reaction} Removed ad by ${message.author} reported by ${reporters} confirmed by ${user} concerning [this report](${messagereaction.message.url}).`));
@@ -613,7 +614,8 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
                     await message.delete({reason: "Founded LFP-ad-report"});
                     //yell at author
                     const template = `<@${message.author.id}>, your ad does not fit in ${ad_channel} because it is looking for real-life elements, so it has been removed. Please only post such ads in ${channels.real_life}.`;
-                    util.sendTextMessage(channels.lfp_moderation, `${template} (confirmed by @${nickname})`);
+                    channels.lfp_moderation.send(`${template} (confirmed by @${nickname})`)
+                    .then(message => message.edit(`${template} (confirmed by ${user})`));
                     //log in reports log
                     util.sendTextMessage(channels.report_log, new DiscordJS.MessageEmbed().setTimestamp(new Date().getTime())
                     .setDescription(`${reaction} Removed ad by ${message.author} reported by ${reporters} confirmed by ${user} concerning [this report](${messagereaction.message.url}).`));
@@ -625,7 +627,8 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
                     await message.delete({reason: "Founded LFP-ad-report"});
                     //yell at author
                     const template = `<@${message.author.id}>, your ad does not fit in ${ad_channel} because it containes references to or images of underage characters which is not allowed, so the ad has been removed. If you have ageplay as a kink please specify that you are not looking to play with underage characters.`;
-                    util.sendTextMessage(channels.lfp_moderation, `${template} (confirmed by @${nickname})`);
+                    channels.lfp_moderation.send(`${template} (confirmed by @${nickname})`)
+                    .then(message => message.edit(`${template} (confirmed by ${user})`));
                     //log in reports log
                     util.sendTextMessage(channels.report_log, new DiscordJS.MessageEmbed().setTimestamp(new Date().getTime())
                     .setDescription(`${reaction} Removed ad by ${message.author} reported by ${reporters} confirmed by ${user} concerning [this report](${messagereaction.message.url}).`));
