@@ -371,12 +371,14 @@ client.on("ready", () => {
     });
 });
 
-const process_member_join = (member: DiscordJS.GuildMember | DiscordJS.PartialGuildMember, invs: Invites) => {
+const process_member_join = async (member: DiscordJS.GuildMember | DiscordJS.PartialGuildMember, invs: Invites) => {
     const invitee_is_new = new Date().getTime() - (client.users.cache.get(member.id)?.createdTimestamp || 0) < 1000 * 60 * 60 * 24;
     const invitee_str = `${member} ` +
         `(${member.user?.username}#${member.user?.discriminator})` +
         `${invitee_is_new ? `(:warning: new account from ${util.time(new Date().getTime() - (member.user?.createdTimestamp || 0))} ago)` : ""}`;
-    return invites.reduce((curr, old_invite, old_code) => {
+    let inv_string = "";
+    for (const [old_code, old_invite] of invites) {
+        let curr = "";
         const new_invite = invs.get(old_code);
         const old_uses = old_invite.uses || 0;
         let new_uses = 0;
@@ -393,7 +395,7 @@ const process_member_join = (member: DiscordJS.GuildMember | DiscordJS.PartialGu
             }
         }
         if (new_uses > old_uses) {
-            const inviter_guildmember = old_invite.inviter ? server.members.cache.get(old_invite.inviter.id) : undefined;
+            const inviter_guildmember = old_invite.inviter ? (server.members.cache.get(old_invite.inviter.id) || await server.members.fetch(old_invite.inviter.id)) : undefined;
             const inviter_has_left = inviter_guildmember === undefined;
             const inviter_is_recent = inviter_guildmember ? (new Date().getTime() - (inviter_guildmember.joinedTimestamp || 0) < 1000 * 60 * 60 * 24) : false;
             const inviter_age = util.time(new Date().getTime() - (inviter_guildmember?.joinedTimestamp || 0));
@@ -410,8 +412,9 @@ const process_member_join = (member: DiscordJS.GuildMember | DiscordJS.PartialGu
         if (new_uses > old_uses + 1) {
             curr += `Sorry, I missed ${new_uses - old_uses - 1} join(s) invited by ${old_invite.inviter}, should be people below this message.\n`;
         }
-        return curr;
-    }, "");
+        inv_string += curr;
+    }
+    return inv_string;
 }
 
 async function member_check(member_: DiscordJS.GuildMember | DiscordJS.PartialGuildMember) {
@@ -429,14 +432,14 @@ client.on("guildMemberAdd", (member) => {
     }
     const invite_channel = <DiscordJS.TextChannel>channels.invites;
     fetch_invites()
-    .then(invs => {
-        const inv_string = process_member_join(member, invs);
+    .then(async invs => {
+        const inv_string = await process_member_join(member, invs);
         if (inv_string === "") {
             setTimeout(() => {
                 fetch_invites()
-                .then(invs => {
+                .then(async invs => {
                     const invitee_str = `${member}(${member.user?.username}#${member.user?.discriminator})`;
-                    const inv_string = process_member_join(member, invs) || `I can't figure out how ${invitee_str} joined the server.`;
+                    const inv_string = await process_member_join(member, invs) || `I can't figure out how ${invitee_str} joined the server.`;
                     invite_channel.send(new DiscordJS.MessageEmbed().setDescription(inv_string));
                     invites = invs;
                 });
