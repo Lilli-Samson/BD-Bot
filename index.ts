@@ -262,6 +262,10 @@ const startUpMod = {
         try {
             server = <DiscordJS.Guild>client.guilds.resolve(server_id);
             assert(server);
+            server.fetch().then(guild => {
+                server = guild;
+                fnct.serverStats(['users', 'online', 'new', 'bots', 'roles', 'channels', 'age']);
+            });
             for (const key in channels) {
                 const channel_name = <string>((channels as any)[key]);
                 assert((channels as any)[key] = server.channels.cache.find(ch => ch.name === channel_name), `failed finding channel ${channel_name}`);
@@ -297,8 +301,6 @@ const startUpMod = {
             util.sendTextMessage(channels.main, startUpMessage);
             util.log("INITIALIZED.", "Startup", util.logLevel.INFO);
 
-            fnct.serverStats(['users', 'online', 'new', 'bots', 'roles', 'channels', 'age']);
-
             lfpChannels.push(channels.with_male);
             lfpChannels.push(channels.with_female);
             lfpChannels.push(channels.with_femboy);
@@ -329,6 +331,8 @@ const startUpMod = {
             }
 
             fetch_invites().then(invs => invites = invs);
+
+            server.members.fetch();
 
             this.startSchedules();
 
