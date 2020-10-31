@@ -262,8 +262,11 @@ const startUpMod = {
         try {
             server = <DiscordJS.Guild>client.guilds.resolve(server_id);
             assert(server);
-            server.fetch().then(guild => {
+            server.fetch().then(async guild => {
                 server = guild;
+                for (const [, member] of server.members.cache) {
+                    await member.fetch();
+                }
                 fnct.serverStats(['users', 'online', 'new', 'bots', 'roles', 'channels', 'age']);
             });
             for (const key in channels) {
