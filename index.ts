@@ -264,9 +264,6 @@ const startUpMod = {
             assert(server);
             server.fetch().then(async guild => {
                 server = guild;
-                for (const [, member] of server.members.cache) {
-                    await member.fetch();
-                }
                 fnct.serverStats(['users', 'online', 'new', 'bots', 'roles', 'channels', 'age']);
             });
             for (const key in channels) {
