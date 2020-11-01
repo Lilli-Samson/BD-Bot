@@ -430,6 +430,12 @@ async function member_check(member_: DiscordJS.GuildMember | DiscordJS.PartialGu
     }
 }
 
+client.on("channelCreate", channel => {
+    if (channel instanceof DiscordJS.TextChannel) {
+        channel.setNSFW(true, `Channel creation default NSFW`);
+    }
+});
+
 client.on("guildMemberAdd", (member) => {
     if (member.guild?.id !== server.id) { //ignore non-main servers
         return;
