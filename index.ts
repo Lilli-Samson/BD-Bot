@@ -652,7 +652,8 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
                     //yell at reporters
                     if (reporters !== "") { //not a retracted report
                         const template = `${reporters}, the ad you reported in ${ad_channel} (<${message.url}>) seems to be on-topic since it's looking ${playtype}. What is wrong with it?`;
-                        util.sendTextMessage(channels.lfp_moderation, `${template} (marked unfounded by @${nickname})`);
+                        channels.lfp_moderation.send(`${template} (marked unfounded by @${nickname})`)
+                        .then(message => message.edit(`${template} (marked unfounded by ${user})`));
                     }
                     //remove reactions from ad
                     for (const [, reaction] of message.reactions.cache) {
