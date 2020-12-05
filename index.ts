@@ -18,7 +18,7 @@ const MongoClient = require('mongodb').MongoClient;
 const db_name = debug ? localConfig.DB.TESTNAME : localConfig.DB.NAME;
 const db_user = localConfig.DB.USER;
 const db_pw = localConfig.DB.PW;
-const url = `mongodb+srv://${db_user}:${db_pw}@cluster0-c0kzw.mongodb.net/${db_name}?retryWrites=true&w=majority`;
+const url = `mongodb+srv://${db_user}:${db_pw}@bd-den.uvq1b.mongodb.net/${db_name}?retryWrites=true&w=majority`;
 
 const prefix = localConfig.PREFIX;
 const server_id = localConfig.SERVER;
