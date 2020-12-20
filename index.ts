@@ -580,6 +580,9 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
             else if (ad_channel.parent?.id === categories.playing_as.id) playtype = `to play as a ${ad_channel.name.substr(5)} character`;
             else if (ad_channel === channels.real_life) playtype = `for real-life contacts`;
             else playtype = `for a ${ad_channel.name.substr(2)} type roleplay`;
+            if (ad_channel === channels.group) {
+                playtype += ` (more than 1 RP partner)`;
+            }
             //get reporters
             let reporters = "";
             for (const [id, reaction] of message.reactions.cache) {
