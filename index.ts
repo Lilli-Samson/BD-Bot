@@ -1651,7 +1651,7 @@ const cmd: Cmd = {
         }
     },
     age: function (message) {
-       const snowflakes = (message.content.match(/\d+/g) || [message.author.id]).filter(match => match.length > 15);
+        const snowflakes = (message.content.match(/\d+/g) || [message.author.id]).filter(match => match.length > 15);
         snowflakes.forEach(async snowflake => {
             const deconstructed_snowflake = DiscordJS.SnowflakeUtil.deconstruct(snowflake);
             if (deconstructed_snowflake.timestamp === 1420070400000) { //that seems to be the default time when the ID was not found
@@ -2254,12 +2254,37 @@ const cmd: Cmd = {
         message.channel.stopTyping();
     },
     adban: function (message) {
+        if (!util.isStaff(message)) {
+            util.sendTextMessage(message.channel, `${message.author}, consider yourself ad banned!`);
+            return;
+        }
         message.content = `${message.content} -VIEW_CHANNEL ${categories.playing_with} ${categories.playing_as} ${categories.by_type}`;
         cmd.perms(message);
     },
     adunban: function (message) {
+        if (!util.isStaff(message)) {
+            util.sendTextMessage(message.channel, `${message.author} hmpf`);
+            return;
+        }
         message.content = `${message.content} clear ${categories.playing_with} ${categories.playing_as} ${categories.by_type}`;
         cmd.perms(message);
+    },
+    ban: async function (message) {
+        if (!util.isStaff(message)) {
+            util.sendTextMessage(message.channel, `${message.author} ${emojis.bancat}`);
+            return;
+        }
+        const snowflakes = (message.content.match(/\d+/g) || []).filter(match => match.length > 15);
+        var result = "";
+        for (const snowflake of snowflakes) {
+            try {
+                result += `Banned ${await server.members.ban(snowflake)}\n`;
+            }
+            catch (e) {
+                result += `Failed banning <@${snowflake}>: ${e}\n`;
+            }
+        }
+        message.reply(result);
     },
     help: function (message) {
         const public_commands = `
