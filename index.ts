@@ -27,7 +27,9 @@ let server: DiscordJS.Guild;
 let channels = {
     main: <unknown>"accalia-main" as DiscordJS.TextChannel,
     level: <unknown>"📈level-up-log" as DiscordJS.TextChannel,
-    logs: <unknown>"accalia-logs" as DiscordJS.TextChannel,
+    accalia_logs: <unknown>"accalia-logs" as DiscordJS.TextChannel,
+    logs: <unknown>"🎫logs" as DiscordJS.TextChannel,
+    bad_words_log: <unknown>"🤬bad-words-log" as DiscordJS.TextChannel,
     warnings: <unknown>"🚨warnings" as DiscordJS.TextChannel,
     cult_info: <unknown>"🗿cult-selection" as DiscordJS.TextChannel,
     char_sub: <unknown>"📃character-submission" as DiscordJS.TextChannel,
@@ -925,7 +927,21 @@ client.on("message", (message) => {
         }
         message.embeds.forEach(embed => {
             if ((embed.description?.indexOf("**NEW ACCOUNT**") || 0) > 0) {
-                (<DiscordJS.TextChannel>channels.paranoia_plaza).send(new DiscordJS.MessageEmbed(embed))
+                channels.paranoia_plaza.send(new DiscordJS.MessageEmbed(embed))
+                .catch(console.error);
+            }
+        });
+        return;
+    }
+
+    //copy bad word messages from log to bad words log
+    if (message.channel.id === channels.logs.id) {
+        if (!message.embeds) { //Stop chatting in the auth log channel :reeeee:
+            return;
+        }
+        message.embeds.forEach(embed => {
+            if ((embed.description?.indexOf("Banned words") || 0) > 0) {
+                channels.bad_words_log.send(new DiscordJS.MessageEmbed(embed))
                 .catch(console.error);
             }
         });
@@ -953,7 +969,7 @@ client.on("message", (message) => {
 
     if (message.mentions.members?.has(client.user.id)) {
         const args = message.content.trim().split(/ +/g).splice(1);
-        util.sendTextMessage(channels.logs,
+        util.sendTextMessage(channels.accalia_logs,
             new DiscordJS.MessageEmbed()
             .setDescription(message.content)
             .addField("Details", `Mentioned by: ${message.author}\n[Link](${message.url})`));
@@ -2553,7 +2569,7 @@ const util = {
         let currDateTime = moment().format('MMM DD YYYY - HH:mm:ss.SSS');
         let logMessage = level + " | " + currDateTime + " | " + moduleName + ": " + message;
 
-        util.sendTextMessage(channels.logs, new DiscordJS.MessageEmbed()
+        util.sendTextMessage(channels.accalia_logs, new DiscordJS.MessageEmbed()
         .setAuthor(level)
         .setColor(embedColor)
         .setDescription(message)
