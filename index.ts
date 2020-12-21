@@ -1607,7 +1607,7 @@ const cmd: Cmd = {
             try {
                 if ((new Date().getTime() - (server.member(member)?.joinedAt?.getTime() || 0))/1000/60 <= 90) { // joined less than 90 minutes ago
                     report += `${index}/${newcomerMembers.size} Skipped ${member} because they only recently joined\n`;
-                    return;
+                    continue;
                 }
                 if (!member.roles.cache.has(roles.NSFW.id)) {
                     if (await trywait(member.kick(`Not having NSFW role for 90+ minutes`), 3000)) {
