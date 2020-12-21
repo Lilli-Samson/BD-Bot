@@ -779,14 +779,27 @@ client.on("message", (message) => {
     if (message.channel.type !== "text") return; // Ignore DMs
     if (message.author.username === client.user.username) return;
     if (message.author.bot) {
-      if (
-          (message.author.id !== "159985870458322944" || message.channel.name !== "📈level-up-log") &&
-          (message.author.id !== "155149108183695360" || message.channel.name !== "🚨reports-log") &&
-          (message.author.username !== "Carl-bot Logging" || message.channel.name !== "🎫authentication-logs") &&
-          (message.channel !== channels.report_log)
-      ) {
-          return;
-      }
+        //copy bad word messages from log to bad words log
+        if (message.channel.id === channels.reports_log.id) {
+            console.log("Checking bad words\n");
+            for (const embed of message.embeds) {
+                console.log(`Title: ${embed.title}\n`);
+                console.log(`Description: ${embed.description}\n`);
+                console.log(`Fields: ${embed.fields.length}\n`);
+                if ((embed.description?.indexOf("Banned words") || 0) > 0) {
+                    channels.bad_words_log.send(new DiscordJS.MessageEmbed(embed))
+                    .catch(console.error);
+                }
+            }
+        }
+        if (
+            (message.author.id !== "159985870458322944" || message.channel.name !== "📈level-up-log") &&
+            (message.author.id !== "155149108183695360" || message.channel.name !== "🚨reports-log") &&
+            (message.author.username !== "Carl-bot Logging" || message.channel.name !== "🎫authentication-logs") &&
+            (message.channel !== channels.report_log)
+        ) {
+            return;
+        }
     }
     if (!message.channel.guild) return; // Ignore DMs
     if (message.channel.guild.id !== server.id) return; // Ignore non-main servers
@@ -930,22 +943,6 @@ client.on("message", (message) => {
         message.embeds.forEach(embed => {
             if ((embed.description?.indexOf("**NEW ACCOUNT**") || 0) > 0) {
                 channels.paranoia_plaza.send(new DiscordJS.MessageEmbed(embed))
-                .catch(console.error);
-            }
-        });
-        return;
-    }
-
-    //copy bad word messages from log to bad words log
-    if (message.channel.id === channels.reports_log.id) {
-        if (!message.embeds) { //Stop chatting in the reports log channel :reeeee:
-            return;
-        }
-        message.embeds.forEach(embed => {
-            console.log(`Description: ${embed.description}\n`);
-            console.log(`Fields: ${embed.fields.length}\n`);
-            if ((embed.description?.indexOf("Banned words") || 0) > 0) {
-                channels.bad_words_log.send(new DiscordJS.MessageEmbed(embed))
                 .catch(console.error);
             }
         });
