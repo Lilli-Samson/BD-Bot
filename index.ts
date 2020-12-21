@@ -138,6 +138,15 @@ type Invite_code = string;
 class Invites extends DiscordJS.Collection<Invite_code, {uses: number | null, maxUses?: number | null, inviter?: DiscordJS.User | null}>{};
 let invites: Invites;
 
+function timeout(ms: number) {
+    return new Promise<string>(resolve => setTimeout(resolve, ms));
+}
+
+async function trywait(promise: Promise<any>, time_ms: number) {
+    const result = await Promise.race([promise, new Promise<string>(resolve => setTimeout(resolve, time_ms, "timeout"))]);
+    return result !== "timeout";
+}
+
 const dbMod = {
     warnUser: function (member: DiscordJS.User, level: number, warner: DiscordJS.GuildMember, reason?: string) {
         util.log(`Calling DB Module`, 'DB/warnUser', util.logLevel.INFO);
@@ -1589,6 +1598,7 @@ const cmd: Cmd = {
             return;
         }
         const newcomerMembers = server.members.cache.filter(member => !member.user.bot && (member.roles.cache.has(roles.Newcomer.id) || !member.roles.cache.has(roles.NSFW.id)));
+        console.log(`Found ${newcomerMembers.size} newcomers`);
         let index = 0;
         let report = "";
         for (const [, member] of newcomerMembers) {
@@ -1599,8 +1609,12 @@ const cmd: Cmd = {
                     return;
                 }
                 if (!member.roles.cache.has(roles.NSFW.id)) {
-                    await member.kick(`Not having NSFW role for 90+ minutes`);
-                    report += `${index}/${newcomerMembers.size} Kicked ${member} for not clicking the ✅\n`;
+                    if (await trywait(member.kick(`Not having NSFW role for 90+ minutes`), 3000)) {
+                        report += `${index}/${newcomerMembers.size} Kicked ${member} for not clicking the ✅\n`;
+                    }
+                    else {
+                        report += `${index}/${newcomerMembers.size} Timeout trying to kick ${member}\n`;
+                    }
                 }
                 else {
                     member.roles.remove(roles.Newcomer);
@@ -1611,9 +1625,7 @@ const cmd: Cmd = {
                 report += `⚠️ ${index}/${newcomerMembers.size} Error handling ${member}: ${e}\n`;
             }
         }
-        if (report.length) {
-            util.log(report, 'clearNewcomer', util.logLevel.INFO);
-        }
+        util.log(report.length ? report : `No newcomers found`, 'clearNewcomer', util.logLevel.INFO);
     },
     ancient: async function(message) {
         if (util.isStaff(message)) {
