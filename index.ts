@@ -941,6 +941,8 @@ client.on("message", (message) => {
             return;
         }
         message.embeds.forEach(embed => {
+            console.log(`Description: ${embed.description}\n`);
+            console.log(`Fields: ${embed.fields.length}\n`);
             if ((embed.description?.indexOf("Banned words") || 0) > 0) {
                 channels.bad_words_log.send(new DiscordJS.MessageEmbed(embed))
                 .catch(console.error);
