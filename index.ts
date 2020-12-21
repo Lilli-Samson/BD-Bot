@@ -783,12 +783,13 @@ client.on("message", (message) => {
         if (message.channel.id === channels.reports_log.id) {
             console.log("Checking bad words\n");
             for (const embed of message.embeds) {
-                console.log(`Title: ${embed.title}\n`);
-                console.log(`Description: ${embed.description}\n`);
-                console.log(`Fields: ${embed.fields.length}\n`);
-                if ((embed.description?.indexOf("Banned words") || 0) > 0) {
-                    channels.bad_words_log.send(new DiscordJS.MessageEmbed(embed))
-                    .catch(console.error);
+                for (const field of embed.fields) {
+                    console.log(`Field name: ${field.name}`);
+                    console.log(`Field value: ${field.value}`);
+                    if (field.name === "Reason" && field.value === "Banned words") {
+                        channels.bad_words_log.send(new DiscordJS.MessageEmbed(embed))
+                        .catch(console.error);
+                    }
                 }
             }
         }
