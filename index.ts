@@ -1603,6 +1603,7 @@ const cmd: Cmd = {
         let report = "";
         for (const [, member] of newcomerMembers) {
             index++;
+            console.log(`Checking member ${index}/${newcomerMembers.size} ${member.displayName}`);
             try {
                 if ((new Date().getTime() - (server.member(member)?.joinedAt?.getTime() || 0))/1000/60 <= 90) { // joined less than 90 minutes ago
                     report += `${index}/${newcomerMembers.size} Skipped ${member} because they only recently joined\n`;
