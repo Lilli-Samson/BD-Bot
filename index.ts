@@ -782,7 +782,8 @@ client.on("message", (message) => {
       if (
           (message.author.id !== "159985870458322944" || message.channel.name !== "📈level-up-log") &&
           (message.author.id !== "155149108183695360" || message.channel.name !== "🚨reports-log") &&
-          (message.author.username !== "Carl-bot Logging" || message.channel.name !== "🎫authentication-logs")
+          (message.author.username !== "Carl-bot Logging" || message.channel.name !== "🎫authentication-logs") &&
+          (message.channel !== channels.report_log)
       ) {
           return;
       }
