@@ -1618,14 +1618,19 @@ const cmd: Cmd = {
                     }
                 }
                 else {
-                    member.roles.remove(roles.Newcomer);
-                    report += `${index}/${newcomerMembers.size} Removed newcomer role from ${member}\n`;
+                    if (await trywait(member.roles.remove(roles.Newcomer), 3000)) {
+                        report += `${index}/${newcomerMembers.size} Removed newcomer role from ${member}\n`;
+                    }
+                    else {
+                        report += `${index}/${newcomerMembers.size} timeout removing newcomer role from ${member}\n`;
+                    }
                 }
             }
             catch (e) {
                 report += `⚠️ ${index}/${newcomerMembers.size} Error handling ${member}: ${e}\n`;
             }
         }
+        console.log(`Done with report`);
         util.log(report.length ? report : `No newcomers found`, 'clearNewcomer', util.logLevel.INFO);
     },
     ancient: async function(message) {
