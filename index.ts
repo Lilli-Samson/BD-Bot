@@ -781,11 +781,8 @@ client.on("message", (message) => {
     if (message.author.bot) {
         //copy bad word messages from log to bad words log
         if (message.channel.id === channels.reports_log.id) {
-            console.log("Checking bad words\n");
             for (const embed of message.embeds) {
                 for (const field of embed.fields) {
-                    console.log(`Field name: ${field.name}`);
-                    console.log(`Field value: ${field.value}`);
                     if (field.name === "Reason" && field.value === "Banned words") {
                         channels.bad_words_log.send(new DiscordJS.MessageEmbed(embed))
                         .catch(console.error);
@@ -796,8 +793,7 @@ client.on("message", (message) => {
         if (
             (message.author.id !== "159985870458322944" || message.channel.name !== "📈level-up-log") &&
             (message.author.id !== "155149108183695360" || message.channel.name !== "🚨reports-log") &&
-            (message.author.username !== "Carl-bot Logging" || message.channel.name !== "🎫authentication-logs") &&
-            (message.channel !== channels.report_log)
+            (message.author.username !== "Carl-bot Logging" || message.channel.name !== "🎫authentication-logs")
         ) {
             return;
         }
