@@ -30,6 +30,7 @@ let channels = {
     accalia_logs: <unknown>"accalia-logs" as DiscordJS.TextChannel,
     logs: <unknown>"🎫logs" as DiscordJS.TextChannel,
     bad_words_log: <unknown>"🤬bad-words-log" as DiscordJS.TextChannel,
+    reports_log: <unknown>"🚨reports-log" as DiscordJS.TextChannel,
     warnings: <unknown>"🚨warnings" as DiscordJS.TextChannel,
     cult_info: <unknown>"🗿cult-selection" as DiscordJS.TextChannel,
     char_sub: <unknown>"📃character-submission" as DiscordJS.TextChannel,
@@ -935,8 +936,8 @@ client.on("message", (message) => {
     }
 
     //copy bad word messages from log to bad words log
-    if (message.channel.id === channels.logs.id) {
-        if (!message.embeds) { //Stop chatting in the auth log channel :reeeee:
+    if (message.channel.id === channels.reports_log.id) {
+        if (!message.embeds) { //Stop chatting in the reports log channel :reeeee:
             return;
         }
         message.embeds.forEach(embed => {
