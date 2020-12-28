@@ -269,6 +269,12 @@ async function fetch_invites() {
     return retval;
 }
 
+async function delete_all_rp_ads(member: DiscordJS.GuildMember | DiscordJS.PartialGuildMember) {
+    for (const lfp_channel of lfpChannels) {
+        lfp_channel.messages.cache.find((message) => message.author.id === member.id)?.delete();
+    }
+}
+
 const startUpMod = {
     initialize: function (startUpMessage:string) {
         try {
@@ -482,6 +488,7 @@ client.on("inviteCreate", invite => {
 
 client.on("guildMemberRemove", (member) => {
     fnct.serverStats(['users', 'online', 'new']);
+    delete_all_rp_ads(member);
 });
 
 client.on("guildUpdate", (oldGuild, newGuild) => {
