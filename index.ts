@@ -1618,6 +1618,7 @@ const cmd: Cmd = {
         if (!message || !util.isStaff(message)) {
             return;
         }
+        const timeout_ms = 10000;
         const newcomerMembers = server.members.cache.filter(member => !member.user.bot && (member.roles.cache.has(roles.Newcomer.id) || !member.roles.cache.has(roles.NSFW.id)));
         console.log(`Found ${newcomerMembers.size} newcomers`);
         let index = 0;
@@ -1631,7 +1632,7 @@ const cmd: Cmd = {
                     continue;
                 }
                 if (!member.roles.cache.has(roles.NSFW.id)) {
-                    if (await trywait(member.kick(`Not having NSFW role for 90+ minutes`), 3000)) {
+                    if (await trywait(member.kick(`Not having NSFW role for 90+ minutes`), timeout_ms)) {
                         report += `${index}/${newcomerMembers.size} Kicked ${member} for not clicking the ✅\n`;
                     }
                     else {
@@ -1639,7 +1640,7 @@ const cmd: Cmd = {
                     }
                 }
                 else {
-                    if (await trywait(member.roles.remove(roles.Newcomer), 3000)) {
+                    if (await trywait(member.roles.remove(roles.Newcomer), timeout_ms)) {
                         report += `${index}/${newcomerMembers.size} Removed newcomer role from ${member}\n`;
                     }
                     else {
