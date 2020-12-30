@@ -1615,7 +1615,7 @@ const cmd: Cmd = {
         }
     },
     cn: async function (message) {
-        if (!message || !util.isStaff(message)) {
+        if (message && !util.isStaff(message)) {
             return;
         }
         const timeout_ms = 10000;
