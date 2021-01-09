@@ -618,7 +618,7 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
                 case "✅": //founded report
                 {
                     //delete original message
-                    await message.delete({reason: "Founded LFP-ad-report"});
+                    await message.delete();
                     //yell at author
                     const template = `<@${message.author.id}>, your ad does not fit in ${ad_channel} because it doesn't explicitly look ${playtype}, so it has been removed.${ad_channel === channels.extreme ? ` Please specify at least one extreme kink to make your ad on topic. See ${channels.extreme_definition} for a list of extreme kinks.` : ""}`;
                     channels.lfp_moderation.send(`${template} (confirmed by @${nickname})`)
@@ -631,7 +631,7 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
                 case "☠": //extreme
                 {
                     //delete original message
-                    await message.delete({reason: "Founded LFP-ad-report"});
+                    await message.delete();
                     //yell at author
                     const author_member = server.members.cache.get(message.author.id);
                     const extreme_role_explanation = author_member?.roles.cache.has(roles.Extreme.id) ? "" : ` You cannot see the channel because you don't have the Extreme role. You can get it in ${channels.roles_selection}.`;
@@ -646,7 +646,7 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
                 case "🤝": //irl request
                 {
                     //delete original message
-                    await message.delete({reason: "Founded LFP-ad-report"});
+                    await message.delete();
                     //yell at author
                     const template = `<@${message.author.id}>, your ad does not fit in ${ad_channel} because it is looking for real-life elements, so it has been removed. Please only post such ads in ${channels.real_life}.`;
                     channels.lfp_moderation.send(`${template} (confirmed by @${nickname})`)
@@ -659,7 +659,7 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
                 case "👶": //underage
                 {
                     //delete original message
-                    await message.delete({reason: "Founded LFP-ad-report"});
+                    await message.delete();
                     //yell at author
                     const template = `<@${message.author.id}>, your ad does not fit in ${ad_channel} because it containes references to or images of underage characters which is not allowed, so the ad has been removed. If you have ageplay as a kink please specify that you are not looking to play with underage characters.`;
                     channels.lfp_moderation.send(`${template} (confirmed by @${nickname})`)
@@ -699,7 +699,7 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
                 case "🧨":
                 {
                     //delete original message
-                    await message.delete({reason: "Founded LFP-ad-report"});
+                    await message.delete();
                     //log in reports log
                     util.sendTextMessage(channels.report_log, new DiscordJS.MessageEmbed().setTimestamp(new Date().getTime())
                     .setDescription(`${reaction} Ad by ${message.author} ${reporters ? `reported by ${reporters}` : `with retracted report`} deleted without message by ${user} concerning [this report](${messagereaction.message.url}).`));
@@ -820,7 +820,7 @@ client.on("message", (message) => {
         (async () => {
             const messages = await message.channel.messages.fetch({ "before": message.id, "limit": 100 });
             for (const [message_id, old_message] of messages) {
-                if (old_message.author.id === message.author.id && old_message.id !== message.id) await old_message.delete({reason: "Repeat post in promotion"});
+                if (old_message.author.id === message.author.id && old_message.id !== message.id) await old_message.delete();
             }
         })();
     }
@@ -831,7 +831,7 @@ client.on("message", (message) => {
         //Check for 3+ images
         (async () => {
             if (util.image_link_count(message) > 3) {
-                message.delete({reason: "More than 3 images in an RP ad"});
+                message.delete();
                 util.sendTextMessage(channels.lfp_moderation,
                 `${message.author}, your roleplaying ad in ${message.channel} has been removed because it had more than 3 images.\n` +
                 `Please follow the rules as described in ${channels.lfp_info}.`);
@@ -865,7 +865,7 @@ client.on("message", (message) => {
             const messages = message.channel.messages.cache;
             for (const [, old_message] of messages) {
                 if (old_message.author.id === message.author.id && old_message.id !== message.id) {
-                    await old_message.delete({reason: "New ad posted in LFP channel"});
+                    await old_message.delete();
                 }
             }
             //Delete ad spam
@@ -885,7 +885,7 @@ client.on("message", (message) => {
                         await channels.lfp_moderation.send(`${old_message.author} Please note that you can only post 4 ads in total across all the LFP channels. If you post a 5th, the oldest gets automatically deleted, which applied to your ad in ${old_message.channel}.`);
                     }
                     util.log(`Deleted ad by ${old_message.author} in ${old_message.channel} because of breaking ${ad_limit} ad limit`, `Ad moderation`, util.logLevel.INFO);
-                    await old_message.delete({reason: "Ad spam"});
+                    await old_message.delete();
                 }
             }
         })();
@@ -1627,7 +1627,7 @@ const cmd: Cmd = {
             index++;
             console.log(`Checking member ${index}/${newcomerMembers.size} ${member.displayName}`);
             try {
-                if ((new Date().getTime() - (server.member(member)?.joinedAt?.getTime() || 0))/1000/60 <= 90) { // joined less than 90 minutes ago
+                if ((new Date().getTime() - (member.joinedAt?.getTime() || 0))/1000/60 <= 90) { // joined less than 90 minutes ago
                     report += `${index}/${newcomerMembers.size} Skipped ${member} because they only recently joined\n`;
                     continue;
                 }
@@ -2318,7 +2318,7 @@ const cmd: Cmd = {
             return;
         }
         const snowflakes = (message.content.match(/\d+/g) || []).filter(match => match.length > 15);
-        var result = "";
+        let result = "";
         for (const snowflake of snowflakes) {
             try {
                 result += `Banned ${await server.members.ban(snowflake)}\n`;
