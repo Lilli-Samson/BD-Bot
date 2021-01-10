@@ -405,7 +405,7 @@ const process_member_join = async (member: DiscordJS.GuildMember | DiscordJS.Par
         const old_uses = old_invite.uses || 0;
         let new_uses = 0;
         let expired = false;
-        if (new_invite && new_invite.uses) {
+        if (new_invite && new_invite.uses !== null) {
             new_uses = new_invite.uses;
         }
         else { //the invite is gone because it expired because its last use was used up
@@ -459,23 +459,30 @@ client.on("guildMemberAdd", (member) => {
         return;
     }
     const invite_channel = <DiscordJS.TextChannel>channels.invites;
+    function done_processing_join(invite_string: string, invs: Invites) {
+        invite_channel.send(new DiscordJS.MessageEmbed().setDescription(invite_string));
+        function invites_to_string(invs: Invites) {
+            return invs.reduce((current, inv) => `${current}${inv.inviter}: ${inv.uses}${inv.maxUses ? `/${inv.maxUses}` : ""}\n`, "");
+        }
+        //util.sendTextMessage(channels.logs, new DiscordJS.MessageEmbed().setDescription(`**Old invites list**:\n${invites_to_string(invites)}\n**New invites list**:\n${invites_to_string(invs)}`));
+        invites = invs;
+    }
     fetch_invites()
     .then(async invs => {
         const inv_string = await process_member_join(member, invs);
         if (inv_string === "") {
+            channels.logs.send(`Got empty invite string for ${member}, trying again in a second.`);
             setTimeout(() => {
                 fetch_invites()
                 .then(async invs => {
                     const invitee_str = `${member}(${member.user?.username}#${member.user?.discriminator})`;
                     const inv_string = await process_member_join(member, invs) || `I can't figure out how ${invitee_str} joined the server.`;
-                    invite_channel.send(new DiscordJS.MessageEmbed().setDescription(inv_string));
-                    invites = invs;
+                    done_processing_join(inv_string, invs);
                 });
             }, 1000);
         }
         else {
-            invite_channel.send(new DiscordJS.MessageEmbed().setDescription(inv_string));
-            invites = invs;
+            done_processing_join(inv_string, invs);
         }
     });
     fnct.serverStats(['users', 'online', 'new']);
@@ -484,6 +491,10 @@ client.on("guildMemberAdd", (member) => {
 
 client.on("inviteCreate", invite => {
     invites.set(invite.code, invite);
+});
+
+client.on("inviteDelete", invite => {
+    //invites.delete(invite.code);
 });
 
 client.on("guildMemberRemove", (member) => {
@@ -2644,9 +2655,11 @@ const util = {
         const role_gain_string = added_roles.reduce((curr, role) => curr + `${role}`, "");
         const role_lose_string = removed_roles.reduce((curr, role) => curr + `${role}`, "");
 
-        util.log(`${(added_roles.size !== 1 || removed_roles.size !== 1) ? "⚠ Incorrect role change: " : ""}${user} gained level ${level}, so added [${role_gain_string}] and removed [${role_lose_string}]`, level_up_module, util.logLevel.INFO);
+        const role_change_incorrect = (added_roles.size !== 1 || removed_roles.size !== 1) && level !== 1;
 
-        if (removed_roles.size === 0) {
+        util.log(`${role_change_incorrect ? "⚠ Incorrect role change: " : ""}${user} gained level ${level}, so added [${role_gain_string}] and removed [${role_lose_string}]`, level_up_module, util.logLevel.INFO);
+
+        if (role_change_incorrect) {
             const old_role = util.level_to_role(level - 1);
             util.log(`Expected to find role ${old_role} with ID ${old_role.id} on user ${user}, but didn't. Roles found: ${
                 member.roles.cache.reduce((curr, role) => `${curr} ${role} (${role.id})`, "")
