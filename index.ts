@@ -363,6 +363,7 @@ const startUpMod = {
         // Cron-format: second 0-59 optional; minute 0-59; hour 0-23; day of month 1-31; month 1-12; day of week 0-7
         let j = schedule.scheduleJob('*/60 * * * *', function(fireDate){
             cmd.cn(null as unknown as DiscordJS.Message);
+            //cmd.ancient(null as unknown as DiscordJS.Message);
         });
     }
 };
@@ -1008,7 +1009,7 @@ client.on("message", (message) => {
         }
     }
     if (message.channel.name === "🚨reports-log") {
-        const was_mute = message.embeds[0].author?.name?.indexOf('Mute');
+        const was_mute = message.embeds[0]?.author?.name?.indexOf('Mute');
         if (was_mute) {
             const usr = message.embeds[0].fields[0].value;
             const usrid = usr.match(/([0-9])+/g)?.[0];
@@ -1667,7 +1668,8 @@ const cmd: Cmd = {
         util.log(report.length ? report : `No newcomers found`, 'clearNewcomer', util.logLevel.INFO);
     },
     ancient: async function(message) {
-        if (util.isStaff(message)) {
+        return;
+        if (!message || util.isStaff(message)) {
             const now = new Date().getTime();
             let ancientMembers = server.members.cache.filter(m => {
                 if (!m.joinedTimestamp) return false;
@@ -1675,6 +1677,7 @@ const cmd: Cmd = {
             });
             for (const [, ancient_member] of ancientMembers) {
                 await ancient_member.roles.add(roles.ANCIENT);
+                //TODO
             }
         } else {
             util.sendTextMessage(message.channel, "🤨");
