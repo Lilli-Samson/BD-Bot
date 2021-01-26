@@ -2294,13 +2294,13 @@ const cmd: Cmd = {
             }
         }
         if (clearing) {
-            await message.channel.send(new DiscordJS.MessageEmbed().setDescription(
+            util.sendTextMessage(message.channel, new DiscordJS.MessageEmbed().setDescription(
                 `Permissions cleared ` +
                 `for${applied_targets.reduce((curr, member_or_roll) => `${curr} ${member_or_roll}`, "")} ` +
                 `in channel(s)${applied_channels.reduce((curr, channel) => `${curr} ${channel}`, "")}`));
         }
         else {
-            await message.channel.send(new DiscordJS.MessageEmbed().setDescription(
+            util.sendTextMessage(message.channel, new DiscordJS.MessageEmbed().setDescription(
                 `Permission(s) ` +
                 `${granted_permissions ? `[${permission_to_string(granted_permissions)}] **granted** ` : ""}` +
                 `${denied_permissions ? `[${permission_to_string(denied_permissions)}] **denied** ` : ""}` +
