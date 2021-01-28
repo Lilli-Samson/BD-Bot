@@ -826,6 +826,11 @@ client.on("message", (message) => {
         cmd.call(message);
     }
 
+    //react with IDs of people getting pinged in #warnings
+    if (message.channel === channels.warnings && message.mentions.users?.size) {
+        message.reply(message.mentions.users.reduce((curr, user) => `${curr} ${user.id}`, ""));
+    }
+
     //delete previous promotion
     if (message.channel === channels.promotion) {
         //Delete previous message
@@ -2342,6 +2347,9 @@ const cmd: Cmd = {
             }
         }
         message.reply(result);
+    },
+    react: function (message) {
+        message.reply("Sure, whatever you say.");
     },
     help: function (message) {
         const public_commands = `

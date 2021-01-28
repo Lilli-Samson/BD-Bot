@@ -4,7 +4,7 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc --pretty -p .",
-    "build+run": "tsc --pretty -p . && node --trace-warnings index.js",
+    "build+run": "tsc --pretty -p .; node --trace-warnings index.js",
     "run": "node --trace-warnings index.js"
   },
   "dependencies": {
