@@ -539,13 +539,11 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
     if (!(user instanceof DiscordJS.User)) {
         user = await client.users.fetch(user.id);
     }
-    if (messagereaction.partial) {
-        try {
-            await messagereaction.fetch();
-        } catch (e) {
-            util.log(`Failed to fetch reaction ${messagereaction} from ${user} in ${messagereaction.message.channel}`, `messageReactionAdd`, util.logLevel.WARN);
-            return;
-        }
+    try {
+        await messagereaction.fetch();
+    } catch (e) {
+        util.log(`Failed to fetch reaction ${messagereaction} from ${user} in ${messagereaction.message.channel}`, `messageReactionAdd`, util.logLevel.WARN);
+        return;
     }
     if (messagereaction.message.guild?.id !== server.id) return;
     const reaction = messagereaction.emoji.name;
