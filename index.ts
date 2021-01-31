@@ -555,12 +555,18 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
     }
     if (user.id === client.user?.id) return; //don't react to our own reactions
 
-    console.log(`Got reaction ${messagereaction.emoji} in channel ${messagereaction.message.channel}`);
+    console.log(`Got reaction ${messagereaction.emoji} in channel ${messagereaction.message.channel}...`);
 
     //check if it's in an LFP channel
     const channel = messagereaction.message.channel;
-    if (!(channel instanceof DiscordJS.TextChannel)) return;
-    if (!channel.parent) return;
+    if (!(channel instanceof DiscordJS.TextChannel)) {
+        console.log(`...but the channel is not a text channel.`)
+        return;
+    }
+    if (!channel.parent) {
+        console.log(`...but the channel has no parent channel.`)
+        return;
+    }
     if (reaction === "❌" && lfpChannels.reduce((found, lfp_channel) => found || lfp_channel.id === channel.id, false)) { //RP ad got flagged
         //no self-reports
         if (messagereaction.message.author.id === client.user?.id) return;
@@ -589,14 +595,27 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
         await util.react(report_message, "🧨");
     }
     if (messagereaction.message.channel.id === channels.reported_rps.id) {
-        if (!messagereaction.me) return;
+        console.log(`...and it's a reaction on a reported ad...`);
+        if (!messagereaction.me) {
+            console.log(`...but it's not an ad reaction.`);
+            return;
+        }
         //get original ad
         const footer_text = messagereaction.message.embeds[0]?.footer?.text;
-        if (!footer_text) return;
+        if (!footer_text) {
+            console.log(`...but there was no footer text.`)
+            return;
+        }
         const [channelID, messageID] = footer_text.split("/");
         const ad_channel = server.channels.cache.get(channelID);
-        if (!ad_channel) return;
-        if (!(ad_channel instanceof DiscordJS.TextChannel)) return;
+        if (!ad_channel) {
+            console.log(`...but the footer doesn't point to an ad channel.`);
+            return;
+        }
+        if (!(ad_channel instanceof DiscordJS.TextChannel)) {
+            console.log(`...but the ad channel is not a text channel.`);
+            return;
+        }
         const message = await (async () => {
             try {
                 return await ad_channel.messages.fetch(messageID);
