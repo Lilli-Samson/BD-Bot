@@ -539,11 +539,13 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
     if (!(user instanceof DiscordJS.User)) {
         user = await client.users.fetch(user.id);
     }
-    try {
-        await messagereaction.fetch();
-    } catch (e) {
-        util.log(`Failed to fetch reaction ${messagereaction} from ${user} in ${messagereaction.message.channel}`, `messageReactionAdd`, util.logLevel.WARN);
-        return;
+    if (messagereaction.partial) {
+        try {
+            await messagereaction.fetch();
+        } catch (e) {
+            util.log(`Failed to fetch reaction ${messagereaction} from ${user} in ${messagereaction.message.channel}`, `messageReactionAdd`, util.logLevel.WARN);
+            return;
+        }
     }
     if (messagereaction.message.guild?.id !== server.id) return;
     const reaction = messagereaction.emoji.name;
@@ -594,7 +596,7 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
     }
     if (messagereaction.message.channel.id === channels.reported_rps.id) {
         console.log(`...and it's a reaction on a reported ad...`);
-        if (!messagereaction.me) {
+        if (!messagereaction.users.cache.has("561189790180179991")) {
             console.log(`...but it's not an ad reaction.`);
             return;
         }
