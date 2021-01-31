@@ -555,8 +555,6 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
     }
     if (user.id === client.user?.id) return; //don't react to our own reactions
 
-    console.log(`Got reaction ${messagereaction.emoji} in channel ${messagereaction.message.channel}...`);
-
     //check if it's in an LFP channel
     const channel = messagereaction.message.channel;
     if (!(channel instanceof DiscordJS.TextChannel)) {
@@ -596,8 +594,8 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
     }
     if (messagereaction.message.channel.id === channels.reported_rps.id) {
         console.log(`...and it's a reaction on a reported ad...`);
-        if (!messagereaction.users.cache.has("561189790180179991")) {
-            console.log(`...but it's not an ad reaction because I didn't react to it. Everyone who reacted to it:${messagereaction.users.cache.reduce((curr, user) => `${curr} ${user}`, "")}.`);
+        if (["✅", "☠", "🤝", "👶", "❔", "✋", "🧨"].indexOf(reaction) === -1) {
+            console.log(`...but it's not an ad reaction because it's emoji "${reaction}" which is none of "✅", "☠", "🤝", "👶", "❔", "✋", "🧨".`);
             return;
         }
         //get original ad
