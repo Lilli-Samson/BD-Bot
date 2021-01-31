@@ -597,7 +597,7 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
     if (messagereaction.message.channel.id === channels.reported_rps.id) {
         console.log(`...and it's a reaction on a reported ad...`);
         if (!messagereaction.users.cache.has("561189790180179991")) {
-            console.log(`...but it's not an ad reaction.`);
+            console.log(`...but it's not an ad reaction because I didn't react to it. Everyone who reacted to it:${messagereaction.users.cache.reduce((curr, user) => `${curr} ${user}`, "")}.`);
             return;
         }
         //get original ad
