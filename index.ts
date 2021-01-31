@@ -554,6 +554,9 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
         fnct.approveChar(messagereaction.message, messagereaction.emoji, user);
     }
     if (user.id === client.user?.id) return; //don't react to our own reactions
+
+    console.log(`Got reaction ${messagereaction.emoji} in channel ${messagereaction.message.channel}`);
+
     //check if it's in an LFP channel
     const channel = messagereaction.message.channel;
     if (!(channel instanceof DiscordJS.TextChannel)) return;
