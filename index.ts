@@ -80,6 +80,7 @@ let channels = {
     rp_ad_feedback: <unknown>"🔖ad-feedback" as DiscordJS.TextChannel,
     extreme_definition: <unknown>"💀extreme-definition" as DiscordJS.TextChannel,
     promotion: <unknown>"🎈promotion" as DiscordJS.TextChannel,
+    achievements: <unknown>"🏆achievements" as DiscordJS.TextChannel,
 };
 
 let categories = {
@@ -363,7 +364,7 @@ const startUpMod = {
         // Cron-format: second 0-59 optional; minute 0-59; hour 0-23; day of month 1-31; month 1-12; day of week 0-7
         let j = schedule.scheduleJob('*/60 * * * *', function(fireDate){
             cmd.cn(null as unknown as DiscordJS.Message);
-            //cmd.ancient(null as unknown as DiscordJS.Message);
+            cmd.ancient(null as unknown as DiscordJS.Message);
         });
     }
 };
@@ -1693,7 +1694,6 @@ const cmd: Cmd = {
         util.log(report.length ? report : `No newcomers found`, 'clearNewcomer', util.logLevel.INFO);
     },
     ancient: async function(message) {
-        return;
         if (!message || util.isStaff(message)) {
             const now = new Date().getTime();
             let ancientMembers = server.members.cache.filter(m => {
@@ -1701,11 +1701,20 @@ const cmd: Cmd = {
                 return m.joinedTimestamp + 365*24*60*60*1000 <= now && !m.user.bot && !m.roles.cache.has(roles.ANCIENT.id);
             });
             for (const [, ancient_member] of ancientMembers) {
-                await ancient_member.roles.add(roles.ANCIENT);
-                //TODO
+                try {
+                    await ancient_member.roles.add(roles.ANCIENT);
+                    const text = `${ancient_member} has become an ancient member for being in the server for 1 year without leaving!`;
+                    if (ancient_member.roles.cache.has(roles.No_Ping.id)) {
+                        await (await channels.achievements.send(".")).edit(text);
+                    }
+                    else {
+                        await channels.achievements.send(text);
+                    }
+                }
+                catch (error) {
+                    util.log(`Failed setting ancient role for ${ancient_member} because ${error}`, "Achievements - Ancient", util.logLevel.ERROR);
+                }
             }
-        } else {
-            util.sendTextMessage(message.channel, "🤨");
         }
     },
     clear: function(message, args) {
