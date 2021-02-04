@@ -81,6 +81,8 @@ let channels = {
     extreme_definition: <unknown>"💀extreme-definition" as DiscordJS.TextChannel,
     promotion: <unknown>"🎈promotion" as DiscordJS.TextChannel,
     achievements: <unknown>"🏆achievements" as DiscordJS.TextChannel,
+    techlab: <unknown>"📡tech-lab" as DiscordJS.TextChannel,
+    botchannel: <unknown>"🤖bot-channel" as DiscordJS.TextChannel,
 };
 
 let categories = {
@@ -1743,6 +1745,10 @@ const cmd: Cmd = {
         }
     },
     age: function (message) {
+        if (message.channel === channels.techlab) {
+            util.sendTextMessage(message.channel, `Please use ${channels.botchannel} for that.`);
+            return;
+        }
         const snowflakes = (message.content.match(/\d+/g) || [message.author.id]).filter(match => match.length > 15);
         snowflakes.forEach(async snowflake => {
             const deconstructed_snowflake = DiscordJS.SnowflakeUtil.deconstruct(snowflake);
