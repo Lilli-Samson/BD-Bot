@@ -566,6 +566,7 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
         console.log(`...but the channel has no parent channel.`)
         return;
     }
+    messagereaction.me = (await messagereaction.users.fetch()).has(client.user!.id)
     if (reaction === "❌" && lfpChannels.reduce((found, lfp_channel) => found || lfp_channel.id === channel.id, false)) { //RP ad got flagged
         //no self-reports
         if (messagereaction.message.author.id === client.user?.id) return;
@@ -594,8 +595,8 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
         await util.react(report_message, "🧨");
     }
     if (messagereaction.message.channel.id === channels.reported_rps.id) {
-        console.log(`...and it's a reaction on a reported ad...`);
-        if (["✅", "☠", "🤝", "👶", "❔", "✋", "🧨"].indexOf(reaction) === -1) {
+        //console.log(`...and it's a reaction on a reported ad...`);
+        if (!messagereaction.me) {
             console.log(`...but it's not an ad reaction because it's emoji "${reaction}" which is none of "✅", "☠", "🤝", "👶", "❔", "✋", "🧨".`);
             return;
         }
