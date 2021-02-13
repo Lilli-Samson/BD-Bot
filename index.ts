@@ -503,6 +503,18 @@ client.on("inviteDelete", invite => {
 
 async function log_action(action: "MEMBER_BAN_ADD" | "MEMBER_BAN_REMOVE" | "MEMBER_KICK", user: DiscordJS.User, attempt: number = 0) {
     const audits = await server.fetchAuditLogs({limit: 20});
+    let action_description = "";
+    switch (action) {
+        case "MEMBER_BAN_ADD":
+            action_description = "banned";
+            break;
+        case "MEMBER_BAN_REMOVE":
+            action_description = "unbanned";
+            break;
+        case "MEMBER_KICK":
+            action_description = "kicked";
+            break;
+    }
     for (const [, audit] of audits.entries.sort((left, right) => right.createdTimestamp - left.createdTimestamp)) {
         if (audit.action !== action) {
             continue;
@@ -513,18 +525,6 @@ async function log_action(action: "MEMBER_BAN_ADD" | "MEMBER_BAN_REMOVE" | "MEMB
         if (audit.target !== user) {
             continue;
         }
-        let action_description = "";
-        switch (action) {
-            case "MEMBER_BAN_ADD":
-                action_description = "banned";
-                break;
-            case "MEMBER_BAN_REMOVE":
-                action_description = "unbanned";
-                break;
-            case "MEMBER_KICK":
-                action_description = "kicked";
-                break;
-        }
         (await channels.warnings.send(".")).edit(`${user} ${user.id} was ${action_description || action} by ${audit.executor}${audit.reason ? ` with reason "${audit.reason}"` : ""}.`);
         return;
     }
@@ -533,7 +533,9 @@ async function log_action(action: "MEMBER_BAN_ADD" | "MEMBER_BAN_REMOVE" | "MEMB
         await log_action(action, user, attempt + 1);
     }
     else {
-        (await channels.warnings.send(".")).edit(`${user} ${user.id} was banned.`);
+        if (action !== "MEMBER_KICK") {
+            (await channels.warnings.send(".")).edit(`${user} ${user.id} was ${action_description}.`);
+        }
     }
 }
 
