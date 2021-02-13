@@ -554,6 +554,9 @@ client.on("guildBanRemove", (guild, user) => {
 });
 
 client.on("guildMemberRemove", async (member) => {
+    if (member.guild !== server) {
+        return;
+    }
     fnct.serverStats(['users', 'online', 'new']);
     await delete_all_rp_ads(member);
     if (!(member instanceof DiscordJS.GuildMember)) {
