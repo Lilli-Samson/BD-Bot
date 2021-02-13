@@ -525,6 +525,9 @@ async function log_action(action: "MEMBER_BAN_ADD" | "MEMBER_BAN_REMOVE" | "MEMB
         if (audit.target !== user) {
             continue;
         }
+        if (audit.executor === client.user && action === "MEMBER_KICK") {
+            return;
+        }
         (await channels.warnings.send(".")).edit(`${user} ${user.id} was ${action_description || action} by ${audit.executor}${audit.reason ? ` with reason "${audit.reason}"` : ""}.`);
         return;
     }
