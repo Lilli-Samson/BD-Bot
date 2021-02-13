@@ -501,9 +501,63 @@ client.on("inviteDelete", invite => {
     //invites.delete(invite.code);
 });
 
-client.on("guildMemberRemove", (member) => {
+async function log_action(action: "MEMBER_BAN_ADD" | "MEMBER_BAN_REMOVE" | "MEMBER_KICK", user: DiscordJS.User, attempt: number = 0) {
+    const audits = await server.fetchAuditLogs({limit: 20});
+    for (const [, audit] of audits.entries.sort((left, right) => right.createdTimestamp - left.createdTimestamp)) {
+        if (audit.action !== action) {
+            continue;
+        }
+        if (audit.targetType !== "USER") {
+            continue;
+        }
+        if (audit.target !== user) {
+            continue;
+        }
+        let action_description = "";
+        switch (action) {
+            case "MEMBER_BAN_ADD":
+                action_description = "banned";
+                break;
+            case "MEMBER_BAN_REMOVE":
+                action_description = "unbanned";
+                break;
+            case "MEMBER_KICK":
+                action_description = "kicked";
+                break;
+        }
+        (await channels.warnings.send(".")).edit(`${user} ${user.id} was ${action_description || action} by ${audit.executor}${audit.reason ? ` with reason "${audit.reason}"` : ""}.`);
+        return;
+    }
+    if (attempt < 10) {
+        await timeout(1000);
+        await log_action(action, user, attempt + 1);
+    }
+    else {
+        (await channels.warnings.send(".")).edit(`${user} ${user.id} was banned.`);
+    }
+}
+
+client.on("guildBanAdd", (guild, user) => {
+    if (guild.id !== server_id) {
+        return;
+    }
+    log_action("MEMBER_BAN_ADD", user);
+});
+
+client.on("guildBanRemove", (guild, user) => {
+    if (guild.id !== server_id) {
+        return;
+    }
+    log_action("MEMBER_BAN_REMOVE", user);
+});
+
+client.on("guildMemberRemove", async (member) => {
     fnct.serverStats(['users', 'online', 'new']);
-    delete_all_rp_ads(member);
+    await delete_all_rp_ads(member);
+    if (!(member instanceof DiscordJS.GuildMember)) {
+        member = await member.fetch();
+    }
+    log_action("MEMBER_KICK", member.user);
 });
 
 client.on("guildUpdate", (oldGuild, newGuild) => {
@@ -851,9 +905,12 @@ client.on("message", (message) => {
     }
 
     //react with IDs of people getting pinged in #warnings
+    /*
+    //No longer relevant since bans and kicks get logged with the ID now.
     if (message.channel === channels.warnings && message.mentions.users?.size) {
         message.reply(message.mentions.users.reduce((curr, user) => `${curr} ${user.id}`, ""));
     }
+    */
 
     //delete previous promotion
     if (message.channel === channels.promotion) {
