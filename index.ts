@@ -94,7 +94,6 @@ let categories = {
 let roles = {
     No_Ping: <unknown>"DON'T PING⛔" as DiscordJS.Role,
     Newcomer: <unknown>"Newcomer" as DiscordJS.Role,
-    CustomRoles: <unknown>"--Custom Roles--" as DiscordJS.Role,
     NSFW: <unknown>"NSFW" as DiscordJS.Role,
     Ask_to_dm: <unknown>"Ask to DM ⚠️" as DiscordJS.Role,
     DMs_closed: <unknown>"DMs Closed ⛔" as DiscordJS.Role,
