@@ -732,7 +732,7 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
                     //yell at author
                     const author_member = server.members.cache.get(message.author.id);
                     const extreme_role_explanation = author_member?.roles.cache.has(roles.Extreme.id) ? "" : ` You cannot see the channel because you don't have the Extreme role. You can get it in ${channels.roles_selection}.`;
-                    const template = `<@${message.author.id}>, your ad does not fit in ${ad_channel} because it contains extreme kinks, so it has been removed. Please only post such ads in ${channels.extreme}.${extreme_role_explanation}`;
+                    const template = `<@${message.author.id}>, your ad does not fit in ${ad_channel} because it contains extreme kinks, so it has been removed. See ${channels.extreme_definition} for what counts as extreme. Please only post such ads in ${channels.extreme}.${extreme_role_explanation}`;
                     channels.lfp_moderation.send(`${template} (confirmed by @${nickname})`)
                     .then(message => message.edit(`${template} (confirmed by ${user})`));
                     //log in reports log
