@@ -112,6 +112,8 @@ let emojis = {
     bancat: <unknown>"bancat" as DiscordJS.GuildEmoji,
     pingmad: <unknown>"pingmad" as DiscordJS.GuildEmoji,
     pingangry: <unknown>"pingangry" as DiscordJS.GuildEmoji,
+    pepegun: <unknown>"Pepegun" as DiscordJS.GuildEmoji,
+    monkas: <unknown>"monkas" as DiscordJS.GuildEmoji,
 };
 
 let lvl_roles = {
@@ -505,13 +507,13 @@ async function log_action(action: "MEMBER_BAN_ADD" | "MEMBER_BAN_REMOVE" | "MEMB
     let action_description = "";
     switch (action) {
         case "MEMBER_BAN_ADD":
-            action_description = "banned";
+            action_description = `banned ${emojis.bancat}`;
             break;
         case "MEMBER_BAN_REMOVE":
-            action_description = "unbanned";
+            action_description = `unbanned ${emojis.pepegun}`;
             break;
         case "MEMBER_KICK":
-            action_description = "kicked";
+            action_description = "kicked 👢";
             break;
     }
     for (const [, audit] of audits.entries.sort((left, right) => right.createdTimestamp - left.createdTimestamp)) {
