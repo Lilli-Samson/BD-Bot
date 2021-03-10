@@ -1121,11 +1121,8 @@ client.on("message", (message) => {
                 userM.ban(options)
                     .then(() => {
                         util.log(`${userM} banned for: ${options.reason}`, 'Mute check', util.logLevel.INFO);
-                        util.sendTextMessage(channels.warnings,
-                            `${userM} banned for: ${options.reason}\n`
-                        );
                     })
-                    .catch(() => util.log(`${userM} failed to kick.`, 'Mute check', util.logLevel.WARN));
+                    .catch((err) => util.log(`${userM} failed to ban because ${err}`, 'Mute check', util.logLevel.WARN));
             }
         }
     }
