@@ -913,14 +913,6 @@ client.on("message", (message) => {
         cmd.call(message);
     }
 
-    //react with IDs of people getting pinged in #warnings
-    /*
-    //No longer relevant since bans and kicks get logged with the ID now.
-    if (message.channel === channels.warnings && message.mentions.users?.size) {
-        message.reply(message.mentions.users.reduce((curr, user) => `${curr} ${user.id}`, ""));
-    }
-    */
-
     //delete previous promotion
     if (message.channel === channels.promotion) {
         //Delete previous message
@@ -935,66 +927,82 @@ client.on("message", (message) => {
     //LFP rule enforcement
     if (lfpChannels.includes(message.channel)) {
         const ad_limit = 4;
-        //Check for 3+ images
         (async () => {
-            if (util.image_link_count(message) > 3) {
-                message.delete();
-                util.sendTextMessage(channels.lfp_moderation,
-                `${message.author}, your roleplaying ad in ${message.channel} has been removed because it had more than 3 images.\n` +
-                `Please follow the rules as described in ${channels.lfp_info}.`);
-                util.sendTextMessage(channels.report_log, new DiscordJS.MessageEmbed()
-                .setDescription(`✅ Deleted RP ad by ${message.author} in ${message.channel} because it contained more than 3 images.`)
-                .setTimestamp(new Date().getTime()));
+            //Check for 3+ images
+            const deleted = await (async () => {
+                if (util.image_link_count(message) > 3) {
+                    message.delete();
+                    util.sendTextMessage(channels.lfp_moderation,
+                        `${message.author}, your roleplaying ad in ${message.channel} has been removed because it had more than 3 images.\n` +
+                        `Please follow the rules as described in ${channels.lfp_info}.`);
+                    util.sendTextMessage(channels.report_log, new DiscordJS.MessageEmbed()
+                        .setDescription(`✅ Deleted RP ad by ${message.author} in ${message.channel} because it contained more than 3 images.`)
+                        .setTimestamp(new Date().getTime()));
+                    return true;
+                }
+                //Add DM status emotes
+                const user = server.members.cache.get(message.author.id);
+                const add_reaction = async (emote: string) => {
+                    try {
+                        await util.react(message, emote);
+                    } catch (error) {
+                        console.log(`Failed adding emote ${emote} because ${error}`);
+                    }
+                }
+                if (user) {
+                    await add_reaction("🇩");
+                    await add_reaction("🇲");
+                    if (user.roles.cache.has(roles.DMs_open.id)) await add_reaction("✅");
+                    else if (user.roles.cache.has(roles.DMs_closed.id)) await add_reaction("⛔");
+                    else if (user.roles.cache.has(roles.Ask_to_dm.id)) await add_reaction("⚠️");
+                    else await add_reaction("❔");
+                }
+            })();
+            if (deleted) {
                 return;
             }
-            //Add DM status emotes
-            const user = server.members.cache.get(message.author.id);
-            const add_reaction = async (emote: string) => {
-                try {
-                    await util.react(message, emote);
-                } catch (error) {
-                    console.log(`Failed adding emote ${emote} because ${error}`);
-                }
-            }
-            if (user) {
-                await add_reaction("🇩");
-                await add_reaction("🇲");
-                if (user.roles.cache.has(roles.DMs_open.id)) await add_reaction("✅");
-                else if (user.roles.cache.has(roles.DMs_closed.id)) await add_reaction("⛔");
-                else if (user.roles.cache.has(roles.Ask_to_dm.id)) await add_reaction("⚠️");
-                else await add_reaction("❔");
-            }
-        })();
 
-        //Delete previous messages
-        (async () => {
-            //delete old ad
-            const messages = message.channel.messages.cache;
-            for (const [, old_message] of messages) {
-                if (old_message.author.id === message.author.id && old_message.id !== message.id) {
-                    await old_message.delete();
-                }
-            }
-            //Delete ad spam
-            let old_messages : DiscordJS.Message[] = [];
-            for (const lfpchannel of lfpChannels) {
-                const channel_messages = lfpchannel.messages.cache;
-                for (const [, old_message] of channel_messages) {
-                    if (old_message.author.id === message.author.id) {
-                        old_messages.push(old_message);
+            //Delete previous messages
+            await (async () => {
+                //delete old ad
+                const messages = message.channel.messages.cache;
+                for (const [, old_message] of messages) {
+                    if (old_message.author.id === message.author.id && old_message.id !== message.id) {
+                        await old_message.delete();
                     }
                 }
-            }
-            if (old_messages.length > ad_limit) {
-                const sorted_messages = old_messages.sort((m1, m2) => m2.createdTimestamp - m1.createdTimestamp);
-                for (const old_message of sorted_messages.splice(ad_limit)) {
-                    if (old_message.createdTimestamp > new Date().getTime() - 10 * 60 * 1000) {
-                        await channels.lfp_moderation.send(`${old_message.author} Please note that you can only post 4 ads in total across all the LFP channels. If you post a 5th, the oldest gets automatically deleted, which applied to your ad in ${old_message.channel}.`);
+                //Delete ad spam
+                let old_messages : DiscordJS.Message[] = [];
+                for (const lfpchannel of lfpChannels) {
+                    const channel_messages = lfpchannel.messages.cache;
+                    for (const [, old_message] of channel_messages) {
+                        if (old_message.author.id === message.author.id) {
+                            old_messages.push(old_message);
+                        }
                     }
-                    util.log(`Deleted ad by ${old_message.author} in ${old_message.channel} because of breaking ${ad_limit} ad limit`, `Ad moderation`, util.logLevel.INFO);
-                    await old_message.delete();
                 }
-            }
+                if (old_messages.length > ad_limit) {
+                    const sorted_messages = old_messages.sort((m1, m2) => m2.createdTimestamp - m1.createdTimestamp);
+                    for (const old_message of sorted_messages.splice(ad_limit)) {
+                        if (old_message.createdTimestamp > new Date().getTime() - 10 * 60 * 1000) {
+                            await channels.lfp_moderation.send(`${old_message.author} Please note that you can only post 4 ads in total across all the LFP channels. If you post a 5th, the oldest gets automatically deleted, which applied to your ad in ${old_message.channel}.`);
+                        }
+                        util.log(`Deleted ad by ${old_message.author} in ${old_message.channel} because of breaking ${ad_limit} ad limit`, `Ad moderation`, util.logLevel.INFO);
+                        await old_message.delete();
+                    }
+                }
+            })();
+
+            //Check ad template
+            await (async () => {
+                const ad_template_words = ["Pairing", "Scene", "Required Kinks", "Optional Kinks", "Blacklisted Kinks", "Timezone", "Post Length", "Minimum Partner Post Length", "Brief Description"];
+                for (const word of ad_template_words) {
+                    if (!message.content.includes(word)) {
+                        await message.react("🧩");
+                        return;
+                    }
+                }
+            })();
         })();
     }
 
@@ -2048,6 +2056,9 @@ const cmd: Cmd = {
         if (args?.[0] === "purge") {
             return cmd["roles purge"](message);
         }
+        if (args?.[0] === "delete") {
+            return cmd["roles delete"](message);
+        }
         util.sendTempTextMessage(message.channel, 'That didn\'t work out... maybe try `_roles who <roleID>` or `_roles usage` or `_roles usage list`');
     },
     "roles usage": function (message, args) { //list all the roles and their usage; args can only be "list"
@@ -2100,7 +2111,7 @@ const cmd: Cmd = {
             util.sendTextMessage(message.channel, new DiscordJS.MessageEmbed().setDescription(`Users with role ${role}:\n${users_str}`));
         });
     },
-    "roles purge": async function (message) {
+    "roles purge": async function (message) { //remove roles from all members
         if (message.author.id !== "591241625737494538") return;
         const matches = message.content.match(/(?:\d){18}/g);
         if (!matches) return;
@@ -2120,6 +2131,36 @@ const cmd: Cmd = {
             }
             util.sendTextMessage(message.channel, new DiscordJS.MessageEmbed().setDescription(`Removed <@&${match}> from ${counter} members.`));
         }
+    },
+    "roles delete": async function (message) {
+        if (message.author.id !== "591241625737494538") {
+            await message.reply(`You can't do that.`);
+            return;
+        }
+        const matches = message.content.match(/(?:\d){18}/g);
+        if (!matches) {
+            await message.reply(`You need to specify 2 roles`);
+            return;
+        }
+        if (matches.length !== 2) {
+            await message.reply(`You need to specify 2 roles`);
+            return;
+        }
+        const start_role = server.roles.cache.get(matches[0]);
+        const end_role = server.roles.cache.get(matches[1]);
+        if (!start_role) {
+            await message.reply(`Failed finding specified role ${matches[0]} <@&${matches[0]}>`);
+            return;
+        }
+        if (!end_role) {
+            await message.reply(`Failed finding specified role ${matches[1]} <@&${matches[1]}>`);
+            return;
+        }
+        const roles_to_delete = server.roles.cache.filter(role => role.position <= start_role.position && role.position >= end_role.position);
+        for (const [, role] of roles_to_delete) {
+            await role.delete();
+        }
+        util.sendTextMessage(message.channel, new DiscordJS.MessageEmbed().setDescription(`Deleted roles${roles_to_delete.reduce((curr, role) => `${curr}\n${role.name} with color ${role.hexColor}`, "")}`));
     },
     call: async function (message) {
         const args = message.content.slice(prefix.length).trim().split(/ +/g);
