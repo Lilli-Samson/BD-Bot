@@ -24,112 +24,122 @@ const prefix = localConfig.PREFIX;
 const server_id = localConfig.SERVER;
 let server: DiscordJS.Guild;
 
-let channels = {
-    main: <unknown>"accalia-main" as DiscordJS.TextChannel,
-    level: <unknown>"📈level-up-log" as DiscordJS.TextChannel,
-    accalia_logs: <unknown>"accalia-logs" as DiscordJS.TextChannel,
-    logs: <unknown>"🎫logs" as DiscordJS.TextChannel,
-    bad_words_log: <unknown>"🤬bad-words-log" as DiscordJS.TextChannel,
-    reports_log: <unknown>"🚨reports-log" as DiscordJS.TextChannel,
-    warnings: <unknown>"🚨warnings" as DiscordJS.TextChannel,
-    cult_info: <unknown>"🗿cult-selection" as DiscordJS.TextChannel,
-    char_sub: <unknown>"📃character-submission" as DiscordJS.TextChannel,
-    char_archive: <unknown>"📚character-archive" as DiscordJS.TextChannel,
-    char_index: <unknown>"📕character-index" as DiscordJS.TextChannel,
-    reports: <unknown>"📮reports-and-issues" as DiscordJS.TextChannel,
-    with_male: <unknown>"🍆with-male" as DiscordJS.TextChannel,
-    with_female: <unknown>"🍑with-female" as DiscordJS.TextChannel,
-    with_femboy: <unknown>"🍌with-femboy" as DiscordJS.TextChannel,
-    with_furry: <unknown>"😺with-furry" as DiscordJS.TextChannel,
-    with_beast: <unknown>"🦄with-beast" as DiscordJS.TextChannel,
-    with_futa_herm: <unknown>"🥕with-futa" as DiscordJS.TextChannel,
-    with_humanoid: <unknown>"👹with-humanoid" as DiscordJS.TextChannel,
-    as_male: <unknown>"🍆as-male" as DiscordJS.TextChannel,
-    as_female: <unknown>"🍑as-female" as DiscordJS.TextChannel,
-    as_femboy: <unknown>"🍌as-femboy" as DiscordJS.TextChannel,
-    as_furry: <unknown>"😺as-furry" as DiscordJS.TextChannel,
-    as_beast: <unknown>"🦄as-beast" as DiscordJS.TextChannel,
-    as_futa_herm: <unknown>"🥕as-futa" as DiscordJS.TextChannel,
-    as_humanoid: <unknown>"👹as-humanoid" as DiscordJS.TextChannel,
-    vanilla: <unknown>"🍦vanilla" as DiscordJS.TextChannel,
-    gay: <unknown>"👬gay" as DiscordJS.TextChannel,
-    lesbian: <unknown>"👭lesbian" as DiscordJS.TextChannel,
-    extreme: <unknown>"☠extreme" as DiscordJS.TextChannel,
-    group: <unknown>"👥group" as DiscordJS.TextChannel,
-    long_term_plot: <unknown>"📰long-term-plot" as DiscordJS.TextChannel,
-    gm_style: <unknown>"🧙gm-style" as DiscordJS.TextChannel,
-    real_life: <unknown>"🤝real-life" as DiscordJS.TextChannel,
-    all_style: <unknown>"✥all-style" as DiscordJS.TextChannel,
-    breeding: <unknown>"🐇breeding" as DiscordJS.TextChannel,
-    contact: <unknown>"💬ask-to-dm" as DiscordJS.TextChannel,
-    ooc_general: <unknown>"💬ooc-general" as DiscordJS.TextChannel,
-    rp_general: <unknown>"🧚rp-general" as DiscordJS.TextChannel,
-    nsfw_media: <unknown>"👅nsfw-media" as DiscordJS.TextChannel,
-    nsfw_media_discussion: <unknown>"👄nsfw-media-discussion" as DiscordJS.TextChannel,
-    nsfw_discussion: <unknown>"nsfw-discussion" as DiscordJS.TextChannel,
-    tinkering: <unknown>"tinkering" as DiscordJS.TextChannel,
-    authentication_logs: <unknown>"🎫authentication-logs" as DiscordJS.TextChannel,
-    paranoia_plaza: <unknown>"🙈ashs-paranoia-plaza" as DiscordJS.TextChannel,
-    invites: <unknown>"⚠invite-log" as DiscordJS.TextChannel,
-    roles_selection: <unknown>"🎲roles-selection" as DiscordJS.TextChannel,
-    reported_rps: <unknown>"☣reported-rp-ads" as DiscordJS.TextChannel,
-    report_log: <unknown>"reported-lfp-warning-logs" as DiscordJS.TextChannel,
-    lfp_moderation: <unknown>"🏷ad-moderation" as DiscordJS.TextChannel,
-    ad_template: <unknown>"🧩ad-template" as DiscordJS.TextChannel,
-    lfp_info: <unknown>"📌posting-rules" as DiscordJS.TextChannel,
-    rp_ad_feedback: <unknown>"🔖ad-feedback" as DiscordJS.TextChannel,
-    extreme_definition: <unknown>"💀extreme-definition" as DiscordJS.TextChannel,
-    promotion: <unknown>"🎈promotion" as DiscordJS.TextChannel,
-    achievements: <unknown>"🏆achievements" as DiscordJS.TextChannel,
-    techlab: <unknown>"📡tech-lab" as DiscordJS.TextChannel,
-    botchannel: <unknown>"🤖bot-channel" as DiscordJS.TextChannel,
-};
+const channel_list = [
+    ["main", "accalia-main"],
+    ["level", "📈level-up-log"],
+    ["accalia_logs", "accalia-logs"],
+    ["logs", "🎫logs"],
+    ["bad_words_log", "🤬bad-words-log"],
+    ["reports_log", "🚨reports-log"],
+    ["warnings", "🚨warnings"],
+    ["cult_info", "🗿cult-selection"],
+    ["char_sub", "📃character-submission"],
+    ["char_archive", "📚character-archive"],
+    ["char_index", "📕character-index"],
+    ["reports", "📮reports-and-issues"],
+    ["with_male", "🍆with-male"],
+    ["with_female", "🍑with-female"],
+    ["with_femboy", "🍌with-femboy"],
+    ["with_furry", "😺with-furry"],
+    ["with_beast", "🦄with-beast"],
+    ["with_futa_herm", "🥕with-futa"],
+    ["with_humanoid", "👹with-humanoid"],
+    ["as_male", "🍆as-male"],
+    ["as_female", "🍑as-female"],
+    ["as_femboy", "🍌as-femboy"],
+    ["as_furry", "😺as-furry"],
+    ["as_beast", "🦄as-beast"],
+    ["as_futa_herm", "🥕as-futa"],
+    ["as_humanoid", "👹as-humanoid"],
+    ["vanilla", "🍦vanilla"],
+    ["gay", "👬gay"],
+    ["lesbian", "👭lesbian"],
+    ["extreme", "☠extreme"],
+    ["group", "👥group"],
+    ["long_term_plot", "📰long-term-plot"],
+    ["gm_style", "🧙gm-style"],
+    ["real_life", "🤝real-life"],
+    ["all_style", "✥all-style"],
+    ["breeding", "🐇breeding"],
+    ["contact", "💬ask-to-dm"],
+    ["ooc_general", "💬ooc-general"],
+    ["rp_general", "🧚rp-general"],
+    ["nsfw_media", "👅nsfw-media"],
+    ["nsfw_media_discussion", "👄nsfw-media-discussion"],
+    ["nsfw_discussion", "nsfw-discussion"],
+    ["tinkering", "tinkering"],
+    ["authentication_logs", "🎫authentication-logs"],
+    ["paranoia_plaza", "🙈ashs-paranoia-plaza"],
+    ["invites", "⚠invite-log"],
+    ["roles_selection", "🎲roles-selection"],
+    ["reported_rps", "☣reported-rp-ads"],
+    ["report_log", "reported-lfp-warning-logs"],
+    ["lfp_moderation", "🏷ad-moderation"],
+    ["ad_template", "🧩ad-template"],
+    ["lfp_info", "📌posting-rules"],
+    ["rp_ad_feedback", "🔖ad-feedback"],
+    ["extreme_definition", "💀extreme-definition"],
+    ["promotion", "🎈promotion"],
+    ["achievements", "🏆achievements"],
+    ["techlab", "📡tech-lab"],
+    ["botchannel", "🤖bot-channel"],
+] as const;
+//@ts-ignore
+let channels: {[C in typeof channel_list[number][0]]: DiscordJS.TextChannel} = {};
 
-let categories = {
-    playing_with: <unknown>"LFP Playing With" as DiscordJS.CategoryChannel,
-    playing_as: <unknown>"LFP Playing As" as DiscordJS.CategoryChannel,
-    by_type: <unknown>"LFP By Type" as DiscordJS.CategoryChannel,
-};
+const category_list = [
+    ["playing_with", "LFP Playing With"],
+    ["playing_as", "LFP Playing As"],
+    ["by_type", "LFP By Type"],
+] as const;
+//@ts-ignore
+let categories: {[C in typeof category_list[number][0]]: DiscordJS.CategoryChannel} = {};
 
-let roles = {
-    No_Ping: <unknown>"DON'T PING⛔" as DiscordJS.Role,
-    Newcomer: <unknown>"Newcomer" as DiscordJS.Role,
-    NSFW: <unknown>"NSFW" as DiscordJS.Role,
-    Ask_to_dm: <unknown>"Ask to DM ⚠️" as DiscordJS.Role,
-    DMs_closed: <unknown>"DMs Closed ⛔" as DiscordJS.Role,
-    DMs_open: <unknown>"DMs Open ✔️" as DiscordJS.Role,
-    Cult_leader: <unknown>"Cult Leader" as DiscordJS.Role,
-    Extreme: <unknown>"Extreme" as DiscordJS.Role,
-    WARN_1: <unknown>"Warned 1x" as DiscordJS.Role,
-    WARN_2: <unknown>"Warned 2x" as DiscordJS.Role,
-    INNOCENT: <unknown>"Innocent" as DiscordJS.Role,
-    ANCIENT: <unknown>"💠Ancient Member" as DiscordJS.Role,
-    STAFF: <unknown>"Staff" as DiscordJS.Role,
-    TRIALMOD: <unknown>"Trial-Moderator" as DiscordJS.Role,
-};
+const role_list = [
+    ["No_Ping", "DON'T PING⛔"],
+    ["Newcomer", "Newcomer"],
+    ["NSFW", "NSFW"],
+    ["Ask_to_dm", "Ask to DM ⚠️"],
+    ["DMs_closed", "DMs Closed ⛔"],
+    ["DMs_open", "DMs Open ✔️"],
+    ["Cult_leader", "Cult Leader"],
+    ["Extreme", "Extreme"],
+    ["WARN_1", "Warned 1x"],
+    ["WARN_2", "Warned 2x"],
+    ["INNOCENT", "Innocent"],
+    ["ANCIENT", "💠Ancient Member"],
+    ["STAFF", "Staff"],
+    ["TRIALMOD", "Trial-Moderator"],
+] as const;
+//@ts-ignore
+let roles: {[C in typeof role_list[number][0]]: DiscordJS.Role} = {};
 
-let emojis = {
-    bancat: <unknown>"bancat" as DiscordJS.GuildEmoji,
-    pingmad: <unknown>"pingmad" as DiscordJS.GuildEmoji,
-    pingangry: <unknown>"pingangry" as DiscordJS.GuildEmoji,
-    pepegun: <unknown>"Pepegun" as DiscordJS.GuildEmoji,
-    monkas: <unknown>"monkas" as DiscordJS.GuildEmoji,
-};
+const emoji_list = [
+    ["bancat", "bancat"],
+    ["pingmad", "pingmad"],
+    ["pingangry", "pingangry"],
+    ["pepegun", "Pepegun"],
+    ["monkas", "monkas"],
+] as const;
+//@ts-ignore
+let emojis: {[C in typeof emoji_list[number][0]]: DiscordJS.GuildEmoji} = {};
 
-let lvl_roles = {
-    LVL_0: <unknown>"Lewd (Lvl 0+)" as DiscordJS.Role,
-    LVL_5: <unknown>"Pervert (Lvl 5+)" as DiscordJS.Role,
-    LVL_10: <unknown>"Tainted (Lvl 10+)" as DiscordJS.Role,
-    LVL_20: <unknown>"Slut (Lvl 20+)" as DiscordJS.Role,
-    LVL_30: <unknown>"Whore (Lvl 30+)" as DiscordJS.Role,
-    LVL_40: <unknown>"Cumdump (Lvl 40+)" as DiscordJS.Role,
-    LVL_50: <unknown>"Pornstar (Lvl 50+)" as DiscordJS.Role,
-    LVL_60: <unknown>"Sex-Toy (Lvl 60+)" as DiscordJS.Role,
-    LVL_70: <unknown>"Server Bus (Lvl 70+)" as DiscordJS.Role,
-    LVL_80: <unknown>"Doesn't leave bed (Lvl 80+)" as DiscordJS.Role,
-    LVL_90: <unknown>"Sperm Bank (Lvl 90+)" as DiscordJS.Role,
-    LVL_100: <unknown>"Retired Pornstar (Lvl 100+)" as DiscordJS.Role,
-};
+const lvl_role_list = [
+    ["LVL_0", "Lewd (Lvl 0+)"],
+    ["LVL_5", "Pervert (Lvl 5+)"],
+    ["LVL_10", "Tainted (Lvl 10+)"],
+    ["LVL_20", "Slut (Lvl 20+)"],
+    ["LVL_30", "Whore (Lvl 30+)"],
+    ["LVL_40", "Cumdump (Lvl 40+)"],
+    ["LVL_50", "Pornstar (Lvl 50+)"],
+    ["LVL_60", "Sex-Toy (Lvl 60+)"],
+    ["LVL_70", "Server Bus (Lvl 70+)"],
+    ["LVL_80", "Doesn't leave bed (Lvl 80+)"],
+    ["LVL_90", "Sperm Bank (Lvl 90+)"],
+    ["LVL_100", "Retired Pornstar (Lvl 100+)"],
+] as const;
+//@ts-ignore
+let lvl_roles: {[C in typeof lvl_role_list[number][0]]: DiscordJS.Role} = {};
 
 type LFP_Timer = {
     [key: string]: NodeJS.Timeout
@@ -288,30 +298,36 @@ const startUpMod = {
                 server = guild;
                 fnct.serverStats(['users', 'online', 'new', 'bots', 'roles', 'channels', 'age']);
             });
-            for (const key in channels) {
-                const channel_name = <string>((channels as any)[key]);
-                assert((channels as any)[key] = server.channels.cache.find(ch => ch.name === channel_name), `failed finding channel ${channel_name}`);
-                assert((channels as any)[key] instanceof DiscordJS.TextChannel, `Failed initializing channels because ${(channels as any)[key]} is not a channel`);
+
+            for (const [channelIdentifier, channelName] of channel_list) {
+                const channel = server.channels.cache.find(ch => ch.name === channelName);
+                assert(channel, `failed finding channel ${channelName}`);
+                assert(channel instanceof DiscordJS.TextChannel, `Failed initializing channels because ${channelName} is not a text channel`);
+                channels[channelIdentifier] = channel;
             }
-            for (const key in categories) {
-                const category_name = <string>((categories as any)[key]);
-                assert((categories as any)[key] = server.channels.cache.find(ch => ch.name === category_name), `failed finding category channel ${category_name}`);
-                assert((categories as any)[key] instanceof DiscordJS.CategoryChannel, `Failed initializing category channels because ${(categories as any)[key]} is not a category channel`);
+            for (const [categoryIdentifier, categoryName] of category_list) {
+                const category = server.channels.cache.find(ch => ch.name === categoryName);
+                assert(category, `failed finding channel ${categoryName}`);
+                assert(category instanceof DiscordJS.CategoryChannel, `Failed initializing category channels because ${categoryName} is not a category channel`);
+                categories[categoryIdentifier] = category;
             }
-            for (const key in roles) {
-                const role_name = <string>((roles as any)[key]);
-                assert((roles as any)[key] = server.roles.cache.find(ch => ch.name === role_name), `failed finding role ${role_name}`);
-                assert((roles as any)[key] instanceof DiscordJS.Role, `Failed initializing roles because ${(roles as any)[key]} is not a role`);
+            for (const [roleIdentifier, roleName] of role_list) {
+                const role = server.roles.cache.find(r => r.name === roleName);
+                assert(role, `failed finding role ${roleName}`);
+                assert(role instanceof DiscordJS.Role, `Failed initializing roles because ${roleName} is not a role`);
+                roles[roleIdentifier] = role;
             }
-            for (const key in emojis) {
-                const emoji_name = <string>((emojis as any)[key]);
-                assert((emojis as any)[key] = server.emojis.cache.find(ch => ch.name === emoji_name), `failed finding emoji ${emoji_name}`);
-                assert((emojis as any)[key] instanceof DiscordJS.GuildEmoji, `Failed initializing emojis because ${(emojis as any)[key]} is not an emoji`);
+            for (const [emojiIdentifier, emojiName] of emoji_list) {
+                const emoji = server.emojis.cache.find(e => e.name === emojiName);
+                assert(emoji, `failed finding emoji ${emojiName}`);
+                assert(emoji instanceof DiscordJS.GuildEmoji, `Failed initializing emojis because ${emojiName} is not an emoji`);
+                emojis[emojiIdentifier] = emoji;
             }
-            for (const key in lvl_roles) {
-                const role_name = <string>((lvl_roles as any)[key]);
-                assert((lvl_roles as any)[key] = server.roles.cache.find(ch => ch.name === role_name), `failed finding level role ${role_name}`);
-                assert((lvl_roles as any)[key] instanceof DiscordJS.Role, `Failed initializing level roles because ${(roles as any)[key]} is not a role`);
+            for (const [lvl_roleIdentifier, lvl_roleName] of lvl_role_list) {
+                const lvl_role = server.roles.cache.find(r => r.name === lvl_roleName);
+                assert(lvl_role, `failed finding level role ${lvl_roleName}`);
+                assert(lvl_role instanceof DiscordJS.Role, `Failed initializing level roles because ${lvl_roleName} is not a role`);
+                lvl_roles[lvl_roleIdentifier] = lvl_role;
             }
 
             if (!client.user) {
