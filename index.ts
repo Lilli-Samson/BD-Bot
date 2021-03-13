@@ -1183,7 +1183,7 @@ client.on("message", (message) => {
     }
 
     // delete links in general
-    if ([channels.general.id, channels.ooc_general.id, channels.rp_general.id].includes(message.channel.id)) {
+    if ([channels.ooc_general.id, channels.rp_general.id].includes(message.channel.id)) {
         if (message.content.match(link_regex)) {
             if (util.isStaff(message)) { //have mercy on staff and don't delete messages
             util.react(message, emojis.bancat);
