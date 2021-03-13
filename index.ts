@@ -62,7 +62,6 @@ let channels = {
     all_style: <unknown>"✥all-style" as DiscordJS.TextChannel,
     breeding: <unknown>"🐇breeding" as DiscordJS.TextChannel,
     contact: <unknown>"💬ask-to-dm" as DiscordJS.TextChannel,
-    general: <unknown>"🔞general" as DiscordJS.TextChannel,
     ooc_general: <unknown>"💬ooc-general" as DiscordJS.TextChannel,
     rp_general: <unknown>"🧚rp-general" as DiscordJS.TextChannel,
     nsfw_media: <unknown>"👅nsfw-media" as DiscordJS.TextChannel,
