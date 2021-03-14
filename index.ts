@@ -334,7 +334,7 @@ const startUpMod = {
                 throw "I don't know what's happening";
             }
             client.user.setActivity("Serving the Den").catch(error => console.error(`${error}`));
-            ping_violation_reaction_emoji = (emojis as any)[<string><unknown>ping_violation_reaction_emoji];
+            ping_violation_reaction_emoji = emojis.pingangry;
 
             util.sendTextMessage(channels.main, startUpMessage);
             util.log("INITIALIZED.", "Startup", util.logLevel.INFO);
