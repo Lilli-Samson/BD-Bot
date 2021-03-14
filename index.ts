@@ -2156,7 +2156,7 @@ const cmd: Cmd = {
         }
     },
     "roles delete": async function (message) {
-        if (message.author.id !== "591241625737494538") {
+        if (message.author.id !== "591241625737494538" && message.author.id !== "324939396283498496") {
             await message.reply(`You can't do that.`);
             return;
         }
