@@ -992,6 +992,14 @@ client.on("message", (message) => {
                 for (const lfpchannel of lfpChannels) {
                     const channel_messages = lfpchannel.messages.cache;
                     for (const [, old_message] of channel_messages) {
+                        if (!old_message.author) {
+                            console.error(`In Delete ad spam: old_message.author as invalid in ${old_message.url}`);
+                            continue;
+                        }
+                        if (!message.author) {
+                            console.error(`In Delete ad spam: message.author as invalid in ${message.url}`);
+                            continue;
+                        }
                         if (old_message.author.id === message.author.id) {
                             old_messages.push(old_message);
                         }
