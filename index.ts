@@ -285,7 +285,7 @@ async function fetch_invites() {
 
 async function delete_all_rp_ads(member: DiscordJS.GuildMember | DiscordJS.PartialGuildMember) {
     for (const lfp_channel of lfpChannels) {
-        lfp_channel.messages.cache.find((message) => message.author.id === member.id)?.delete();
+        lfp_channel.messages.cache.find((message) => message.author?.id === member.id)?.delete();
     }
 }
 
@@ -480,6 +480,7 @@ client.on("guildMemberAdd", (member) => {
         return;
     }
     const invite_channel = <DiscordJS.TextChannel>channels.invites;
+    
     function done_processing_join(invite_string: string, invs: Invites) {
         invite_channel.send(new DiscordJS.MessageEmbed().setDescription(invite_string));
         function invites_to_string(invs: Invites) {
@@ -488,22 +489,37 @@ client.on("guildMemberAdd", (member) => {
         //util.sendTextMessage(channels.logs, new DiscordJS.MessageEmbed().setDescription(`**Old invites list**:\n${invites_to_string(invites)}\n**New invites list**:\n${invites_to_string(invs)}`));
         invites = invs;
     }
+    
+    function fail_processing_join(member: DiscordJS.GuildMember, err: any) {
+        invite_channel.send(`Failed processing join of member ${member} because ${err}`);
+    }
+
     fetch_invites()
     .then(async invs => {
-        const inv_string = await process_member_join(member, invs);
-        if (inv_string === "") {
-            channels.logs.send(`Got empty invite string for ${member}, trying again in a second.`);
-            setTimeout(() => {
-                fetch_invites()
-                .then(async invs => {
-                    const invitee_str = `${member}(${member.user?.username}#${member.user?.discriminator})`;
-                    const inv_string = await process_member_join(member, invs) || `I can't figure out how ${invitee_str} joined the server.`;
-                    done_processing_join(inv_string, invs);
-                });
-            }, 1000);
+        try {
+            const inv_string = await process_member_join(member, invs);
+            if (inv_string === "") {
+                channels.logs.send(`Got empty invite string for ${member}, trying again in a second.`);
+                setTimeout(() => {
+                    fetch_invites()
+                    .then(async invs => {
+                        const invitee_str = `${member}(${member.user?.username}#${member.user?.discriminator})`;
+                        try {
+                            const inv_string = await process_member_join(member, invs) || `I can't figure out how ${invitee_str} joined the server.`;
+                            done_processing_join(inv_string, invs);
+                        }
+                        catch (err) {
+                            fail_processing_join(member, err);
+                        }
+                    });
+                }, 1000);
+            }
+            else {
+                done_processing_join(inv_string, invs);
+            }
         }
-        else {
-            done_processing_join(inv_string, invs);
+        catch (err) {
+            fail_processing_join(member, err);
         }
     });
     fnct.serverStats(['users', 'online', 'new']);
@@ -983,7 +999,7 @@ client.on("message", (message) => {
                 //delete old ad
                 const messages = message.channel.messages.cache;
                 for (const [, old_message] of messages) {
-                    if (old_message.author.id === message.author.id && old_message.id !== message.id) {
+                    if (old_message.author?.id === message.author.id && old_message.id !== message.id) {
                         await old_message.delete();
                     }
                 }
