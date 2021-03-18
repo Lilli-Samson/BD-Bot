@@ -166,11 +166,11 @@ async function trywait(promise: Promise<any>, time_ms: number) {
 
 const dbMod = {
     warnUser: function (member: DiscordJS.User, level: number, warner: DiscordJS.GuildMember, reason?: string) {
-        util.log(`Calling DB Module`, 'DB/warnUser', util.logLevel.INFO);
+        util.log(`Calling DB Module`, 'DB/warnUser', "INFO");
         try {
-            util.log(`Attempting to connect to DB`, 'DB/warnUser', util.logLevel.INFO);
+            util.log(`Attempting to connect to DB`, 'DB/warnUser', "INFO");
             this.connect( function(db: any) {
-                util.log(`Successfully established DB Connection`, 'DB/warnUser', util.logLevel.INFO);
+                util.log(`Successfully established DB Connection`, 'DB/warnUser', "INFO");
                 let warnings = db.collection('warnings');
                 let warnedUser = {
                     id: member.id,
@@ -189,10 +189,10 @@ const dbMod = {
                         // TODO: REPLACE FORMERNAME AND LEVEL IF EXISTS IN DB --> PREREQUISITE: SCHEDULED WARNING DELETION
                     })
                     .catch((err: any) => {
-                        util.log(`Failed to do command warning (findOneAndUpdate): ${err}.`, 'DB/warnUser', util.logLevel.FATAL);
+                        util.log(`Failed to do command warning (findOneAndUpdate): ${err}.`, 'DB/warnUser', "__**FATAL**__");
                     });
 
-                util.log(`Attempting updating/inserting warning for ${member}`, 'DB/warnUser', util.logLevel.INFO);
+                util.log(`Attempting updating/inserting warning for ${member}`, 'DB/warnUser', "INFO");
                 // Upsert command
                 warnings.findOneAndUpdate(
                     { id: member.id },
@@ -200,7 +200,7 @@ const dbMod = {
                     { upsert: true, returnOriginal: true }
                 )
                     .then(() => {
-                        util.log(`Successfully added/updated warning for ${member} (lvl ${level})`, 'DB/warnUser', util.logLevel.INFO);
+                        util.log(`Successfully added/updated warning for ${member} (lvl ${level})`, 'DB/warnUser', "INFO");
                         let dateFormat = 'Do MMMM YYYY';
                         let warnDate = [
                             moment(new Date(Date.now() + 1000 * 60 * 60 * 24 * 14)).format(dateFormat) + " (14 Days)",
@@ -217,7 +217,7 @@ const dbMod = {
                         member.send(`You have been given a Level ${level} warning in the server **${server.name}** with reason: '${reason}'\n`+
                             `This warning expires ${expirationMsg[level-1]}`);
 
-                        util.log(`warned: ${member} (${level-1}->${level})`, "warn", util.logLevel.INFO);
+                        util.log(`warned: ${member} (${level-1}->${level})`, "warn", "INFO");
 
                         util.sendTextMessage(channels.warnings,
                             `${member} | **${lvlMsg[level-1]}**\n`+
@@ -228,36 +228,36 @@ const dbMod = {
                         );
                     })
                     .catch((err: any) => {
-                        util.log(`Failed to do command warning (findOneAndUpdate): ${err}.`, 'DB/warnUser', util.logLevel.FATAL);
+                        util.log(`Failed to do command warning (findOneAndUpdate): ${err}.`, 'DB/warnUser', "__**FATAL**__");
                     });
             });
         } catch (err) {
-            util.log('Failed to do "warnUser": ' + err, 'DB/warnUser', util.logLevel.FATAL);
+            util.log('Failed to do "warnUser": ' + err, 'DB/warnUser', "__**FATAL**__");
         }
     },
     checkWarnings: function () {
-        util.log(`Calling DB Module`, 'DB/checkWarnings', util.logLevel.INFO);
+        util.log(`Calling DB Module`, 'DB/checkWarnings', "INFO");
         try {
             return;
-            util.log(`Attempting to connect to DB`, 'DB/checkWarnings', util.logLevel.INFO);
+            util.log(`Attempting to connect to DB`, 'DB/checkWarnings', "INFO");
             this.connect( function(db: any) {
                 let warnings = db.collection('warnings');
                 warnings.findAll()
                     .then(() => {
-                        //util.log(`Successfully added/updated warning for ${member} (lvl ${level})`, 'DB/warnUser', util.logLevel.INFO);
+                        //util.log(`Successfully added/updated warning for ${member} (lvl ${level})`, 'DB/warnUser', "INFO");
 
                     })
                     .catch((err: any) => {
-                        util.log(`Failed to do command warning (findOneAndUpdate): ${err}.`, 'DB/warnUser', util.logLevel.FATAL);
+                        util.log(`Failed to do command warning (findOneAndUpdate): ${err}.`, 'DB/warnUser', "__**FATAL**__");
                     });
             });
         } catch (err) {
-            util.log('Failed to do "checkWarnings":' + err, 'DB/checkWarnings', util.logLevel.FATAL);
+            util.log('Failed to do "checkWarnings":' + err, 'DB/checkWarnings', "__**FATAL**__");
         }
     },
     connect: function (callback: (db: any) => any) {
         MongoClient.connect(url, { useNewUrlParser: true }, (err: any, client: any) => {
-            if (err) util.log(err, 'DB/connect', util.logLevel.FATAL);
+            if (err) util.log(err, 'DB/connect', "__**FATAL**__");
             else {
                 const db = client.db(db_name);
                 callback(db);
@@ -337,7 +337,7 @@ const startUpMod = {
             ping_violation_reaction_emoji = emojis.pingangry;
 
             util.sendTextMessage(channels.main, startUpMessage);
-            util.log("INITIALIZED.", "Startup", util.logLevel.INFO);
+            util.log("INITIALIZED.", "Startup", "INFO");
 
             lfpChannels.push(channels.with_male);
             lfpChannels.push(channels.with_female);
@@ -410,7 +410,7 @@ client.on("ready", () => {
         seen_users.forEach(util.handle_level_up);
     })
     .catch(error => {
-        util.log(`Failed reading old messages from ${channels.level} because of ${error}`, level_up_module, util.logLevel.ERROR);
+        util.log(`Failed reading old messages from ${channels.level} because of ${error}`, level_up_module, "**ERROR**");
     });
 });
 
@@ -641,7 +641,7 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
         try {
             await messagereaction.fetch();
         } catch (e) {
-            util.log(`Failed to fetch reaction ${messagereaction} from ${user} in ${messagereaction.message.channel}`, `messageReactionAdd`, util.logLevel.WARN);
+            util.log(`Failed to fetch reaction ${messagereaction} from ${user} in ${messagereaction.message.channel}`, `messageReactionAdd`, "WARN");
             return;
         }
     }
@@ -903,10 +903,10 @@ client.on("channelUpdate", (oldChannel, newChannel) => {
     }
     if (newChannel.guild.id !== server.id) return; // Ignore non-main servers
     if (oldChannel.parent && newChannel.parent && oldChannel.parent.id !== newChannel.parent.id) {
-        util.log(`:warning: Channel ${newChannel} was moved! Category ${oldChannel.parent} position ${oldChannel.position} -> ${newChannel.parent} position ${newChannel.position}`, "Channel Position", util.logLevel.WARN);
+        util.log(`:warning: Channel ${newChannel} was moved! Category ${oldChannel.parent} position ${oldChannel.position} -> ${newChannel.parent} position ${newChannel.position}`, "Channel Position", "WARN");
     }
     else if (oldChannel.position !== newChannel.position && Math.abs(oldChannel.position - newChannel.position) != 1) {
-        util.log(`:warning: Channel ${newChannel} was moved! Position ${oldChannel.position} -> ${newChannel.position}`, "Channel Position", util.logLevel.WARN);
+        util.log(`:warning: Channel ${newChannel} was moved! Position ${oldChannel.position} -> ${newChannel.position}`, "Channel Position", "WARN");
     }
 });
 
@@ -1027,7 +1027,7 @@ client.on("message", (message) => {
                         if (old_message.createdTimestamp > new Date().getTime() - 10 * 60 * 1000) {
                             await channels.lfp_moderation.send(`${old_message.author} Please note that you can only post 4 ads in total across all the LFP channels. If you post a 5th, the oldest gets automatically deleted, which applied to your ad in ${old_message.channel}.`);
                         }
-                        util.log(`Deleted ad by ${old_message.author} in ${old_message.channel} because of breaking ${ad_limit} ad limit`, `Ad moderation`, util.logLevel.INFO);
+                        util.log(`Deleted ad by ${old_message.author} in ${old_message.channel} because of breaking ${ad_limit} ad limit`, `Ad moderation`, "INFO");
                         await old_message.delete();
                     }
                 }
@@ -1041,7 +1041,7 @@ client.on("message", (message) => {
                 const ad_template_words = ["Pairing", "Scene", "Required Kinks", "Optional Kinks", "Blacklisted Kinks", "Timezone", "Post Length", "Minimum Partner Post Length", "Brief Description"];
                 for (const word of ad_template_words) {
                     if (!message.content.includes(word)) {
-                        await message.react("🧩");
+                        await util.react(message, "🧩");
                         return;
                     }
                 }
@@ -1059,7 +1059,7 @@ client.on("message", (message) => {
                 .then(messages => {
                     let msg = messages.filter(m => m.author.id === client.user?.id);
                     if (msg.size !== 1) {
-                        util.log(`Deleting ${msg.size} of my messages in ${channel} which shouldn't happen.`, "lfpInfo", util.logLevel.WARN);
+                        util.log(`Deleting ${msg.size} of my messages in ${channel} which shouldn't happen.`, "lfpInfo", "WARN");
                     }
                     msg.forEach(m => m.delete());
                 });
@@ -1171,7 +1171,7 @@ client.on("message", (message) => {
                         break;
 
                     default:
-                        util.log(`Failed finding matchmaking channel ${channel.name.substr(2)}`, "Matchmaking", util.logLevel.ERROR);
+                        util.log(`Failed finding matchmaking channel ${channel.name.substr(2)}`, "Matchmaking", "**ERROR**");
                     }
 
                 const playing_as = channel.parent?.id === categories.playing_as.id;
@@ -1216,7 +1216,7 @@ client.on("message", (message) => {
                 ;
 
                 channel.send(channel.id === channels.all_style.id ? lfpAllstyleMsg : lfpMsg)
-                .catch(error => util.log(`Failed updating lfp info in ${channel} because ${error}`, "lfpInfo", util.logLevel.ERROR));
+                .catch(error => util.log(`Failed updating lfp info in ${channel} because ${error}`, "lfpInfo", "**ERROR**"));
             }, 2000);
         }
         })();
@@ -1232,10 +1232,10 @@ client.on("message", (message) => {
             const logBody = `link in ${message.channel} from ${message.author}\nMessage content: ${message}`;
             message.delete()
                 .then(() => {
-                    util.log(`Removed ${logBody}`, 'Automatic Link Removal', util.logLevel.WARN);
+                    util.log(`Removed ${logBody}`, 'Automatic Link Removal', "WARN");
                 })
                 .catch((e) => {
-                    util.log(`Failed to remove ${logBody}\nError: ${e.toString()}`, 'Automatic Link Removal', util.logLevel.ERROR);
+                    util.log(`Failed to remove ${logBody}\nError: ${e.toString()}`, 'Automatic Link Removal', "**ERROR**");
                 });
             util.sendTextMessage(message.channel, `${message.author} Sorry, no media or links of any kind in this channel. Put it in ${channels.nsfw_media} or another media channel please.`);
             return;
@@ -1253,10 +1253,10 @@ client.on("message", (message) => {
             const logBody = `Non-Media/-Link in ${message.channel} from ${message.author}\nMessage content: ${message}`;
             message.delete()
                 .then(() => {
-                    util.log(`Removed ${logBody}`, 'Media Channel Text Filtering', util.logLevel.WARN);
+                    util.log(`Removed ${logBody}`, 'Media Channel Text Filtering', "WARN");
                 })
                 .catch((e) => {
-                    util.log(`Failed to remove ${logBody}\nError: ${e.toString()}`, 'Media Channel Text Filtering', util.logLevel.ERROR);
+                    util.log(`Failed to remove ${logBody}\nError: ${e.toString()}`, 'Media Channel Text Filtering', "**ERROR**");
                 });
             message.reply(message.channel.id === channels.nsfw_media.id ?
             `sorry, no messages without media allowed in this channel. Use ${channels.nsfw_media_discussion}.` :
@@ -1293,7 +1293,7 @@ client.on("message", (message) => {
             const no_ping_mentions_string = no_ping_mentions.reduce((prev_member, next_member) => prev_member + `${next_member} `, "");
             const log_message = `${message.author} pinged people with <@&${dontPingRole.id}>:\n${no_ping_mentions_string}\n[Message Link](${message.url})`;
             if (!util.isUserStaff(message.author)) { // exclude staff
-                util.log(log_message, "Ping role violation", util.logLevel.INFO);
+                util.log(log_message, "Ping role violation", "INFO");
                 util.react(message, ping_violation_reaction_emoji);
             }
         }
@@ -1337,16 +1337,16 @@ client.on("message", (message) => {
             }
             const userM = message.guild?.members.cache.get(usrid);
             if (userM && userM.roles.cache.has(roles.Newcomer.id)) {
-                util.log(`Attempting to ban Muted Newcomer: ${message.embeds[0].fields[0].value}`, 'Mute check', util.logLevel.INFO);
+                util.log(`Attempting to ban Muted Newcomer: ${message.embeds[0].fields[0].value}`, 'Mute check', "INFO");
                 let options = {
                     reason: "Violating Automoderator chat rules as a Newcomer",
                     days: 7
                 };
                 userM.ban(options)
                     .then(() => {
-                        util.log(`${userM} banned for: ${options.reason}`, 'Mute check', util.logLevel.INFO);
+                        util.log(`${userM} banned for: ${options.reason}`, 'Mute check', "INFO");
                     })
-                    .catch((err) => util.log(`${userM} failed to ban because ${err}`, 'Mute check', util.logLevel.WARN));
+                    .catch((err) => util.log(`${userM} failed to ban because ${err}`, 'Mute check', "WARN"));
             }
         }
     }
@@ -1600,7 +1600,7 @@ const audit_send_result = async (target_string: string, string: string, channel:
         }
         catch (error) {
             console.log(`Failed sending audit log piece because of error ${error}:\n${message_piece}`);
-            util.log(`Failed sending audit log piece because ${error}`, "Audit command", util.logLevel.ERROR);
+            util.log(`Failed sending audit log piece because ${error}`, "Audit command", "**ERROR**");
         }
     }
 };
@@ -1666,9 +1666,9 @@ const cmd: Cmd = {
         try {
             const m = await message.channel.send("Ping!");
             m.edit(`Pong! Latency is ${m.createdTimestamp - message.createdTimestamp}ms. API Latency is ${Math.round(client.ws.ping)}ms`);
-            util.log('used command: ping', "ping", util.logLevel.INFO);
+            util.log('used command: ping', "ping", "INFO");
         } catch (e) {
-            util.log('Failed to process command (ping)', 'ping', util.logLevel.ERROR);
+            util.log('Failed to process command (ping)', 'ping', "**ERROR**");
         }
     },
     staff: async function (message) {
@@ -1676,9 +1676,9 @@ const cmd: Cmd = {
             const m = await message.channel.send("Checking!");
             let isStaff = util.isStaff(message);
             m.edit(`${message.author} is${(!isStaff) ? ' not' : '' } a staff member!`);
-            util.log('used command: staff', "staff", util.logLevel.INFO);
+            util.log('used command: staff', "staff", "INFO");
         } catch (e) {
-            util.log('Failed to process command (staff)', 'staff', util.logLevel.ERROR);
+            util.log('Failed to process command (staff)', 'staff', "**ERROR**");
         }
     },
     warn: async function (message, args) {
@@ -1717,14 +1717,14 @@ const cmd: Cmd = {
                         }
                         member.roles.remove(roles.WARN_1)
                             .catch(() => {
-                                util.log(`Failed to remove Warning level 1 from ${member}.`, 'Warn: remove level 1', util.logLevel.ERROR);
+                                util.log(`Failed to remove Warning level 1 from ${member}.`, 'Warn: remove level 1', "**ERROR**");
                                 err = true;
                             });
                         level = 2;
                     })
                     .catch(() => {
                         err = true;
-                        util.log(`Failed to add Warning level 2 to ${member}.`, 'Warn: 1->2', util.logLevel.ERROR);
+                        util.log(`Failed to add Warning level 2 to ${member}.`, 'Warn: 1->2', "**ERROR**");
                     });
             } else {
                 await member.roles.add(roles.WARN_1)
@@ -1735,14 +1735,14 @@ const cmd: Cmd = {
                         }
                         member.roles.remove(roles.INNOCENT)
                             .catch(() => {
-                                util.log(`Failed to remove Innocent role from ${member}.`, 'Warn: remove Innocent role', util.logLevel.ERROR);
+                                util.log(`Failed to remove Innocent role from ${member}.`, 'Warn: remove Innocent role', "**ERROR**");
                                 err = true;
                             });
                         level = 1;
                     })
                     .catch(() => {
                         err = true;
-                        util.log(`Failed to add Warning level 1 to ${member}.`, 'Warn: 0->1', util.logLevel.ERROR);
+                        util.log(`Failed to add Warning level 1 to ${member}.`, 'Warn: 0->1', "**ERROR**");
                     });
             }
 
@@ -1756,21 +1756,21 @@ const cmd: Cmd = {
             dbMod.warnUser(member.user, level, author, reason);
             message.delete();
         } catch (e) {
-            util.log('Failed to process command (warn)', 'warn', util.logLevel.ERROR);
+            util.log('Failed to process command (warn)', 'warn', "**ERROR**");
         }
     },
     stopmention: function (message) {
         if (util.isStaff(message)) {
             disableMentions = true;
             util.sendTextMessage(message.channel, 'No longer listening to non-staff mentions... :(');
-            util.log('Disabling responses to non-staff mentions ...', 'disable mentions', util.logLevel.INFO);
+            util.log('Disabling responses to non-staff mentions ...', 'disable mentions', "INFO");
         }
     },
     startmention: function (message) {
         if (util.isStaff(message)) {
             disableMentions = false;
             util.sendTextMessage(message.channel, 'Start listening to non-staff mentions... :3');
-            util.log('Enabling responses to non-staff mentions', 'enable mentions', util.logLevel.INFO);
+            util.log('Enabling responses to non-staff mentions', 'enable mentions', "INFO");
         }
     },
     cn: async function (message) {
@@ -1812,7 +1812,7 @@ const cmd: Cmd = {
             }
         }
         console.log(`Done with report`);
-        util.log(report.length ? report : `No newcomers found`, 'clearNewcomer', util.logLevel.INFO);
+        util.log(report.length ? report : `No newcomers found`, 'clearNewcomer', "INFO");
     },
     ancient: async function(message) {
         if (!message || util.isStaff(message)) {
@@ -1833,7 +1833,7 @@ const cmd: Cmd = {
                     }
                 }
                 catch (error) {
-                    util.log(`Failed setting ancient role for ${ancient_member} because ${error}`, "Achievements - Ancient", util.logLevel.ERROR);
+                    util.log(`Failed setting ancient role for ${ancient_member} because ${error}`, "Achievements - Ancient", "**ERROR**");
                 }
             }
         }
@@ -1854,7 +1854,7 @@ const cmd: Cmd = {
                                 setTimeout(() => {
                                     message.channel.send(`\`Cleared ${count-1} message(s)!\``)
                                         .then(d => setTimeout(() => d.delete(), 5000));
-                                    util.log(`${message.author} cleared ${count-1} meessages in ${message.channel}`, 'clear', util.logLevel.INFO);
+                                    util.log(`${message.author} cleared ${count-1} meessages in ${message.channel}`, 'clear', "INFO");
                                 }, 1000);
                             }
                         });
@@ -2020,11 +2020,11 @@ const cmd: Cmd = {
             }
             try {
                 await target_channel.setRateLimitPerUser(time_s, `Set by @${message.author.tag} in #${message.channel.name}`);
-                util.log(`${message.author} set the slowmode in ${target_channel} to ${time_str}.`, `Channel Administration`, util.logLevel.INFO);
+                util.log(`${message.author} set the slowmode in ${target_channel} to ${time_str}.`, `Channel Administration`, "INFO");
             }
             catch (error) {
                 util.sendTextMessage(message.channel, `Failed setting slowmode to ${time_str} because of:\n${error}`);
-                util.log(`${message.author} failed setting slowmode in ${target_channel} to ${time_str} because of:\n${error}`, `Channel Administration`, util.logLevel.ERROR);
+                util.log(`${message.author} failed setting slowmode in ${target_channel} to ${time_str} because of:\n${error}`, `Channel Administration`, "**ERROR**");
                 return;
             };
         };
@@ -2078,7 +2078,7 @@ const cmd: Cmd = {
             message.channel.stopTyping();
         }
         catch (err) {
-            util.log(err, 'cultInfo', util.logLevel.ERROR);
+            util.log(err, 'cultInfo', "**ERROR**");
             message.channel.stopTyping();
         }
     },
@@ -2217,10 +2217,10 @@ const cmd: Cmd = {
             if (!this[command]) return;
             if (command in this) {
                 this[command](message, args);
-                util.log(`${message.author} is calling command: \`${message.content}\`\n[link](${message.url})`, command, util.logLevel.INFO);
+                util.log(`${message.author} is calling command: \`${message.content}\`\n[link](${message.url})`, command, "INFO");
             }
         } catch (e) {
-            util.log(`Failed to process (${command})`, command, util.logLevel.ERROR);
+            util.log(`Failed to process (${command})`, command, "**ERROR**");
         }
     },
     stop_typing: function (message) {
@@ -2239,7 +2239,7 @@ const cmd: Cmd = {
             });
         });
         util.react(message, '✅');
-        util.log(`Disabled invite creation and deleted invites`, "Raid", util.logLevel.WARN);
+        util.log(`Disabled invite creation and deleted invites`, "Raid", "WARN");
     },
     trim_reacts: async function (commandmessage) {
         const messages = await channels.roles_selection.messages.fetch();
@@ -2661,7 +2661,7 @@ const fnct = {
                 server.channels.cache.get(channel)?.setName(str);
             });
         } catch (e) {
-            util.log(`Failed to update server stats for ${modes}: ${e}`, 'Server Stats', util.logLevel.ERROR);
+            util.log(`Failed to update server stats for ${modes}: ${e}`, 'Server Stats', "**ERROR**");
         }
     },
     approveChar: function(message: DiscordJS.Message, reaction: DiscordJS.ReactionEmoji, user: DiscordJS.User) {
@@ -2675,7 +2675,7 @@ const fnct = {
                 let msgAttachments = message.attachments.map(a => a.url);
                 let msgImagesString = "";
                 msgAttachments.forEach(imgUrl => msgImagesString += imgUrl + "\n");
-                util.log(`${user} approved character message:\n ${message.content}\n ${msgImagesString}`, "approveCharacter", util.logLevel.INFO);
+                util.log(`${user} approved character message:\n ${message.content}\n ${msgImagesString}`, "approveCharacter", "INFO");
                 let msgContent = `User: ${message.author}\n${message.content}`;
                 channels.char_archive.send(msgType === 1 ? msgContent : message.content, { files: msgAttachments })
                     .then(msg => {
@@ -2691,7 +2691,7 @@ const fnct = {
                     });
             }
         } catch (e) {
-            util.log(e, 'approveCharacter', util.logLevel.ERROR);
+            util.log(e, 'approveCharacter', "**ERROR**");
         }
     }
 };
@@ -2726,7 +2726,7 @@ const util = {
             }, 500);
         } catch (e) {
             const text = typeof message ==="string" ? message : message.description || "";
-            this.log('Failed to send message: ' + text.slice(1970), "", this.logLevel.ERROR);
+            this.log('Failed to send message: ' + text.slice(1970), "", "**ERROR**");
             channel.stopTyping();
         }
     },
@@ -2751,7 +2751,7 @@ const util = {
                 channel.stopTyping();
             }, 500);
         } catch (e) {
-            this.log('Failed to send message: ' + message.slice(1970), "", this.logLevel.ERROR);
+            this.log('Failed to send message: ' + message.slice(1970), "", "**ERROR**");
             channel.stopTyping();
         }
     },
@@ -2766,16 +2766,16 @@ const util = {
         return member.roles.cache.has(roles.STAFF.id) || member.roles.cache.has(roles.TRIALMOD.id);
     },
 
-    log: function (message: string, moduleName: string, level: string) {
+    log: function (message: string, moduleName: string, level: "INFO" | "WARN" | "**ERROR**" | "__**FATAL**__") {
         let embedColor = 0xE0FFFF;
         switch (level) {
-            case util.logLevel.WARN:
+            case "WARN":
                 embedColor = 0xFFD700;
                 break;
-            case util.logLevel.ERROR:
+            case "**ERROR**":
                 embedColor = 0xFF7F50;
                 break;
-            case util.logLevel.FATAL:
+            case "__**FATAL**__":
                 embedColor = 0xDC143C;
                 break;
             default:
@@ -2791,13 +2791,6 @@ const util = {
         .setFooter(moduleName)
         .setTimestamp(new Date()));
         console.log(logMessage);
-    },
-
-    logLevel: {
-        INFO:  "INFO",
-        WARN:  "WARN",
-        ERROR: "**ERROR**",
-        FATAL: "__**FATAL**__",
     },
 
     image_link_count: function (message: DiscordJS.Message) {
@@ -2855,13 +2848,13 @@ const util = {
 
         const role_change_incorrect = (added_roles.size !== 1 || removed_roles.size !== 1) && level !== 1;
 
-        util.log(`${role_change_incorrect ? "⚠ Incorrect role change: " : ""}${user} gained level ${level}, so added [${role_gain_string}] and removed [${role_lose_string}]`, level_up_module, util.logLevel.INFO);
+        util.log(`${role_change_incorrect ? "⚠ Incorrect role change: " : ""}${user} gained level ${level}, so added [${role_gain_string}] and removed [${role_lose_string}]`, level_up_module, "INFO");
 
         if (role_change_incorrect) {
             const old_role = util.level_to_role(level - 1);
             util.log(`Expected to find role ${old_role} with ID ${old_role.id} on user ${user}, but didn't. Roles found: ${
                 member.roles.cache.reduce((curr, role) => `${curr} ${role} (${role.id})`, "")
-            }`, level_up_module, util.logLevel.WARN);
+            }`, level_up_module, "WARN");
         }
 
         await member.roles.set(updated_roles);
@@ -2912,7 +2905,7 @@ const util = {
         try {
             await message.react(emote);
         } catch (error) {
-            util.log(`Failed reacting with emote ${emote} to [this message](${message.url}) by ${message.author} because ${error}`, "Adding reaction", util.logLevel.ERROR);
+            util.log(`Failed reacting with emote ${emote} to [this message](${message.url}) by ${message.author} because ${error}`, "Adding reaction", "**ERROR**");
         }
     }
 };
