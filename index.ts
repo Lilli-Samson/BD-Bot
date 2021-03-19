@@ -415,6 +415,7 @@ client.on("ready", () => {
 });
 
 const process_member_join = async (member: DiscordJS.GuildMember | DiscordJS.PartialGuildMember, invs: Invites) => {
+    member = await member.fetch();
     const invitee_is_new = new Date().getTime() - (client.users.cache.get(member.id)?.createdTimestamp || 0) < 1000 * 60 * 60 * 24;
     const invitee_str = `${member} ` +
         `(${member.user?.username}#${member.user?.discriminator})` +
