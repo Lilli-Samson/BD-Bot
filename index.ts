@@ -110,6 +110,7 @@ const role_list = [
     ["ANCIENT", "💠Ancient Member"],
     ["STAFF", "Staff"],
     ["TRIALMOD", "Trial-Moderator"],
+    ["Moderator", "Moderator"],
 ] as const;
 //@ts-ignore
 let roles: {[C in typeof role_list[number][0]]: DiscordJS.Role} = {};
@@ -1695,7 +1696,7 @@ const cmd: Cmd = {
     warn: async function (message, args) {
         if (message.channel.id === "737043345913675786") return;
         try {
-            if (!util.isStaff(message)) {
+            if (!util.isMod(message)) {
                 //util.sendTextMessage(message.channel, `${message.author} Shoo! You don't have the permissions for that!`);
                 return;
             }
@@ -1850,7 +1851,7 @@ const cmd: Cmd = {
         }
     },
     clear: function(message, args) {
-        if (util.isStaff(message)) {
+        if (util.isMod(message)) {
             if (!args?.[0]) {
                 return;
             }
@@ -2360,7 +2361,7 @@ const cmd: Cmd = {
         util.sendTextMessage(message.channel, new DiscordJS.MessageEmbed().setDescription(`Banished <@${target}> from ${summary}`));
     },
     perms: async function (message) {
-        if (!util.isStaff(message)) {
+        if (!util.isMod(message)) {
             util.sendTextMessage(message.channel, `${message.author} had their horny license revoked!`);
             return;
         }
@@ -2530,7 +2531,7 @@ const cmd: Cmd = {
         cmd.perms(message);
     },
     ban: async function (message) {
-        if (!util.isStaff(message)) {
+        if (!util.isMod(message)) {
             util.sendTextMessage(message.channel, `${message.author} ${emojis.bancat}`);
             return;
         }
@@ -2769,7 +2770,17 @@ const util = {
     isStaff: function (message: DiscordJS.Message) {
         return this.isUserStaff(message.author);
     },
-
+    isMod: function (source: DiscordJS.Message | DiscordJS.GuildMember) {
+        const user = source instanceof DiscordJS.Message ? source.member : source;
+        if (user?.permissions.has(DiscordJS.Permissions.FLAGS.ADMINISTRATOR)) {
+            return true;
+        }
+        if (!user) {
+            return false;
+        }
+        const user_roles = user.roles;
+        return user_roles.cache.has(roles.Moderator.id);
+    },
     isUserStaff: function (user: DiscordJS.User) {
         const member = server.members.cache.get(user.id);
         if (!member) return;
