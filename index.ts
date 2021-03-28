@@ -43,14 +43,12 @@ const channel_list = [
     ["with_furry", "😺with-furry"],
     ["with_beast", "🦄with-beast"],
     ["with_futa_herm", "🥕with-futa"],
-    ["with_humanoid", "👹with-humanoid"],
     ["as_male", "🍆as-male"],
     ["as_female", "🍑as-female"],
     ["as_femboy", "🍌as-femboy"],
     ["as_furry", "😺as-furry"],
     ["as_beast", "🦄as-beast"],
     ["as_futa_herm", "🥕as-futa"],
-    ["as_humanoid", "👹as-humanoid"],
     ["vanilla", "🍦vanilla"],
     ["gay", "👬gay"],
     ["lesbian", "👭lesbian"],
@@ -346,14 +344,12 @@ const startUpMod = {
             lfpChannels.push(channels.with_furry);
             lfpChannels.push(channels.with_beast);
             lfpChannels.push(channels.with_futa_herm);
-            lfpChannels.push(channels.with_humanoid);
             lfpChannels.push(channels.as_male);
             lfpChannels.push(channels.as_female);
             lfpChannels.push(channels.as_femboy);
             lfpChannels.push(channels.as_furry);
             lfpChannels.push(channels.as_beast);
             lfpChannels.push(channels.as_futa_herm);
-            lfpChannels.push(channels.as_humanoid);
             lfpChannels.push(channels.all_style);
             lfpChannels.push(channels.vanilla);
             lfpChannels.push(channels.gay);
@@ -1105,10 +1101,6 @@ client.on("message", (message) => {
                         title = "FUTANARI / HERMAPHRODITE Characters";
                         target = "Futanari and Hermaphrodites";
                         break;
-                    case "with-humanoid":
-                        title = "Humanoid Characters";
-                        target = "Humanoids such as demons, orcs, vampires and similar";
-                        break;
 
                     //RP Playing As
                     case "as-male":
@@ -1134,10 +1126,6 @@ client.on("message", (message) => {
                     case "as-futa":
                         title = "FUTANARI / HERMAPHRODITE Characters";
                         target = "Futanari and Hermaphrodites";
-                        break;
-                    case "as-humanoid":
-                        title = "Humanoid Characters";
-                        target = "Humanoids such as demons, orcs, vampires and similar";
                         break;
 
                     //RP By Type
@@ -2549,6 +2537,32 @@ const cmd: Cmd = {
     },
     react: function (message) {
         message.reply("Sure, whatever you say.");
+    },
+    say: function (message) {
+        if (message.author.id !== "591241625737494538") {
+            return;
+        }
+        message.channel.send(message.content.substr(5));
+        message.delete();
+    },
+    ssay: function (message) {
+        if (message.author.id !== "591241625737494538") return;
+        message.delete();
+        message.channel.send(message.content.substr(6).replace(/:.{1,20}:/g, (text) => {
+            const name = text.slice(1, -1);
+            for (const [_, emoji] of server.emojis.cache) {
+                if (emoji.name === name) {
+                    return `${emoji}`;
+                }
+            }
+            return text;
+        }));
+    },
+    sayeb: function (message) {
+        if (message.author.id === "591241625737494538") {
+            message.delete();
+            util.sendTextMessage(message.channel, new DiscordJS.MessageEmbed().setDescription(message.content.substr(6)));
+        }
     },
     help: function (message) {
         const public_commands = `
