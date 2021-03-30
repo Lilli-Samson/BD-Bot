@@ -81,6 +81,7 @@ const channel_list = [
     ["achievements", "🏆achievements"],
     ["techlab", "📡tech-lab"],
     ["botchannel", "🤖bot-channel"],
+    ["template_data", "rp-template-data"],
 ] as const;
 //@ts-ignore
 let channels: {[C in typeof channel_list[number][0]]: DiscordJS.TextChannel} = {};
@@ -153,6 +154,122 @@ const link_regex = /((https?|ftp):\/\/|www\.)(\w.+\w\W?)/g; //source: https://su
 type Invite_code = string;
 class Invites extends DiscordJS.Collection<Invite_code, {uses: number | null, maxUses?: number | null, inviter?: DiscordJS.User | null}>{};
 let invites: Invites;
+
+const field_names = {
+    pairing: "Pairing",
+    kinks: "Kinks",
+    limits: "Limits",
+    post_length: "Post Length",
+} as const;
+
+const field_commands = {
+    pairing: ["pairing", "pairings", "pair", "pa"],
+    kinks: ["kink", "kinks", "ki", "k"],
+    limits: ["limit", "limits", "l", "li"],
+    post_length: ["postlength", "length", "postlengths", "lengths", "pl", "📏"],
+};
+
+class Ad_template_info {
+    user: DiscordJS.Snowflake;
+    data_message: DiscordJS.Snowflake;
+    pairing: string = "";
+    channel_pairings = new Map<DiscordJS.Snowflake, string>();
+    kinks: string = "";
+    channel_kinks = new Map<DiscordJS.Snowflake, string>();
+    limits: string = "";
+    channel_limits = new Map<DiscordJS.Snowflake, string>();
+    post_length: string = "";
+    channel_post_length = new Map<DiscordJS.Snowflake, number>();
+
+    static async create_entry(user: DiscordJS.Snowflake) {
+        const entry = new Ad_template_info(user, (await channels.template_data.send(new DiscordJS.MessageEmbed().setAuthor(user).setDescription(`<@${user}>`))).id);
+        Ad_template_info.ad_template_infos.set(user, entry);
+        return entry;
+    }
+
+    static has_info_for(user: DiscordJS.Snowflake) {
+        return Ad_template_info.ad_template_infos.has(user);
+    }
+
+    static async load_from_message(message: DiscordJS.Message) {
+        const author_id = message.embeds[0]?.author?.name;
+        if (!author_id) {
+            throw `Failed loading from message ${message} because field author was not found`;
+        }
+        const user = client.users.cache.get(author_id);
+        if (!user) {
+            throw `Failed finding user <@${user}> from message ${message}`;
+        }
+        const entry = new Ad_template_info(author_id, message.id);
+        await entry.load();
+        Ad_template_info.ad_template_infos.set(user.id, entry);
+    }
+
+    private constructor (user: DiscordJS.Snowflake, message: DiscordJS.Snowflake) {
+        this.user = user;
+        this.data_message = message;
+    }
+
+    async save() {
+        let message = channels.template_data.messages.cache.get(this.data_message);
+        if (!message) {
+            throw `Error while trying to save data for user <@${this.user}>: undefined message https://discord.com/channels/594871617058897920/826128576222724107/${this.data_message}`;
+        }
+        const entry = new DiscordJS.MessageEmbed().setAuthor(this.user).setDescription(`<@${this.user}>`);
+        if (this.pairing) {
+            entry.addField(field_names.pairing, this.pairing);
+        }
+        if (this.kinks) {
+            entry.addField(field_names.kinks, this.kinks);
+        }
+        if (this.limits) {
+            entry.addField(field_names.limits, this.limits);
+        }
+        if (this.post_length) {
+            entry.addField(field_names.post_length, this.post_length);
+        }
+        await message.edit(entry);
+    }
+
+    async load() {
+        let message = channels.template_data.messages.cache.get(this.data_message);
+        if (!message) {
+            throw `Error while trying to load data for user <@${this.user}>: undefined message https://discord.com/channels/594871617058897920/826128576222724107/${this.data_message}`;
+        }
+        for (const embed of message.embeds) {
+            for (const field of embed.fields) {
+                switch (field.name) {
+                    case field_names.pairing:
+                        this.pairing = field.value;
+                        break;
+                    case field_names.kinks:
+                        this.kinks = field.value;
+                        break;
+                    case field_names.limits:
+                        this.limits = field.value;
+                        break;
+                    case field_names.post_length:
+                        this.post_length = field.value;
+                        break;
+                }
+            }
+        }
+    }
+    static async load_ad_templates() {
+        function get_last_message_of(messages: DiscordJS.Collection<DiscordJS.Snowflake, DiscordJS.Message>): DiscordJS.Message {
+            return messages.reduce((current, other) => current.createdTimestamp < other.createdTimestamp ? current : other, messages.first());
+        }
+        for (let messages = await channels.template_data.messages.fetch(); messages.size > 0; messages = await channels.template_data.messages.fetch({before: get_last_message_of(messages).id})) {
+            for (const [, message] of messages) {
+                await this.load_from_message(message);
+            }
+        }
+    }
+    static of(user: DiscordJS.Snowflake) {
+        return Ad_template_info.ad_template_infos.get(user);
+    }
+    private static ad_template_infos = new Map<DiscordJS.Snowflake, Ad_template_info>();
+}
 
 function timeout(ms: number) {
     return new Promise<string>(resolve => setTimeout(resolve, ms));
@@ -409,6 +526,7 @@ client.on("ready", () => {
     .catch(error => {
         util.log(`Failed reading old messages from ${channels.level} because of ${error}`, level_up_module, "**ERROR**");
     });
+    Ad_template_info.load_ad_templates();
 });
 
 const process_member_join = async (member: DiscordJS.GuildMember | DiscordJS.PartialGuildMember, invs: Invites) => {
@@ -1658,6 +1776,106 @@ const dead_char_search = async (start_message_id: string, message: DiscordJS.Mes
     util.sendTextMessage(message.channel, new DiscordJS.MessageEmbed().setDescription(leavers_messages + "For new results use command\n**_chararchive " + oldest_message.id + "**"));
 }
 
+async function continue_registering(info: Ad_template_info, message: DiscordJS.Message, pretext = "") {
+    if (!info.pairing) {
+        await message.reply(`${pretext}Let's start with the pairing. What matches do you usually like? Specify your preferred character and then your partner's character. For example "MxF" if you like to play as a male with a female or "Futa with beast". Type for example \`_register ${field_commands.pairing[0]} FxM, Futa with beast\` to register your pairing. You can update that info any time.`);
+    }
+    else if (!info.kinks) {
+        await message.reply(`${pretext}What sort of kinks do you like? Example: \`_register ${field_commands.kinks[0]} Oral, vanilla, ||handholding||\``);
+    }
+    else if (!info.limits) {
+        await message.reply(`${pretext}What kinks are a complete turn-off for you? Example: \`_register ${field_commands.limits[0]} vore, gore, scat\``);
+    }
+    else if (!info.post_length) {
+        await message.reply(`${pretext}How long are your resposes typically? Please answer in characters, not lines. You can also use words and multiply by 7 to get an estimate. If you are unsure because you will adapt to your partner specify what you usually write or feel most comfortable with. Example: \`_register ${field_commands.post_length[0]} 400-500\``);
+    }
+    else {
+        await message.reply(`You already registered your ad template. If you want to update a field use \`_register pairing [Pairings like MxF]\`, \`_register kinks [your kinks]\`, \`_register limits [your limits]\` or \`register postlength [typical post length in characters]\``);
+    }
+}
+
+async function post_next_missing(info: Ad_template_info, message: DiscordJS.Message, text: string, updated: boolean) {
+    if (!info.pairing || !info.kinks || !info.limits || !info.post_length) {
+        await continue_registering(info, message, text);
+    }
+    else {
+        if (updated) {
+            await message.reply(text);
+        }
+        else {
+            await message.reply(`${text}That's it! You're done registering, so go and write some ads!`);
+        }
+    }
+}
+
+async function register_pairings(info: Ad_template_info, message: DiscordJS.Message) {
+    const match = message.content.match(/\w+\s+\w+\s+/);
+    if (!match) {
+        throw `Failed finding pairings data`;
+    }
+    const pairings = message.content.slice(match[0].length);
+    const prev = info.pairing;
+    info.pairing = pairings;
+    await info.save();
+    if (prev) {
+        await post_next_missing(info, message, `Successfully updated your pairings! Your previous pairings were "${prev}"\n`, true);
+    }
+    else {
+        await post_next_missing(info, message, `Successfully saved pairings! I'm sure we have something for you!\n`, false);
+    }
+}
+
+async function register_kinks(info: Ad_template_info, message: DiscordJS.Message) {
+    const match = message.content.match(/\w+\s+\w+\s+/);
+    if (!match) {
+        throw `Failed finding kinks data`;
+    }
+    const kinks = message.content.slice(match[0].length);
+    const prev = info.kinks;
+    info.kinks = kinks;
+    await info.save();
+    if (prev) {
+        await post_next_missing(info, message, `Updated kinks. Your previous kinks were "${prev}"\n`, true);
+    }
+    else {
+        await post_next_missing(info, message, `Successfully saved your kinks! Those are pretty lewd 😳\n`, false);
+    }
+}
+
+async function register_limits(info: Ad_template_info, message: DiscordJS.Message) {
+    const match = message.content.match(/\w+\s+\w+\s+/);
+    if (!match) {
+        throw `Failed finding limits data`;
+    }
+    const limits = message.content.slice(match[0].length);
+    const prev = info.limits;
+    info.limits = limits;
+    await info.save();
+    if (prev) {
+        await post_next_missing(info, message, `Updated limits. Previous limits: "${prev}"\n`, true);
+    }
+    else {
+        await post_next_missing(info, message, `Yeah, I don't like those either. Saved.\n`, false);
+    }
+}
+
+async function register_postlength(info: Ad_template_info, message: DiscordJS.Message) {
+    const match = message.content.match(/\w+\s+\w+\s+/);
+    if (!match) {
+        throw `Failed finding post length data`;
+    }
+    const postlength = message.content.slice(match[0].length);
+    const prev = info.post_length;
+    info.post_length = postlength;
+    await info.save();
+    if (prev) {
+        await post_next_missing(info, message, `Updated post length, was "${prev}" before.\n`, true);
+    }
+    else {
+        await post_next_missing(info, message, `Gotcha.\n`, false);
+    }
+}
+
 type Cmd = {
     [key: string]: (arg1: DiscordJS.Message, arg2?: string[]) => void
 };
@@ -2562,6 +2780,61 @@ const cmd: Cmd = {
         if (message.author.id === "591241625737494538") {
             message.delete();
             util.sendTextMessage(message.channel, new DiscordJS.MessageEmbed().setDescription(message.content.substr(6)));
+        }
+    },
+    removereacts: function (message) {
+        if (!util.isStaff(message)) {
+            return;
+        }
+        const snowflakes = (message.content.match(/\d+/g) || []).filter(match => match.length > 15);
+        //TODO
+    },
+    register: async function (message) {
+        try {
+            if (message.content === "_register") {
+                const entry = Ad_template_info.of(message.author.id);
+                if (entry) {
+                    await continue_registering(entry, message, "Let's continue filling out your RP info!\n");
+                }
+                else {
+                    const entry = await Ad_template_info.create_entry(message.author.id);
+                    await continue_registering(entry, message, "Alright, I'll help you fill out your RP info!\n");
+                }
+                return;
+            }
+            const command = message.content.match(/\w*\s(\w*)/)?.[1];
+            if (!command) {
+                await message.reply(`Error getting register command`);
+                return;
+            }
+            const entry = Ad_template_info.of(message.author.id) || await Ad_template_info.create_entry(message.author.id);
+            if (field_commands.pairing.includes(command)) {
+                await register_pairings(entry, message);
+            }
+            else if (field_commands.kinks.includes(command)) {
+                await register_kinks(entry, message);
+            }
+            else if (field_commands.limits.includes(command)) {
+                await register_limits(entry, message);
+            }
+            else if (field_commands.post_length.includes(command)) {
+                await register_postlength(entry, message);
+            }
+            else if (command === "show") {
+                await message.reply(
+                    `Pairings: ${entry.pairing || "<none>"}\n` +
+                    `Kinks: ${entry.kinks || "<none>"}\n` +
+                    `Limits: ${entry.limits || "<none>"}\n` +
+                    `Post length: ${entry.post_length || "<none>"}\n` +
+                ``);
+            }
+            else {
+                await message.reply(`I don't know what to do with register command ${command} 😦`);
+            }
+                
+        }
+        catch (err) {
+            message.reply(`Failed processing command: ${err}`);
         }
     },
     help: function (message) {
