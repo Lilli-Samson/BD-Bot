@@ -1046,7 +1046,7 @@ client.on("message", (message) => {
                 if (message.channel === channels.all_style) {
                     return;
                 }
-                const ad_template_words = ["pairing", "my kinks", "blacklisted kinks", "post length", "minimum partner post length kinks", "scene/description"];
+                const ad_template_words = ["pairing", "my kinks", "blacklisted kinks", "post length", "minimum partner post length", "scene/description"];
                 const lower_content = message.content.toLowerCase();
                 for (const word of ad_template_words) {
                     if (!lower_content.includes(word)) {
