@@ -1046,15 +1046,15 @@ client.on("message", (message) => {
                 if (message.channel === channels.all_style) {
                     return;
                 }
-                const ad_template_words = ["Pairing", "Scene", "Required Kinks", "Optional Kinks", "Blacklisted Kinks", "Timezone", "Post Length", "Minimum Partner Post Length", "Brief Description"];
+                const ad_template_words = ["pairing", "my kinks", "blacklisted kinks", "post length", "minimum partner post length kinks", "scene/description"];
+                const lower_content = message.content.toLowerCase();
                 for (const word of ad_template_words) {
-                    if (!message.content.includes(word)) {
+                    if (!lower_content.includes(word)) {
                         await util.react(message, "🧩");
                         return;
                     }
                 }
             })();
-
 
         // Post the LFP rules in LFP channels
         if (message.channel instanceof DiscordJS.TextChannel && lfpChannels.includes(message.channel)) {
