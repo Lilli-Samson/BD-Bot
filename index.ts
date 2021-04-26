@@ -155,6 +155,13 @@ type Invite_code = string;
 class Invites extends DiscordJS.Collection<Invite_code, {uses: number | null, maxUses?: number | null, inviter?: DiscordJS.User | null}>{};
 let invites: Invites;
 
+function reduce<Key_type, Value_type, Accumulator_type>(map: Map<Key_type, Value_type>, reducer: {(current_value: Accumulator_type, key_value: [Key_type, Value_type]): Accumulator_type}, accumulator: Accumulator_type) {
+    for (const key_value of map) {
+        accumulator = reducer(accumulator, key_value);
+    }
+    return accumulator;
+}
+
 const field_names = {
     pairing: "Pairing",
     kinks: "Kinks",
@@ -179,7 +186,7 @@ class Ad_template_info {
     limits: string = "";
     channel_limits = new Map<DiscordJS.Snowflake, string>();
     post_length: string = "";
-    channel_post_length = new Map<DiscordJS.Snowflake, number>();
+    channel_post_length = new Map<DiscordJS.Snowflake, string>();
 
     static async create_entry(user: DiscordJS.Snowflake) {
         const entry = new Ad_template_info(user, (await channels.template_data.send(new DiscordJS.MessageEmbed().setAuthor(user).setDescription(`<@${user}>`))).id);
@@ -216,17 +223,20 @@ class Ad_template_info {
             throw `Error while trying to save data for user <@${this.user}>: undefined message https://discord.com/channels/594871617058897920/826128576222724107/${this.data_message}`;
         }
         const entry = new DiscordJS.MessageEmbed().setAuthor(this.user).setDescription(`<@${this.user}>`);
+        function to_string(general: string, per_channel: Map<DiscordJS.Snowflake, string>) {
+            return general + reduce(per_channel, (curr, [channel_id, value]) => `${curr}<#${channel_id}>${value}`, "");
+        }
         if (this.pairing) {
-            entry.addField(field_names.pairing, this.pairing);
+            entry.addField(field_names.pairing, to_string(this.pairing, this.channel_pairings));
         }
         if (this.kinks) {
-            entry.addField(field_names.kinks, this.kinks);
+            entry.addField(field_names.kinks, to_string(this.kinks, this.channel_kinks));
         }
         if (this.limits) {
-            entry.addField(field_names.limits, this.limits);
+            entry.addField(field_names.limits, to_string(this.limits, this.channel_limits));
         }
         if (this.post_length) {
-            entry.addField(field_names.post_length, this.post_length);
+            entry.addField(field_names.post_length, to_string(this.post_length, this.channel_post_length));
         }
         await message.edit(entry);
     }
@@ -236,20 +246,30 @@ class Ad_template_info {
         if (!message) {
             throw `Error while trying to load data for user <@${this.user}>: undefined message https://discord.com/channels/594871617058897920/826128576222724107/${this.data_message}`;
         }
+        function from_string(field: string): [string, Map<DiscordJS.Snowflake, string>] {
+            const per_channel = new Map<DiscordJS.Snowflake, string>();
+            const parts = field.split(/<#(\d{18})>/);
+            const general_piece = parts[0];
+            for (let i = 1; parts.length > i * 2; i++) {
+                per_channel.set(parts[i * 2 - 1], parts[i * 2]);
+            }
+            return [general_piece, per_channel];
+        }
+
         for (const embed of message.embeds) {
             for (const field of embed.fields) {
                 switch (field.name) {
                     case field_names.pairing:
-                        this.pairing = field.value;
+                        [this.pairing, this.channel_pairings] = from_string(field.value);
                         break;
                     case field_names.kinks:
-                        this.kinks = field.value;
+                        [this.kinks, this.channel_kinks] = from_string(field.value);
                         break;
                     case field_names.limits:
-                        this.limits = field.value;
+                        [this.limits, this.channel_limits] = from_string(field.value);
                         break;
                     case field_names.post_length:
-                        this.post_length = field.value;
+                        [this.post_length, this.channel_post_length] = from_string(field.value);
                         break;
                 }
             }
@@ -1084,8 +1104,8 @@ client.on("message", (message) => {
     if (lfpChannels.includes(message.channel)) {
         const ad_limit = 4;
         (async () => {
-            //Check for 3+ images
             if ((await (async () => {
+                //Check for 3+ images
                 if (util.image_link_count(message) > 3) {
                     message.delete();
                     util.sendTextMessage(channels.lfp_moderation,
@@ -1096,6 +1116,7 @@ client.on("message", (message) => {
                         .setTimestamp(new Date().getTime()));
                     return true;
                 }
+                //Don't DM react when we can put it in the ad info
                 if (Ad_template_info.of(message.author.id)?.is_complete) {
                     return;
                 }
@@ -1118,12 +1139,21 @@ client.on("message", (message) => {
                 }
             })())) return;
 
+            async function delete_ad_info(message: DiscordJS.Message) {
+                for (const [, followup_message] of await message.channel.messages.fetch({after: message.id})) {
+                    if (followup_message.author.id === "561189790180179991" && followup_message.content.includes(message.author.id)) {
+                        await followup_message.delete();
+                    }
+                }
+            }
+
             //Delete previous ads
             await (async () => {
                 //delete old ad
                 const messages = message.channel.messages.cache;
                 for (const [, old_message] of messages) {
                     if (old_message.author?.id === message.author.id && old_message.id !== message.id) {
+                        await delete_ad_info(old_message);
                         await old_message.delete();
                     }
                 }
@@ -1152,6 +1182,7 @@ client.on("message", (message) => {
                             await channels.lfp_moderation.send(`${old_message.author} Please note that you can only post 4 ads in total across all the LFP channels. If you post a 5th, the oldest gets automatically deleted, which applied to your ad in ${old_message.channel}.`);
                         }
                         try {
+                            await delete_ad_info(old_message);
                             await old_message.delete();
                             util.log(`Deleted ad by ${old_message.author} in ${old_message.channel} because of breaking ${ad_limit} ad limit`, `Ad moderation`, "INFO");
                         }
@@ -1167,15 +1198,28 @@ client.on("message", (message) => {
                 const entry = Ad_template_info.of(message.author.id);
                 if (entry && entry.is_complete) {
                     const user = server.members.cache.get(message.author.id);
-                    let dm_text = "";
+                    let dm_text = "Unknown❔";
                     if (user) {
                         if (user.roles.cache.has(roles.DMs_open.id)) dm_text = "Open ✅";
                         else if (user.roles.cache.has(roles.DMs_closed.id)) dm_text = "Closed ⛔";
                         else if (user.roles.cache.has(roles.Ask_to_dm.id)) dm_text = "Ask ⚠️";
-                        else dm_text = "Unknown❔";
                     }
 
-                    message.channel.send(`Pairing: ${entry.pairing}\nKinks: ${entry.kinks}\nLimits: ${entry.limits}\nPost Length: ${entry.post_length}\nDM: ${dm_text}`);
+                    function field_data(general: string, per_channel: Map<string, string>) {
+                        const channel_value = per_channel.get(message.channel.id);
+                        if (channel_value) {
+                            return `${general}, ${channel_value}`;
+                        }
+                        return general;
+                    }
+
+                    message.channel.send(`${message.author}'s Ad Info
+**Pairings**: ${field_data(entry.pairing, entry.channel_pairings)}
+**Kinks**: ${field_data(entry.kinks, entry.channel_kinks)}
+**Limits**: ${field_data(entry.limits, entry.channel_limits)}
+**Post Length**: ${field_data(entry.post_length, entry.channel_post_length)}
+**DMs**: ${dm_text}`
+                    );
                     return;
                 }
 
@@ -1819,9 +1863,27 @@ async function post_next_missing(info: Ad_template_info, message: DiscordJS.Mess
             await message.reply(text);
         }
         else {
-            await message.reply(`${text}That's it! You're done registering, so go and write some ads!`);
+            await message.reply(`${text}That's it! You're done registering, so go and write some ads!\nIf you made a mistake or changed your mind you can repeat any command to update your info!\nYou can also set additional per channel fields by mentioning a channel, for example \`_register kinks <#719107115444076685> Scissoring\` and it will be added to your kink list when posting an ad in that channel.`);
         }
     }
+}
+
+function parse_register_data(data: string, message: DiscordJS.Message): [string, string[]] | undefined {
+    const parts = data.match(/<#\d{18}>/);
+    if (!parts) {
+        return [data, []];
+    }
+    const channel_ids: string[] = [];
+    for (const part of parts) {
+        const id = part.substr(2, 18);
+        const is_lfp_channel = lfpChannels.reduce((found, lfp_channel) => found || lfp_channel.id === id, false);
+        if (!is_lfp_channel) {
+            message.reply(`You are supposed to only specify LFP channels`);
+            return;
+        }
+        channel_ids.push(id);
+    }
+    return [data.split(/<#\d{18}>/).join("").trim(), channel_ids];
 }
 
 async function register_pairings(info: Ad_template_info, message: DiscordJS.Message) {
@@ -1829,12 +1891,30 @@ async function register_pairings(info: Ad_template_info, message: DiscordJS.Mess
     if (!match) {
         throw `Failed finding pairings data`;
     }
-    const pairings = message.content.slice(match[0].length);
+
     const prev = info.pairing;
-    info.pairing = pairings;
+    const result = parse_register_data(message.content.slice(match[0].length), message);
+    if (!result) {
+        return;
+    }
+    if (result[1].length == 0) {
+        info.pairing = result[0];
+    }
+    else {
+        if (result[0] === "clear") {
+            for (const id of result[1]) {
+                info.channel_pairings.delete(id);
+            }
+        }
+        else {
+            for (const id of result[1]) {
+                info.channel_pairings.set(id, result[0]);
+            }
+        }
+    }
     await info.save();
     if (prev) {
-        await post_next_missing(info, message, `Successfully updated your pairings! Your previous pairings were "${prev}"\n`, true);
+        await post_next_missing(info, message, `Successfully updated your pairings!\n`, true);
     }
     else {
         await post_next_missing(info, message, `Successfully saved pairings! I'm sure we have something for you!\n`, false);
@@ -1846,12 +1926,30 @@ async function register_kinks(info: Ad_template_info, message: DiscordJS.Message
     if (!match) {
         throw `Failed finding kinks data`;
     }
-    const kinks = message.content.slice(match[0].length);
     const prev = info.kinks;
-    info.kinks = kinks;
+    const result = parse_register_data(message.content.slice(match[0].length), message);
+    if (!result) {
+        return;
+    }
+    if (result[1].length == 0) {
+        info.kinks = result[0];
+    }
+    else {
+        console.log(`>${result[0]}<`);
+        if (result[0] === "clear") {
+            for (const id of result[1]) {
+                info.channel_kinks.delete(id);
+            }
+        }
+        else {
+            for (const id of result[1]) {
+                info.channel_kinks.set(id, result[0]);
+            }
+        }
+    }
     await info.save();
     if (prev) {
-        await post_next_missing(info, message, `Updated kinks. Your previous kinks were "${prev}"\n`, true);
+        await post_next_missing(info, message, `Updated kinks.\n`, true);
     }
     else {
         await post_next_missing(info, message, `Successfully saved your kinks! Those are pretty lewd 😳\n`, false);
@@ -1863,12 +1961,29 @@ async function register_limits(info: Ad_template_info, message: DiscordJS.Messag
     if (!match) {
         throw `Failed finding limits data`;
     }
-    const limits = message.content.slice(match[0].length);
     const prev = info.limits;
-    info.limits = limits;
+    const result = parse_register_data(message.content.slice(match[0].length), message);
+    if (!result) {
+        return;
+    }
+    if (result[1].length == 0) {
+        info.limits = result[0];
+    }
+    else {
+        if (result[0] === "clear") {
+            for (const id of result[1]) {
+                info.channel_limits.delete(id);
+            }
+        }
+        else {
+            for (const id of result[1]) {
+                info.channel_limits.set(id, result[0]);
+            }
+        }
+    }
     await info.save();
     if (prev) {
-        await post_next_missing(info, message, `Updated limits. Previous limits: "${prev}"\n`, true);
+        await post_next_missing(info, message, `Updated limits.\n`, true);
     }
     else {
         await post_next_missing(info, message, `Yeah, I don't like those either. Saved.\n`, false);
@@ -1880,12 +1995,29 @@ async function register_postlength(info: Ad_template_info, message: DiscordJS.Me
     if (!match) {
         throw `Failed finding post length data`;
     }
-    const postlength = message.content.slice(match[0].length);
     const prev = info.post_length;
-    info.post_length = postlength;
+    const result = parse_register_data(message.content.slice(match[0].length), message);
+    if (!result) {
+        return;
+    }
+    if (result[1].length == 0) {
+        info.post_length = result[0];
+    }
+    else {
+        if (result[0] === "clear") {
+            for (const id of result[1]) {
+                info.channel_post_length.delete(id);
+            }
+        }
+        else {
+            for (const id of result[1]) {
+                info.channel_post_length.set(id, result[0]);
+            }
+        }
+    }
     await info.save();
     if (prev) {
-        await post_next_missing(info, message, `Updated post length, was "${prev}" before.\n`, true);
+        await post_next_missing(info, message, `Updated post length.\n`, true);
     }
     else {
         await post_next_missing(info, message, `Gotcha.\n`, false);
@@ -2837,11 +2969,17 @@ const cmd: Cmd = {
                 await register_postlength(entry, message);
             }
             else if (command === "show") {
+                function additional(type: string, values: Map<string, string>) {
+                    if (values.size == 0) {
+                        return "";
+                    }
+                    return `Additional per channel ${type}: ${reduce(values, (curr, [channel_id, value]) => `${curr}<#${channel_id}>: ${value}\n`, "\n")}`;
+                }
                 await message.reply(
-                    `Pairings: ${entry.pairing || "<none>"}\n` +
-                    `Kinks: ${entry.kinks || "<none>"}\n` +
-                    `Limits: ${entry.limits || "<none>"}\n` +
-                    `Post length: ${entry.post_length || "<none>"}\n` +
+                    `**Pairings**: ${entry.pairing || "<none>"}\n` + additional("pairings", entry.channel_pairings) +
+                    `**Kinks:** ${entry.kinks || "<none>"}\n` + additional("kinks", entry.channel_kinks) +
+                    `**Limits**: ${entry.limits || "<none>"}\n` + additional("limits", entry.channel_limits) +
+                    `**Post length**: ${entry.post_length || "<none>"}\n` + additional("post length", entry.channel_post_length) +
                 ``);
             }
             else {
@@ -2876,8 +3014,18 @@ Displays a list of channels and the number of messages, chatters and readers for
 **\`_inactive\`**
 Displays a list of channels that are currently considered inactive and may get deleted next weekend. Note that this only updates every couple of days and that new channels get a grace period.
 
+**\`_register\`**
+Start the process of registering your ad template.
+
+**\`_register show\`**
+Show your ad template.
+
+**\`_register clear pairings|kinks|limits|postlength [#channel]\`**
+Clear a per channel field.
+
 **\`_help\`**
-Display this text.`
+Display this text.
+`
         const staff_commands = `
 ***\`_warn\`*** \`[@user] [?reason]\`
 Applies appropriate warning role (Warned 1x or Warned 2x), sends a DM about the warning and enters it into database.
