@@ -1223,15 +1223,15 @@ client.on("message", (message) => {
                     return;
                 }
 
-                if (message.channel === channels.all_style) {
-                    return;
+                if (message.channel === channels.all_style || message.channel === channels.real_life) {
+                    return; //No ad template required in these channels
                 }
-                const ad_template_words = ["Pairing", "Scene", "Required Kinks", "Optional Kinks", "Blacklisted Kinks", "Timezone", "Post Length", "Minimum Partner Post Length", "Brief Description"];
-                for (const word of ad_template_words) {
-                    if (!message.content.includes(word)) {
-                        await util.react(message, "🧩");
-                        return;
-                    }
+                const ad_template_words = ["pairing", "kinks", "limits", "post length", "plot"];
+                const lower_content = message.content.toLowerCase();
+                const missing_words = ad_template_words.filter(word => !lower_content.includes(word));
+                if (missing_words.length > 0) {
+                    channels.lfp_moderation.send(`${message.author} Your ad in ${message.channel} is not following the ${channels.ad_template}. It is missing the field(s) **${missing_words.join(", ")}**. Please edit your ad to include these required fields.`);
+                    await util.react(message, "🧩");
                 }
             })();
 
@@ -1243,11 +1243,11 @@ client.on("message", (message) => {
                 }
                 lfpTimer[channel.name] = setTimeout(async () => {
                     const messages = await channel.messages.fetch();
-                    let msg = messages.filter(m => m.author.id === client.user?.id && m.content.includes("Channel Info"));
-                    if (msg.size !== 1) {
-                        util.log(`Deleting ${msg.size} of my messages in ${channel} which shouldn't happen.`, "lfpInfo", "WARN");
+                    let channel_info_msgs = messages.filter(m => m.author.id === client.user?.id && m.content.includes("Channel Info"));
+                    if (channel_info_msgs.size !== 1) {
+                        util.log(`Deleting ${channel_info_msgs.size} of my messages in ${channel} which shouldn't happen.`, "lfpInfo", "WARN");
                     }
-                    msg.forEach(m => m.delete());
+                    channel_info_msgs.forEach(m => m.delete());
 
                     let title = "";
                     let target = "";
@@ -1349,7 +1349,7 @@ client.on("message", (message) => {
 
                         default:
                             util.log(`Failed finding matchmaking channel ${channel.name.substr(2)}`, "Matchmaking", "**ERROR**");
-                        }
+                    }
 
                     const playing_as = channel.parent?.id === categories.playing_as.id;
                     const playing_with = channel.parent?.id === categories.playing_with.id;
@@ -1384,20 +1384,32 @@ client.on("message", (message) => {
                         `Following the ${channels.ad_template} is not required in this channel.\n\n` +
                         `__**${rp_type_str} ${title} Channel Info**__\n` +
                         `🔹 __What posts are to be expected and to be posted in this channel?__\n` +
-                        `Any LFP ad that that doesn't contain disallowed content such as underage characters.\n\n` +
+                        `Any LFP ad that doesn't contain disallowed content such as underage characters.\n\n` +
                         `🔹 __Target Audience for LFP posts in this channel:__\n` +
                         `**Anyone looking to browse diverse ads**\n\n` +
                         `If you see posts which are looking to play with or as underage characters let the staff know by reacting with :x: (\`:x:\`) or reporting it in ${channels.reports}!\n\n` +
                         `If you want to **contact** someone, **please check their DM Roles** first! If they have **Ask to DM ⚠️** (🇩 🇲 ⚠️) or **DMs Closed ⛔** (🇩 🇲 ⛔) use ${channels.contact}!\n\n` +
                         `*More info in:* ${channels.lfp_info}\n\n`
                     ;
+                    const irlMsg = `>>> ` +
+                        `Following the ${channels.ad_template} is not required in this channel.\n\n` +
+                        `__**${rp_type_str} ${title} Channel Info**__\n` +
+                        `🔹 __What posts are to be expected and to be posted in this channel?__\n` +
+                        `Any ad that is looking for non-roleplay contacts such as friends, dates and playing games.\n\n` +
+                        `🔹 __Target Audience for posts in this channel:__\n` +
+                        `**Anyone looking for friends or partners.**\n\n` +
+                        `If you see ads not looking for IRL contacts or breaking other rules let the staff know by reacting with :x: (\`:x:\`) or reporting it in ${channels.reports}!\n\n` +
+                        `If you want to **contact** someone, **please check their DM Roles** first! If they have **Ask to DM ⚠️** (🇩 🇲 ⚠️) or **DMs Closed ⛔** (🇩 🇲 ⛔) use ${channels.contact}!\n\n` +
+                        `*More info in:* ${channels.lfp_info}\n\n`
+                    ;
 
-                    await channel.send(channel.id === channels.all_style.id ? lfpAllstyleMsg : lfpMsg)
+                    const msg = channel.id === channels.all_style.id ? lfpAllstyleMsg : channel.id === channels.real_life.id ? irlMsg : lfpMsg;
+
+                    channel.send(msg)
                     .catch(error => util.log(`Failed updating lfp info in ${channel} because ${error}`, "lfpInfo", "**ERROR**"));
                 }, 2000);
             }
-        }
-        )();
+        })();
     }
 
     // delete links in general
@@ -3009,7 +3021,7 @@ Display the profile picture of a user in big.
 Displays a list of the current cults and their symbol, cult role, leader and number of members sorted by members.
 
 **\`_stats\`** \`[#channel|#category|prefix|ID]*\`
-Displays a list of channels and the number of messages, chatters and readers for the specified channel(s) for the last 28 days. Try \`_stats #💬ooc-general #🧚rp-general\` to compare the general chats or \`_stats 🐎\` to see how active the Ram Ranch cult is. Note that this only updates once every few days or so.
+Displays a list of channels and the number of messages, chatters and readers for the specified channel(s) for the last 28 days. Try \`_stats #💬ooc-general #🧚rp-general\` to compare the general chats or \`_stats 🐎\` to see how active the Ram Ranch cult is. Note that the stats only update once a week around Sunday to Monday.
 
 **\`_inactive\`**
 Displays a list of channels that are currently considered inactive and may get deleted next weekend. Note that this only updates every couple of days and that new channels get a grace period.
