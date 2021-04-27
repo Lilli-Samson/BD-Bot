@@ -281,7 +281,9 @@ class Ad_template_info {
         }
         for (let messages = await channels.template_data.messages.fetch(); messages.size > 0; messages = await channels.template_data.messages.fetch({before: get_last_message_of(messages).id})) {
             for (const [, message] of messages) {
-                await this.load_from_message(message);
+                if (message.author.id === "561189790180179991") {
+                    await this.load_from_message(message);
+                }
             }
         }
     }
