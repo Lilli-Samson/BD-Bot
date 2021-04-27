@@ -1875,7 +1875,7 @@ async function post_next_missing(info: Ad_template_info, message: DiscordJS.Mess
             await message.reply(text);
         }
         else {
-            await message.reply(`${text}That's it! You're done registering, so go and write some ads!\nIf you made a mistake or changed your mind you can repeat any command to update your info!\nYou can also set additional per channel fields by mentioning a channel, for example \`_register kinks <#719107115444076685> Scissoring\` and it will be added to your kink list when posting an ad in that channel.`);
+            await message.reply(`${text}That's it! You're done registering, so go and write some ads!\nIf you made a mistake or changed your mind you can repeat any command to update your info!\nYou can also set additional per channel fields by mentioning a channel, for example \`_register kinks #${channels.lesbian.name} Scissoring\` and it will be added to your kink list when posting an ad in that channel.`);
         }
     }
 }
