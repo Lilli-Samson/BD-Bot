@@ -810,6 +810,24 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
         return;
     }
     messagereaction.me = (await messagereaction.users.fetch()).has(client.user!.id)
+    if (reaction === "❌" && messagereaction.message.channel === channels.contact) {
+        try {
+            await messagereaction.message.delete();
+        } catch (e) {
+            await channels.logs.send(`Failed deleting message ${messagereaction.message.url} because of ${e}`);
+            return;
+        }
+        try {
+            await channels.logs.send(
+                new DiscordJS.MessageEmbed()
+                .setTitle(`Message Deleted via ❌ reaction in #${channels.contact.name}`)
+                .setDescription(messagereaction.message.content)
+                .addField("Author", `${messagereaction.message.author} - ${messagereaction.message.author.username}#${messagereaction.message.author.discriminator}`)
+                .addField("Reporter", `${user} - ${user.username}#${user.discriminator}`));
+        } catch (e) {
+            await channels.logs.send(`Deleted message by ${messagereaction.message.author} in ${channels.contact} due to ❌ reaction by ${user} but failed to send report because of error ${e}`);
+        }
+    }
     if (reaction === "❌" && lfpChannels.reduce((found, lfp_channel) => found || lfp_channel.id === channel.id, false)) { //RP ad got flagged
         //no self-reports
         if (messagereaction.message.author.id === client.user?.id) return;
