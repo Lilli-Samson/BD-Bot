@@ -1228,7 +1228,7 @@ client.on("message", (message) => {
                 if (message.channel === channels.all_style || message.channel === channels.real_life) {
                     return; //No ad template required in these channels
                 }
-                const ad_template_words = ["pairing", "kinks", "limits", "post length", "plot"];
+                const ad_template_words = ["pairing", "kinks", "limits", "post length min/max", "plot"];
                 const lower_content = message.content.toLowerCase();
                 const missing_words = ad_template_words.filter(word => !lower_content.includes(word));
                 if (missing_words.length > 0) {
