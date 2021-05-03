@@ -1234,10 +1234,10 @@ client.on("message", (message) => {
                     }
 
                     message.channel.send(`${message.author}'s Ad Info
-**Pairings**: ${field_data(entry.pairing, entry.channel_pairings)}
+**Pairing**: ${field_data(entry.pairing, entry.channel_pairings)}
 **Kinks**: ${field_data(entry.kinks, entry.channel_kinks)}
 **Limits**: ${field_data(entry.limits, entry.channel_limits)}
-**Post Length**: ${field_data(entry.post_length, entry.channel_post_length)}
+**Post Length Min/Max**: ${field_data(entry.post_length, entry.channel_post_length)}
 **DMs**: ${dm_text}`
                     );
                     return;
@@ -1250,7 +1250,7 @@ client.on("message", (message) => {
                 const lower_content = message.content.toLowerCase();
                 const missing_words = ad_template_words.filter(word => !lower_content.includes(word));
                 if (missing_words.length > 0) {
-                    channels.lfp_moderation.send(`${message.author} Your ad in ${message.channel} is not following the ${channels.ad_template}. It is missing the field(s) **${missing_words.join(", ")}**. Please edit your ad to include these required fields.`);
+                    channels.lfp_moderation.send(`${message.author} Your ad in ${message.channel} is not following the ${channels.ad_template}. It is missing the field(s) **${missing_words.join(", ")}**. Please edit your ad to include these required fields or register your template fields by typing \`_register\` in ${channels.botchannel}.`);
                     await util.react(message, "🧩");
                 }
             })();
