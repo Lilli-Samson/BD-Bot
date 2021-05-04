@@ -1136,27 +1136,6 @@ client.on("message", (message) => {
                         .setTimestamp(new Date().getTime()));
                     return true;
                 }
-                //Don't DM react when we can put it in the ad info
-                if (Ad_template_info.of(message.author.id)?.is_complete) {
-                    return;
-                }
-                //Add DM status emotes
-                const user = server.members.cache.get(message.author.id);
-                const add_reaction = async (emote: string) => {
-                    try {
-                        await util.react(message, emote);
-                    } catch (error) {
-                        console.log(`Failed adding emote ${emote} because ${error}`);
-                    }
-                }
-                if (user) {
-                    await add_reaction("🇩");
-                    await add_reaction("🇲");
-                    if (user.roles.cache.has(roles.DMs_open.id)) await add_reaction("✅");
-                    else if (user.roles.cache.has(roles.DMs_closed.id)) await add_reaction("⛔");
-                    else if (user.roles.cache.has(roles.Ask_to_dm.id)) await add_reaction("⚠️");
-                    else await add_reaction("❔");
-                }
             })())) return;
 
             async function delete_ad_info(message: DiscordJS.Message) {
@@ -1217,14 +1196,6 @@ client.on("message", (message) => {
             await (async () => {
                 const entry = Ad_template_info.of(message.author.id);
                 if (entry && entry.is_complete) {
-                    const user = server.members.cache.get(message.author.id);
-                    let dm_text = "Unknown❔";
-                    if (user) {
-                        if (user.roles.cache.has(roles.DMs_open.id)) dm_text = "Open ✅";
-                        else if (user.roles.cache.has(roles.DMs_closed.id)) dm_text = "Closed ⛔";
-                        else if (user.roles.cache.has(roles.Ask_to_dm.id)) dm_text = "Ask ⚠️";
-                    }
-
                     function field_data(general: string, per_channel: Map<string, string>) {
                         const channel_value = per_channel.get(message.channel.id);
                         if (channel_value) {
@@ -1237,8 +1208,7 @@ client.on("message", (message) => {
 **Pairing**: ${field_data(entry.pairing, entry.channel_pairings)}
 **Kinks**: ${field_data(entry.kinks, entry.channel_kinks)}
 **Limits**: ${field_data(entry.limits, entry.channel_limits)}
-**Post Length Min/Max**: ${field_data(entry.post_length, entry.channel_post_length)}
-**DMs**: ${dm_text}`
+**Post Length Min/Max**: ${field_data(entry.post_length, entry.channel_post_length)}`
                     );
                     return;
                 }
@@ -1252,11 +1222,29 @@ client.on("message", (message) => {
                 if (missing_words.length > 0) {
                     channels.lfp_moderation.send(`${message.author} Your ad in ${message.channel} is not following the ${channels.ad_template}. It is missing the field(s) **${missing_words.join(", ")}**. Please edit your ad to include these required fields or register your template fields by typing \`_register\` in ${channels.botchannel}.`);
                     await util.react(message, "🧩");
-                }
+                }                
             })();
 
-            // Post the LFP rules in LFP channels
             if (message.channel instanceof DiscordJS.TextChannel && lfpChannels.includes(message.channel)) {
+                //Add DM status emotes
+                const user = server.members.cache.get(message.author.id);
+                const add_reaction = async (emote: string) => {
+                    try {
+                        await util.react(message, emote);
+                    } catch (error) {
+                        console.log(`Failed adding emote ${emote} because ${error}`);
+                    }
+                }
+                if (user) {
+                    await add_reaction("🇩");
+                    await add_reaction("🇲");
+                    if (user.roles.cache.has(roles.DMs_open.id)) await add_reaction("✅");
+                    else if (user.roles.cache.has(roles.DMs_closed.id)) await add_reaction("⛔");
+                    else if (user.roles.cache.has(roles.Ask_to_dm.id)) await add_reaction("⚠️");
+                    else await add_reaction("❔");
+                }
+
+                // Post the LFP rules in LFP channels
                 const channel = message.channel;
                 if (lfpTimer[channel.name]) {
                     clearTimeout(lfpTimer[channel.name]);
