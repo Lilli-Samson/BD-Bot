@@ -1947,6 +1947,13 @@ async function register_kinks(info: Ad_template_info, message: DiscordJS.Message
         throw `Failed finding kinks data`;
     }
     const prev = info.kinks;
+    function has(text: string) {
+        return message.content.includes(text);
+    }
+    if ((has("age play") || has("ageplay") || has("underage")) && !has("18+") && !has("over 18") && !has("above 18")) {
+        message.reply(`Underage characters are not allowed on the server, so I can't save those kinks. If you meant age differences write "age differences" or explicitly specify that the characters must be of age, for example "ageplay (18+)".`);
+        return;
+    }
     const result = parse_register_data(message.content.slice(match[0].length), message);
     if (!result) {
         return;
