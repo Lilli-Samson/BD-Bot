@@ -1870,7 +1870,7 @@ async function continue_registering(info: Ad_template_info, message: DiscordJS.M
         await message.reply(`${pretext}How long are your resposes typically? Please answer in characters, not lines. You can also use words and multiply by 7 to get an estimate. If you are unsure because you will adapt to your partner specify what you usually write or feel most comfortable with. Example: \`_register ${field_commands.post_length[0]} 400-500\``);
     }
     else {
-        await message.reply(`You already registered your ad template. If you want to update a field use \`_register pairing [Pairings like MxF]\`, \`_register kinks [your kinks]\`, \`_register limits [your limits]\` or \`register postlength [typical post length in characters]\``);
+        await message.reply(`You already registered your ad template. If you want to update a field use \`_register pairing [Pairings like MxF]\`, \`_register kink [your kinks]\`, \`_register limit [your limits]\` or \`register postlength [typical post length in characters]\``);
     }
 }
 
