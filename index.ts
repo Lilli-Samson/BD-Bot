@@ -829,14 +829,18 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
         }
     }
     if (reaction === "❌" && lfpChannels.reduce((found, lfp_channel) => found || lfp_channel.id === channel.id, false)) { //RP ad got flagged
+        const is_template_report = messagereaction.message.author.id === client.user?.id && messagereaction.message.content.includes("'s Ad Info");
         //no self-reports
-        if (messagereaction.message.author.id === client.user?.id) return;
+        if (messagereaction.message.author.id === client.user?.id && !is_template_report) return;
         //check that we haven't already handled it
         if (messagereaction.me) return;
         //place own reaction
         await util.react(messagereaction.message, "❌");
         //make report
         const report_message = await channels.reported_rps.send(get_ad_report(messagereaction.message, user));
+        if (is_template_report) {
+            return;
+        }
         let images: string[] = [];
         messagereaction.message.embeds.forEach(emb => {
             if (emb.url) images.push(emb.url);
