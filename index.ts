@@ -808,6 +808,20 @@ async function remove_own_reactions(message: DiscordJS.Message) {
     }
 }
 
+async function remove_jigsaw_reaction(message: DiscordJS.Message) {
+    for (const [id, reaction] of message.reactions.cache) {
+        if (reaction.me) {
+            await reaction.users.fetch(); //need to do this, otherwise reaction.users is empty
+            for (const [id] of reaction.users.cache) {
+                if (id === client.user?.id && reaction.emoji.name === "🧩") {
+                    reaction.users.remove(id);
+                    return;
+                }
+            }
+        }
+    }
+}
+
 client.on('messageReactionAdd', async (messagereaction, user) => {
     if (user === client.user) return;
     if (!(user instanceof DiscordJS.User)) {
@@ -1256,8 +1270,27 @@ client.on("message", (message) => {
                 const missing_words = ad_template_words.filter(word => !lower_content.includes(word));
                 if (missing_words.length > 0) {
                     if (delete_ads_without_ad_template) {
-                        channels.lfp_moderation.send(`${message.author} Your ad in ${message.channel} was not following the ${channels.ad_template}, so **it was deleted**. It was missing the field(s) **${missing_words.join(", ")}**. Please include these required field(s) exactly next time you post an ad **or** register your template fields by typing \`_register\` in ${channels.botchannel}.`);
-                        message = await message.delete({reason: "Missing ad template"});
+                        channels.lfp_moderation.send(`${message.author} Your ad in ${message.channel} is not following the ${channels.ad_template}. It is missing the field(s) **${missing_words.join(", ")}**. Please edit your ad to include these required fields **within the next 10 minutes**. Alternatively register your template fields by typing \`_register\` in ${channels.botchannel}.`);
+                        await util.react(message, "🧩");
+                        setTimeout(async () => {
+                            if (message.deleted) {
+                                return;
+                            }
+                            const lower_content = message.content.toLowerCase();
+                            const missing_words = ad_template_words.filter(word => !lower_content.includes(word));
+                            const entry = Ad_template_info.of(message.author.id);
+                            if (entry && entry.is_complete) {
+                                await remove_jigsaw_reaction(message);
+                                return;
+                            }
+                            if (missing_words.length > 0) {
+                                await channels.lfp_moderation.send(`${message.author} Your ad in ${message.channel} was not following the ${channels.ad_template}, so **it was deleted**. It was missing the field(s) **${missing_words.join(", ")}**. Please include these required field(s) exactly next time you post an ad **or** register your template fields by typing \`_register\` in ${channels.botchannel}.`);
+                                await message.delete({reason: "Missing ad template"});
+                            }
+                            else {
+                                remove_jigsaw_reaction(message);
+                            }
+                        }, 10*60*1000);
                     }
                     else {
                         channels.lfp_moderation.send(`${message.author} Your ad in ${message.channel} is not following the ${channels.ad_template}. It is missing the field(s) **${missing_words.join(", ")}**. Please edit your ad to include these required fields or register your template fields by typing \`_register\` in ${channels.botchannel}.`);
