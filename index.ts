@@ -24,6 +24,8 @@ const prefix = localConfig.PREFIX;
 const server_id = localConfig.SERVER;
 let server: DiscordJS.Guild;
 
+let delete_ads_without_ad_template = false;
+
 const channel_list = [
     ["main", "accalia-main"],
     ["level", "📈level-up-log"],
@@ -120,6 +122,8 @@ const emoji_list = [
     ["pingangry", "pingangry"],
     ["pepegun", "Pepegun"],
     ["monkas", "monkas"],
+    ["elmoburn", "elmoburn"],
+    ["pog", "pog"],
 ] as const;
 //@ts-ignore
 let emojis: {[C in typeof emoji_list[number][0]]: DiscordJS.GuildEmoji} = {};
@@ -407,6 +411,31 @@ const dbMod = {
         });
     }
 };
+
+function delete_links_in_general_chats(message: DiscordJS.Message) {
+    if ([channels.ooc_general.id, channels.rp_general.id].includes(message.channel.id)) {
+        if (message.content.match(link_regex)) {
+            if (message.content.match(/https:\/\/discord.gift\/\w+/)) {
+                util.react(message, emojis.pog);
+                return;
+            }
+            if (util.isStaff(message)) { //have mercy on staff and don't delete messages
+                util.react(message, emojis.bancat);
+                return;
+            }
+            const logBody = `link in ${message.channel} from ${message.author}\nMessage content: ${message}`;
+            message.delete({reason: "link in gen chat"})
+                .then(() => {
+                    util.log(`Removed ${logBody}`, 'Automatic Link Removal', "WARN");
+                })
+                .catch((e) => {
+                    util.log(`Failed to remove ${logBody}\nError: ${e.toString()}`, 'Automatic Link Removal', "**ERROR**");
+                });
+            util.sendTextMessage(message.channel, `${message.author} Sorry, no media or links of any kind in this channel. Put it in ${channels.nsfw_media} or another media channel please.`);
+            return;
+        }
+    }
+}
 
 async function fetch_invites() {
     assert(server.available, "Server unavailable");
@@ -1040,6 +1069,7 @@ client.on("messageUpdate", async (old_message, new_message) => {
         if (!reporter) return;
         await old_report.edit(null, get_ad_report(new_message, reporter));
     }
+    delete_links_in_general_chats(new_message);
 });
 
 client.on("messageDelete", async (deleted_message) => {
@@ -1224,10 +1254,20 @@ client.on("message", (message) => {
                 const lower_content = message.content.toLowerCase();
                 const missing_words = ad_template_words.filter(word => !lower_content.includes(word));
                 if (missing_words.length > 0) {
-                    channels.lfp_moderation.send(`${message.author} Your ad in ${message.channel} is not following the ${channels.ad_template}. It is missing the field(s) **${missing_words.join(", ")}**. Please edit your ad to include these required fields or register your template fields by typing \`_register\` in ${channels.botchannel}.`);
-                    await util.react(message, "🧩");
+                    if (delete_ads_without_ad_template) {
+                        channels.lfp_moderation.send(`${message.author} Your ad in ${message.channel} was not following the ${channels.ad_template}, so **it was deleted**. It was missing the field(s) **${missing_words.join(", ")}**. Please include these required field(s) exactly next time you post an ad **or** register your template fields by typing \`_register\` in ${channels.botchannel}.`);
+                        message = await message.delete({reason: "Missing ad template"});
+                    }
+                    else {
+                        channels.lfp_moderation.send(`${message.author} Your ad in ${message.channel} is not following the ${channels.ad_template}. It is missing the field(s) **${missing_words.join(", ")}**. Please edit your ad to include these required fields or register your template fields by typing \`_register\` in ${channels.botchannel}.`);
+                        await util.react(message, "🧩");
+                    }
                 }                
             })();
+
+            if (message.deleted) {
+                return;
+            }
 
             if (message.channel instanceof DiscordJS.TextChannel && lfpChannels.includes(message.channel)) {
                 //Add DM status emotes
@@ -1425,24 +1465,7 @@ client.on("message", (message) => {
     }
 
     // delete links in general
-    if ([channels.ooc_general.id, channels.rp_general.id].includes(message.channel.id)) {
-        if (message.content.match(link_regex)) {
-            if (util.isStaff(message)) { //have mercy on staff and don't delete messages
-            util.react(message, emojis.bancat);
-                return;
-            }
-            const logBody = `link in ${message.channel} from ${message.author}\nMessage content: ${message}`;
-            message.delete()
-                .then(() => {
-                    util.log(`Removed ${logBody}`, 'Automatic Link Removal', "WARN");
-                })
-                .catch((e) => {
-                    util.log(`Failed to remove ${logBody}\nError: ${e.toString()}`, 'Automatic Link Removal', "**ERROR**");
-                });
-            util.sendTextMessage(message.channel, `${message.author} Sorry, no media or links of any kind in this channel. Put it in ${channels.nsfw_media} or another media channel please.`);
-            return;
-        }
-    }
+    delete_links_in_general_chats(message);
 
     // delete non-media in Hentai Corner and Pornhub categories and nsfw-media
     if (["SOURCE", "NSFW-DISCUSSION", "EXTREME-FETISHES-BOT", "NSFW-BOT-IMAGES"].indexOf(message.channel.name.toUpperCase()) === -1 &&
@@ -3021,6 +3044,13 @@ const cmd: Cmd = {
         catch (err) {
             message.reply(`Failed processing command: ${err}`);
         }
+    },
+    rampage: function (message) {
+        message.reply(`${emojis.elmoburn}`);
+        if (!util.isStaff(message)) {
+            return;
+        }
+        delete_ads_without_ad_template = true;
     },
     help: function (message) {
         const public_commands = `
