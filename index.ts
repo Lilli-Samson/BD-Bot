@@ -64,6 +64,7 @@ const channel_list = [
     ["contact", "💬ask-to-dm"],
     ["ooc_general", "💬ooc-general"],
     ["rp_general", "🧚rp-general"],
+    ["extreme_chat", "☠extreme-chat"],
     ["nsfw_media", "👅nsfw-media"],
     ["nsfw_media_discussion", "👄nsfw-media-discussion"],
     ["nsfw_discussion", "nsfw-discussion"],
@@ -413,7 +414,7 @@ const dbMod = {
 };
 
 function delete_links_in_general_chats(message: DiscordJS.Message) {
-    if ([channels.ooc_general.id, channels.rp_general.id].includes(message.channel.id)) {
+    if ([channels.ooc_general.id, channels.rp_general.id, channels.extreme_chat.id].includes(message.channel.id)) {
         if (message.content.match(link_regex)) {
             if (message.content.match(/https:\/\/discord.gift\/\w+/)) {
                 util.react(message, emojis.pog);
