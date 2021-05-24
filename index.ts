@@ -24,8 +24,6 @@ const prefix = localConfig.PREFIX;
 const server_id = localConfig.SERVER;
 let server: DiscordJS.Guild;
 
-let delete_ads_without_ad_template = false;
-
 const channel_list = [
     ["main", "accalia-main"],
     ["level", "📈level-up-log"],
@@ -284,21 +282,34 @@ class Ad_template_info {
         function get_last_message_of(messages: DiscordJS.Collection<DiscordJS.Snowflake, DiscordJS.Message>): DiscordJS.Message {
             return messages.reduce((current, other) => current.createdTimestamp < other.createdTimestamp ? current : other, messages.first());
         }
+        let good_count = 0;
+        let bad_count = 0;
         for (let messages = await channels.template_data.messages.fetch(); messages.size > 0; messages = await channels.template_data.messages.fetch({before: get_last_message_of(messages).id})) {
             for (const [, message] of messages) {
                 if (message.author.id === "561189790180179991") {
                     await this.load_from_message(message);
+                    good_count++;
+                }
+                else {
+                    bad_count++;
                 }
             }
         }
+        channels.main.send(`Loaded ${good_count} ad template messages and skipped ${bad_count} staff messages.\nTotal ad templates loaded: ${this.ad_template_infos.size}`);
     }
     static of(user: DiscordJS.Snowflake) {
         return Ad_template_info.ad_template_infos.get(user);
     }
     get is_complete() {
-        return this.pairing && this.kinks && this.limits && this.post_length;
+        return this.pairing !== "" && this.kinks !== "" && this.limits !== "" && this.post_length !== "";
     }
     private static ad_template_infos = new Map<DiscordJS.Snowflake, Ad_template_info>();
+    static async debug() {
+        let log = `Templates loaded: ${this.ad_template_infos.size}\n`;
+        for (const [userid, info] of this.ad_template_infos) {
+            log += `${userid}: ${info.is_complete ? "completed" : "incomplete"}`;
+        }
+    }
 }
 
 function timeout(ms: number) {
@@ -1269,33 +1280,27 @@ client.on("message", (message) => {
                 const lower_content = message.content.toLowerCase();
                 const missing_words = ad_template_words.filter(word => !lower_content.includes(word));
                 if (missing_words.length > 0) {
-                    if (delete_ads_without_ad_template) {
-                        channels.lfp_moderation.send(`${message.author} Your ad in ${message.channel} is not following the ${channels.ad_template}. It is missing the field(s) **${missing_words.join(", ")}**. Please edit your ad to include these required fields **within the next 10 minutes**. Alternatively register your template fields by typing \`_register\` in ${channels.botchannel}.`);
-                        await util.react(message, "🧩");
-                        setTimeout(async () => {
-                            if (message.deleted) {
-                                return;
-                            }
-                            const lower_content = message.content.toLowerCase();
-                            const missing_words = ad_template_words.filter(word => !lower_content.includes(word));
-                            const entry = Ad_template_info.of(message.author.id);
-                            if (entry && entry.is_complete) {
-                                await remove_jigsaw_reaction(message);
-                                return;
-                            }
-                            if (missing_words.length > 0) {
-                                await channels.lfp_moderation.send(`${message.author} Your ad in ${message.channel} was not following the ${channels.ad_template}, so **it was deleted**. It was missing the field(s) **${missing_words.join(", ")}**. Please include these required field(s) exactly next time you post an ad **or** register your template fields by typing \`_register\` in ${channels.botchannel}.`);
-                                await message.delete({reason: "Missing ad template"});
-                            }
-                            else {
-                                remove_jigsaw_reaction(message);
-                            }
-                        }, 10*60*1000);
-                    }
-                    else {
-                        channels.lfp_moderation.send(`${message.author} Your ad in ${message.channel} is not following the ${channels.ad_template}. It is missing the field(s) **${missing_words.join(", ")}**. Please edit your ad to include these required fields or register your template fields by typing \`_register\` in ${channels.botchannel}.`);
-                        await util.react(message, "🧩");
-                    }
+                    channels.lfp_moderation.send(`${message.author} Your ad in ${message.channel} is not following the ${channels.ad_template}. It is missing the field(s) **${missing_words.join(", ")}**. Please edit your ad to include these required fields **within the next 10 minutes**. Alternatively register your template fields by typing \`_register\` in ${channels.botchannel}.`);
+                    await util.react(message, "🧩");
+                    setTimeout(async () => {
+                        if (message.deleted) {
+                            return;
+                        }
+                        const lower_content = message.content.toLowerCase();
+                        const missing_words = ad_template_words.filter(word => !lower_content.includes(word));
+                        const entry = Ad_template_info.of(message.author.id);
+                        if (entry && entry.is_complete) {
+                            await remove_jigsaw_reaction(message);
+                            return;
+                        }
+                        if (missing_words.length > 0) {
+                            await channels.lfp_moderation.send(`${message.author} Your ad in ${message.channel} was not following the ${channels.ad_template}, so **it was deleted**. It was missing the field(s) **${missing_words.join(", ")}**. Please include these required field(s) exactly next time you post an ad **or** register your template fields by typing \`_register\` in ${channels.botchannel}.`);
+                            await message.delete({reason: "Missing ad template"});
+                        }
+                        else {
+                            remove_jigsaw_reaction(message);
+                        }
+                    }, 10*60*1000);
                 }                
             })();
 
@@ -3043,7 +3048,7 @@ const cmd: Cmd = {
                 await message.reply(`Error getting register command`);
                 return;
             }
-            const entry = Ad_template_info.of(message.author.id) || await Ad_template_info.create_entry(message.author.id);
+            let entry = Ad_template_info.of(message.author.id) || await Ad_template_info.create_entry(message.author.id);
             if (field_commands.pairing.includes(command)) {
                 await register_pairings(entry, message);
             }
@@ -3057,6 +3062,17 @@ const cmd: Cmd = {
                 await register_postlength(entry, message);
             }
             else if (command === "show") {
+                const mention = message.mentions.members?.first();
+                if (mention) {
+                    const mention_entry = Ad_template_info.of(mention.id);
+                    if (mention_entry) {
+                        entry = mention_entry;
+                    }
+                    else {
+                        await message.reply(`No template registered for member ${mention}`);
+                        return;
+                    }
+                }
                 function additional(type: string, values: Map<string, string>) {
                     if (values.size == 0) {
                         return "";
@@ -3081,10 +3097,6 @@ const cmd: Cmd = {
     },
     rampage: function (message) {
         message.reply(`${emojis.elmoburn}`);
-        if (!util.isStaff(message)) {
-            return;
-        }
-        delete_ads_without_ad_template = true;
     },
     help: function (message) {
         const public_commands = `
