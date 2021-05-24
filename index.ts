@@ -206,13 +206,9 @@ class Ad_template_info {
         if (!author_id) {
             throw `Failed loading from message ${message} because field author was not found`;
         }
-        const user = client.users.cache.get(author_id);
-        if (!user) {
-            throw `Failed finding user <@${user}> from message ${message}`;
-        }
         const entry = new Ad_template_info(author_id, message.id);
         await entry.load();
-        Ad_template_info.ad_template_infos.set(user.id, entry);
+        Ad_template_info.ad_template_infos.set(author_id, entry);
     }
 
     private constructor (user: DiscordJS.Snowflake, message: DiscordJS.Snowflake) {
