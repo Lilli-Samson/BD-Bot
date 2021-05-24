@@ -293,7 +293,7 @@ class Ad_template_info {
                         good_count++;
                     }
                     catch (e) {
-                        await channels.logs.send(`Failed loading ad template message ${message.url} because ${e}`);
+                        await channels.accalia_logs.send(`Failed loading ad template message ${message.url} because ${e}`);
                         error_count++;
                     }
                 }
