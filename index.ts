@@ -284,18 +284,25 @@ class Ad_template_info {
         }
         let good_count = 0;
         let bad_count = 0;
+        let error_count = 0;
         for (let messages = await channels.template_data.messages.fetch(); messages.size > 0; messages = await channels.template_data.messages.fetch({before: get_last_message_of(messages).id})) {
             for (const [, message] of messages) {
                 if (message.author.id === "561189790180179991") {
-                    await this.load_from_message(message);
-                    good_count++;
+                    try {
+                        await this.load_from_message(message);
+                        good_count++;
+                    }
+                    catch (e) {
+                        await channels.logs.send(`Failed loading ad template message ${message.url} because ${e}`);
+                        error_count++;
+                    }
                 }
                 else {
                     bad_count++;
                 }
             }
         }
-        channels.main.send(`Loaded ${good_count} ad template messages and skipped ${bad_count} staff messages.\nTotal ad templates loaded: ${this.ad_template_infos.size}`);
+        channels.main.send(`Loaded ${good_count} ad template messages, failed loading ${error_count} ad template messages and skipped ${bad_count} staff messages.\nTotal ad templates loaded: ${this.ad_template_infos.size}`);
     }
     static of(user: DiscordJS.Snowflake) {
         return Ad_template_info.ad_template_infos.get(user);
