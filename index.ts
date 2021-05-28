@@ -1927,16 +1927,16 @@ const dead_char_search = async (start_message_id: string, message: DiscordJS.Mes
 
 async function continue_registering(info: Ad_template_info, message: DiscordJS.Message, pretext = "") {
     if (!info.pairing) {
-        await message.reply(`${pretext}Let's start with the pairing. What matches do you usually like? Specify your preferred character and then your partner's character. For example "MxF" if you like to play as a male with a female or "Futa with beast". Type for example \`_register kink FxM, Futa with beast\` to register your pairing. You can update that info any time.`);
+        await message.reply(`${pretext}Let's start with the pairing. What matches do you usually like? Specify your preferred character and then your partner's character. For example "MxF" if you like to play as a male with a female or "Futa with beast". Type for example \`_register pairing FxM, Futa with beast\` to register your pairing. You can update that info any time.`);
     }
     else if (!info.kinks) {
-        await message.reply(`${pretext}What sort of kinks do you like? Example: \`_register ${field_commands.kinks[0]} Oral, vanilla, ||handholding||\``);
+        await message.reply(`${pretext}What sort of kinks do you like? Example: \`_register kink Oral, vanilla, ||handholding||\``);
     }
     else if (!info.limits) {
-        await message.reply(`${pretext}What kinks are a complete turn-off for you? Example: \`_register ${field_commands.limits[0]} vore, gore, scat\``);
+        await message.reply(`${pretext}What kinks are a complete turn-off for you? Example: \`_register limit vore, gore, scat\``);
     }
     else if (!info.post_length) {
-        await message.reply(`${pretext}How long are your resposes typically? Please answer in characters, not lines. You can also use words and multiply by 7 to get an estimate. If you are unsure because you will adapt to your partner specify what you usually write or feel most comfortable with. Example: \`_register ${field_commands.post_length[0]} 400-500\``);
+        await message.reply(`${pretext}How long are your resposes typically? Please answer in characters, not lines. You can also use words and multiply by 7 to get an estimate. If you are unsure because you will adapt to your partner specify what you usually write or feel most comfortable with. Example: \`_register postlength 400-500\``);
     }
     else {
         await message.reply(`You already registered your ad template. If you want to update a field use \`_register pairing [Pairings like MxF]\`, \`_register kink [your kinks]\`, \`_register limit [your limits]\` or \`register postlength [typical post length in characters]\``);
