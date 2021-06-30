@@ -1257,6 +1257,9 @@ client.on("message", (message) => {
 
             //Check ad template
             await (async () => {
+                if (message.channel === channels.real_life) {
+                    return; //No ad template required, but still post it for all-style if available
+                }
                 const entry = Ad_template_info.of(message.author.id);
                 if (entry && entry.is_complete) {
                     function field_data(general: string, per_channel: Map<string, string>) {
@@ -1276,8 +1279,8 @@ client.on("message", (message) => {
                     return;
                 }
 
-                if (message.channel === channels.all_style || message.channel === channels.real_life) {
-                    return; //No ad template required in these channels
+                if (message.channel === channels.all_style) {
+                    return; //No ad template required
                 }
                 const ad_template_words = ["pairing", "kinks", "limits", "post length min/max", "plot"];
                 const lower_content = message.content.toLowerCase();
