@@ -85,7 +85,7 @@ const channel_list = [
     ["template_data", "rp-template-data"],
 ] as const;
 //@ts-ignore
-let channels: {[C in typeof channel_list[number][0]]: DiscordJS.TextChannel} = {};
+let channels: { [C in typeof channel_list[number][0]]: DiscordJS.TextChannel } = {};
 
 const category_list = [
     ["playing_with", "LFP Playing With"],
@@ -93,7 +93,7 @@ const category_list = [
     ["by_type", "LFP By Type"],
 ] as const;
 //@ts-ignore
-let categories: {[C in typeof category_list[number][0]]: DiscordJS.CategoryChannel} = {};
+let categories: { [C in typeof category_list[number][0]]: DiscordJS.CategoryChannel } = {};
 
 const role_list = [
     ["No_Ping", "DON'T PING⛔"],
@@ -113,7 +113,7 @@ const role_list = [
     ["Moderator", "Moderator"],
 ] as const;
 //@ts-ignore
-let roles: {[C in typeof role_list[number][0]]: DiscordJS.Role} = {};
+let roles: { [C in typeof role_list[number][0]]: DiscordJS.Role } = {};
 
 const emoji_list = [
     ["bancat", "bancat"],
@@ -125,7 +125,7 @@ const emoji_list = [
     ["pog", "pog"],
 ] as const;
 //@ts-ignore
-let emojis: {[C in typeof emoji_list[number][0]]: DiscordJS.GuildEmoji} = {};
+let emojis: { [C in typeof emoji_list[number][0]]: DiscordJS.GuildEmoji } = {};
 
 const lvl_role_list = [
     ["LVL_0", "Lewd (Lvl 0+)"],
@@ -142,7 +142,7 @@ const lvl_role_list = [
     ["LVL_100", "Retired Pornstar (Lvl 100+)"],
 ] as const;
 //@ts-ignore
-let lvl_roles: {[C in typeof lvl_role_list[number][0]]: DiscordJS.Role} = {};
+let lvl_roles: { [C in typeof lvl_role_list[number][0]]: DiscordJS.Role } = {};
 
 type LFP_Timer = {
     [key: string]: NodeJS.Timeout
@@ -155,10 +155,10 @@ let ping_violation_reaction_emoji = emojis.pingangry;
 const level_up_module = "Level roles";
 const link_regex = /((https?|ftp):\/\/|www\.)(\w.+\w\W?)/g; //source: https://support.discordapp.com/hc/en-us/community/posts/360036244152-Change-in-text-link-detection-RegEx
 type Invite_code = string;
-class Invites extends DiscordJS.Collection<Invite_code, {uses: number | null, maxUses?: number | null, inviter?: DiscordJS.User | null}>{};
+class Invites extends DiscordJS.Collection<Invite_code, { uses: number | null, maxUses?: number | null, inviter?: DiscordJS.User | null }>{ };
 let invites: Invites;
 
-function reduce<Key_type, Value_type, Accumulator_type>(map: Map<Key_type, Value_type>, reducer: {(current_value: Accumulator_type, key_value: [Key_type, Value_type]): Accumulator_type}, accumulator: Accumulator_type) {
+function reduce<Key_type, Value_type, Accumulator_type>(map: Map<Key_type, Value_type>, reducer: { (current_value: Accumulator_type, key_value: [Key_type, Value_type]): Accumulator_type }, accumulator: Accumulator_type) {
     for (const key_value of map) {
         accumulator = reducer(accumulator, key_value);
     }
@@ -211,7 +211,7 @@ class Ad_template_info {
         Ad_template_info.ad_template_infos.set(author_id, entry);
     }
 
-    private constructor (user: DiscordJS.Snowflake, message: DiscordJS.Snowflake) {
+    private constructor(user: DiscordJS.Snowflake, message: DiscordJS.Snowflake) {
         this.user = user;
         this.data_message = message;
     }
@@ -281,7 +281,7 @@ class Ad_template_info {
         let good_count = 0;
         let bad_count = 0;
         let error_count = 0;
-        for (let messages = await channels.template_data.messages.fetch(); messages.size > 0; messages = await channels.template_data.messages.fetch({before: get_last_message_of(messages).id})) {
+        for (let messages = await channels.template_data.messages.fetch(); messages.size > 0; messages = await channels.template_data.messages.fetch({ before: get_last_message_of(messages).id })) {
             for (const [, message] of messages) {
                 if (message.author.id === "561189790180179991") {
                     try {
@@ -329,7 +329,7 @@ const dbMod = {
         util.log(`Calling DB Module`, 'DB/warnUser', "INFO");
         try {
             util.log(`Attempting to connect to DB`, 'DB/warnUser', "INFO");
-            this.connect( function(db: any) {
+            this.connect(function (db: any) {
                 util.log(`Successfully established DB Connection`, 'DB/warnUser', "INFO");
                 let warnings = db.collection('warnings');
                 let warnedUser = {
@@ -345,7 +345,7 @@ const dbMod = {
                     .then((userFound: any) => {
                         if (userFound == null) return;
                         warnedUser.formerName = userFound.formerName;
-                        level = userFound.level+1;
+                        level = userFound.level + 1;
                         // TODO: REPLACE FORMERNAME AND LEVEL IF EXISTS IN DB --> PREREQUISITE: SCHEDULED WARNING DELETION
                     })
                     .catch((err: any) => {
@@ -374,16 +374,16 @@ const dbMod = {
                             `whenever the staff team decides for it.`
                         ];
 
-                        member.send(`You have been given a Level ${level} warning in the server **${server.name}** with reason: '${reason}'\n`+
-                            `This warning expires ${expirationMsg[level-1]}`);
+                        member.send(`You have been given a Level ${level} warning in the server **${server.name}** with reason: '${reason}'\n` +
+                            `This warning expires ${expirationMsg[level - 1]}`);
 
-                        util.log(`warned: ${member} (${level-1}->${level})`, "warn", "INFO");
+                        util.log(`warned: ${member} (${level - 1}->${level})`, "warn", "INFO");
 
                         util.sendTextMessage(channels.warnings,
-                            `${member} | **${lvlMsg[level-1]}**\n`+
+                            `${member} | **${lvlMsg[level - 1]}**\n` +
                             `__Reason:__ ${reason || 'Not specified'} (Warned by ${warner})\n` +
-                            `__When:__ ${moment().format(dateFormat)}\n`+
-                            `__Ends:__ ${warnDate[level-1]}\n`+
+                            `__When:__ ${moment().format(dateFormat)}\n` +
+                            `__Ends:__ ${warnDate[level - 1]}\n` +
                             `-------------------`
                         );
                     })
@@ -400,7 +400,7 @@ const dbMod = {
         try {
             return;
             util.log(`Attempting to connect to DB`, 'DB/checkWarnings', "INFO");
-            this.connect( function(db: any) {
+            this.connect(function (db: any) {
                 let warnings = db.collection('warnings');
                 warnings.findAll()
                     .then(() => {
@@ -422,7 +422,9 @@ const dbMod = {
                 const db = client.db(db_name);
                 callback(db);
             }
-            client.close();
+            if (client) {
+                client.close();
+            }
         });
     }
 };
@@ -439,7 +441,7 @@ function delete_links_in_general_chats(message: DiscordJS.Message) {
                 return;
             }
             const logBody = `link in ${message.channel} from ${message.author}\nMessage content: ${message}`;
-            message.delete({reason: "link in gen chat"})
+            message.delete({ reason: "link in gen chat" })
                 .then(() => {
                     util.log(`Removed ${logBody}`, 'Automatic Link Removal', "WARN");
                 })
@@ -461,10 +463,10 @@ async function fetch_invites() {
     try {
         const vanity_data = await server.fetchVanityData();
         if (server.vanityURLCode) {
-            retval.set(vanity_data.code, {uses: vanity_data.uses});
+            retval.set(vanity_data.code, { uses: vanity_data.uses });
         }
     }
-    catch (error) {}
+    catch (error) { }
     return retval;
 }
 
@@ -475,7 +477,7 @@ async function delete_all_rp_ads(member: DiscordJS.GuildMember | DiscordJS.Parti
 }
 
 const startUpMod = {
-    initialize: function (startUpMessage:string) {
+    initialize: function (startUpMessage: string) {
         try {
             server = <DiscordJS.Guild>client.guilds.resolve(server_id);
             assert(server);
@@ -564,7 +566,7 @@ const startUpMod = {
     },
     startSchedules: function () {
         // Cron-format: second 0-59 optional; minute 0-59; hour 0-23; day of month 1-31; month 1-12; day of week 0-7
-        let j = schedule.scheduleJob('*/60 * * * *', function(fireDate){
+        let j = schedule.scheduleJob('*/60 * * * *', function (fireDate) {
             cmd.cn(null as unknown as DiscordJS.Message);
             cmd.ancient(null as unknown as DiscordJS.Message);
         });
@@ -579,22 +581,22 @@ client.on("ready", () => {
         return;
     }
     channels.level.messages.fetch({ "limit": 100 })
-    .then(messages => {
-        //Remove duplicates so that when someone levels from lvl 3 to 4 and lvl 4 to 5 it doesn't trigger 2 level-up handles
-        let seen_users = new DiscordJS.Collection<DiscordJS.Snowflake, DiscordJS.Message>();
-        messages.sort((left, right) => right.createdTimestamp - left.createdTimestamp); //newest to oldest
-        messages.forEach(message => {
-            const id = message.mentions.members?.first()?.id;
-            if (id && !seen_users.get(id)) {
-                seen_users.set(id, message);
-            }
+        .then(messages => {
+            //Remove duplicates so that when someone levels from lvl 3 to 4 and lvl 4 to 5 it doesn't trigger 2 level-up handles
+            let seen_users = new DiscordJS.Collection<DiscordJS.Snowflake, DiscordJS.Message>();
+            messages.sort((left, right) => right.createdTimestamp - left.createdTimestamp); //newest to oldest
+            messages.forEach(message => {
+                const id = message.mentions.members?.first()?.id;
+                if (id && !seen_users.get(id)) {
+                    seen_users.set(id, message);
+                }
+            });
+            //Handle level ups that we may have missed
+            seen_users.forEach(util.handle_level_up);
+        })
+        .catch(error => {
+            util.log(`Failed reading old messages from ${channels.level} because of ${error}`, level_up_module, "**ERROR**");
         });
-        //Handle level ups that we may have missed
-        seen_users.forEach(util.handle_level_up);
-    })
-    .catch(error => {
-        util.log(`Failed reading old messages from ${channels.level} because of ${error}`, level_up_module, "**ERROR**");
-    });
     Ad_template_info.load_ad_templates();
 });
 
@@ -602,7 +604,7 @@ const process_member_join = async (member: DiscordJS.GuildMember | DiscordJS.Par
     try {
         member = await member.fetch();
     }
-    catch(err) {
+    catch (err) {
         console.error(`Failed process_member_join on initial fetch because ${err}`);
     }
     const invitee_is_new = new Date().getTime() - (client.users.cache.get(member.id)?.createdTimestamp || 0) < 1000 * 60 * 60 * 24;
@@ -635,8 +637,8 @@ const process_member_join = async (member: DiscordJS.GuildMember | DiscordJS.Par
             const inviter_recent_string = inviter_is_recent ? `(:warning: who joined ${inviter_age} ago) ` : "";
             if (old_invite.inviter) {
                 curr += `${invitee_str} **joined**; Invited by\n` +
-                `${old_invite.inviter} ` + `(${old_invite.inviter.username}#${old_invite.inviter.discriminator}) ` + inviter_recent_string +
-                `${inviter_has_left ? "who already left " : ""}(**${new_uses}** invite(s) on ${expired ? "expired " : ""}code **${old_code}**)\n`;
+                    `${old_invite.inviter} ` + `(${old_invite.inviter.username}#${old_invite.inviter.discriminator}) ` + inviter_recent_string +
+                    `${inviter_has_left ? "who already left " : ""}(**${new_uses}** invite(s) on ${expired ? "expired " : ""}code **${old_code}**)\n`;
             }
             else {
                 curr += `${invitee_str} **joined** (**${new_uses}** invite(s) on code **${old_code}**)\n`;
@@ -655,7 +657,7 @@ async function member_check(member_: DiscordJS.GuildMember | DiscordJS.PartialGu
     const banned_names = ["jonathan galindo", "nigga", "nigger"];
     if (banned_names.find(name => (member.user.username.toLocaleLowerCase().indexOf(name) !== -1) || (member.displayName.toLocaleLowerCase().indexOf(name) !== -1))) {
         util.sendTextMessage(channels.warnings, `Banned ${member} for having disallowed name/nickname (${member.user.username}/${member.displayName}).`);
-        member.ban({reason: `Name contained bad phrase`});
+        member.ban({ reason: `Name contained bad phrase` });
     }
 }
 
@@ -670,7 +672,7 @@ client.on("guildMemberAdd", (member) => {
         return;
     }
     const invite_channel = <DiscordJS.TextChannel>channels.invites;
-    
+
     function done_processing_join(invite_string: string, invs: Invites) {
         invite_channel.send(new DiscordJS.MessageEmbed().setDescription(invite_string));
         function invites_to_string(invs: Invites) {
@@ -679,39 +681,39 @@ client.on("guildMemberAdd", (member) => {
         //util.sendTextMessage(channels.logs, new DiscordJS.MessageEmbed().setDescription(`**Old invites list**:\n${invites_to_string(invites)}\n**New invites list**:\n${invites_to_string(invs)}`));
         invites = invs;
     }
-    
+
     function fail_processing_join(member: DiscordJS.GuildMember, err: any) {
         invite_channel.send(`Failed processing join of member ${member} because ${err}`);
     }
 
     fetch_invites()
-    .then(async invs => {
-        try {
-            const inv_string = await process_member_join(member, invs);
-            if (inv_string === "") {
-                channels.logs.send(`Got empty invite string for ${member}, trying again in a second.`);
-                setTimeout(() => {
-                    fetch_invites()
-                    .then(async invs => {
-                        const invitee_str = `${member}(${member.user?.username}#${member.user?.discriminator})`;
-                        try {
-                            const inv_string = await process_member_join(member, invs) || `I can't figure out how ${invitee_str} joined the server.`;
-                            done_processing_join(inv_string, invs);
-                        }
-                        catch (err) {
-                            fail_processing_join(member, err);
-                        }
-                    });
-                }, 1000);
+        .then(async invs => {
+            try {
+                const inv_string = await process_member_join(member, invs);
+                if (inv_string === "") {
+                    channels.logs.send(`Got empty invite string for ${member}, trying again in a second.`);
+                    setTimeout(() => {
+                        fetch_invites()
+                            .then(async invs => {
+                                const invitee_str = `${member}(${member.user?.username}#${member.user?.discriminator})`;
+                                try {
+                                    const inv_string = await process_member_join(member, invs) || `I can't figure out how ${invitee_str} joined the server.`;
+                                    done_processing_join(inv_string, invs);
+                                }
+                                catch (err) {
+                                    fail_processing_join(member, err);
+                                }
+                            });
+                    }, 1000);
+                }
+                else {
+                    done_processing_join(inv_string, invs);
+                }
             }
-            else {
-                done_processing_join(inv_string, invs);
+            catch (err) {
+                fail_processing_join(member, err);
             }
-        }
-        catch (err) {
-            fail_processing_join(member, err);
-        }
-    });
+        });
     fnct.serverStats(['users', 'online', 'new']);
     member_check(member);
 });
@@ -725,7 +727,7 @@ client.on("inviteDelete", invite => {
 });
 
 async function log_action(action: "MEMBER_BAN_ADD" | "MEMBER_BAN_REMOVE" | "MEMBER_KICK", user: DiscordJS.User, attempt: number = 0) {
-    const audits = await server.fetchAuditLogs({limit: 20});
+    const audits = await server.fetchAuditLogs({ limit: 20 });
     let action_description = "";
     switch (action) {
         case "MEMBER_BAN_ADD":
@@ -797,15 +799,15 @@ client.on("guildUpdate", (oldGuild, newGuild) => {
 
 function get_ad_report(message: DiscordJS.Message, user: DiscordJS.User | DiscordJS.PartialUser) {
     return new DiscordJS.MessageEmbed()
-    .setDescription(message.content)
-    .addField("Details",
-    `Channel: ${message.channel}\n` +
-    `Post author: ${message.author}\n` +
-    `Reported by: ${user}\n` +
-    `${message.deleted ? "~~Link to ad~~ (deleted)" : `[Link to ad](${message.url})`}\n` +
-    `${channels.lfp_moderation}`)
-    .setFooter(`${message.channel.id}/${message.id}`)
-    .setTimestamp(new Date().getTime());
+        .setDescription(message.content)
+        .addField("Details",
+            `Channel: ${message.channel}\n` +
+            `Post author: ${message.author}\n` +
+            `Reported by: ${user}\n` +
+            `${message.deleted ? "~~Link to ad~~ (deleted)" : `[Link to ad](${message.url})`}\n` +
+            `${channels.lfp_moderation}`)
+        .setFooter(`${message.channel.id}/${message.id}`)
+        .setTimestamp(new Date().getTime());
 }
 
 async function remove_own_reactions(message: DiscordJS.Message) {
@@ -878,10 +880,10 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
         try {
             await channels.logs.send(
                 new DiscordJS.MessageEmbed()
-                .setTitle(`Message Deleted via ❌ reaction in #${channels.contact.name}`)
-                .setDescription(messagereaction.message.content)
-                .addField("Author", `${messagereaction.message.author} - ${messagereaction.message.author.username}#${messagereaction.message.author.discriminator}`)
-                .addField("Reporter", `${user} - ${user.username}#${user.discriminator}`));
+                    .setTitle(`Message Deleted via ❌ reaction in #${channels.contact.name}`)
+                    .setDescription(messagereaction.message.content)
+                    .addField("Author", `${messagereaction.message.author} - ${messagereaction.message.author.username}#${messagereaction.message.author.discriminator}`)
+                    .addField("Reporter", `${user} - ${user.username}#${user.discriminator}`));
         } catch (e) {
             await channels.logs.send(`Deleted message by ${messagereaction.message.author} in ${channels.contact} due to ❌ reaction by ${user} but failed to send report because of error ${e}`);
         }
@@ -973,102 +975,102 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
             //handle reaction
             switch (reaction) {
                 case "✅": //founded report
-                {
-                    //delete original message
-                    await message.delete();
-                    //yell at author
-                    const template = `<@${message.author.id}>, your ad does not fit in ${ad_channel} because it doesn't explicitly look ${playtype}, so it has been removed.${ad_channel === channels.extreme ? ` Please specify at least one extreme kink to make your ad on topic. See ${channels.extreme_definition} for a list of extreme kinks.` : ""}`;
-                    channels.lfp_moderation.send(`${template} (confirmed by @${nickname})`)
-                    .then(message => message.edit(`${template} (confirmed by ${user})`));
-                    //log in reports log
-                    util.sendTextMessage(channels.report_log, new DiscordJS.MessageEmbed().setTimestamp(new Date().getTime())
-                    .setDescription(`${reaction} Removed ad by ${message.author} reported by ${reporters} confirmed by ${user} concerning [this report](${messagereaction.message.url}).`));
-                    break;
-                }
+                    {
+                        //delete original message
+                        await message.delete();
+                        //yell at author
+                        const template = `<@${message.author.id}>, your ad does not fit in ${ad_channel} because it doesn't explicitly look ${playtype}, so it has been removed.${ad_channel === channels.extreme ? ` Please specify at least one extreme kink to make your ad on topic. See ${channels.extreme_definition} for a list of extreme kinks.` : ""}`;
+                        channels.lfp_moderation.send(`${template} (confirmed by @${nickname})`)
+                            .then(message => message.edit(`${template} (confirmed by ${user})`));
+                        //log in reports log
+                        util.sendTextMessage(channels.report_log, new DiscordJS.MessageEmbed().setTimestamp(new Date().getTime())
+                            .setDescription(`${reaction} Removed ad by ${message.author} reported by ${reporters} confirmed by ${user} concerning [this report](${messagereaction.message.url}).`));
+                        break;
+                    }
                 case "☠": //extreme
-                {
-                    //delete original message
-                    await message.delete();
-                    //yell at author
-                    const author_member = server.members.cache.get(message.author.id);
-                    const extreme_role_explanation = author_member?.roles.cache.has(roles.Extreme.id) ? "" : ` You cannot see the channel because you don't have the Extreme role. You can get it in ${channels.roles_selection}.`;
-                    const template = `<@${message.author.id}>, your ad does not fit in ${ad_channel} because it contains extreme kinks, so it has been removed. See ${channels.extreme_definition} for what counts as extreme. Please only post such ads in ${channels.extreme}.${extreme_role_explanation}`;
-                    channels.lfp_moderation.send(`${template} (confirmed by @${nickname})`)
-                    .then(message => message.edit(`${template} (confirmed by ${user})`));
-                    //log in reports log
-                    util.sendTextMessage(channels.report_log, new DiscordJS.MessageEmbed().setTimestamp(new Date().getTime())
-                    .setDescription(`${reaction} Removed ad by ${message.author} reported by ${reporters} confirmed by ${user} concerning [this report](${messagereaction.message.url}).`));
-                    break;
-                }
+                    {
+                        //delete original message
+                        await message.delete();
+                        //yell at author
+                        const author_member = server.members.cache.get(message.author.id);
+                        const extreme_role_explanation = author_member?.roles.cache.has(roles.Extreme.id) ? "" : ` You cannot see the channel because you don't have the Extreme role. You can get it in ${channels.roles_selection}.`;
+                        const template = `<@${message.author.id}>, your ad does not fit in ${ad_channel} because it contains extreme kinks, so it has been removed. See ${channels.extreme_definition} for what counts as extreme. Please only post such ads in ${channels.extreme}.${extreme_role_explanation}`;
+                        channels.lfp_moderation.send(`${template} (confirmed by @${nickname})`)
+                            .then(message => message.edit(`${template} (confirmed by ${user})`));
+                        //log in reports log
+                        util.sendTextMessage(channels.report_log, new DiscordJS.MessageEmbed().setTimestamp(new Date().getTime())
+                            .setDescription(`${reaction} Removed ad by ${message.author} reported by ${reporters} confirmed by ${user} concerning [this report](${messagereaction.message.url}).`));
+                        break;
+                    }
                 case "🤝": //irl request
-                {
-                    //delete original message
-                    await message.delete();
-                    //yell at author
-                    const template = `<@${message.author.id}>, your ad does not fit in ${ad_channel} because it is looking for real-life elements, so it has been removed. Please only post such ads in ${channels.real_life}.`;
-                    channels.lfp_moderation.send(`${template} (confirmed by @${nickname})`)
-                    .then(message => message.edit(`${template} (confirmed by ${user})`));
-                    //log in reports log
-                    util.sendTextMessage(channels.report_log, new DiscordJS.MessageEmbed().setTimestamp(new Date().getTime())
-                    .setDescription(`${reaction} Removed ad by ${message.author} reported by ${reporters} confirmed by ${user} concerning [this report](${messagereaction.message.url}).`));
-                    break;
-                }
+                    {
+                        //delete original message
+                        await message.delete();
+                        //yell at author
+                        const template = `<@${message.author.id}>, your ad does not fit in ${ad_channel} because it is looking for real-life elements, so it has been removed. Please only post such ads in ${channels.real_life}.`;
+                        channels.lfp_moderation.send(`${template} (confirmed by @${nickname})`)
+                            .then(message => message.edit(`${template} (confirmed by ${user})`));
+                        //log in reports log
+                        util.sendTextMessage(channels.report_log, new DiscordJS.MessageEmbed().setTimestamp(new Date().getTime())
+                            .setDescription(`${reaction} Removed ad by ${message.author} reported by ${reporters} confirmed by ${user} concerning [this report](${messagereaction.message.url}).`));
+                        break;
+                    }
                 case "👶": //underage
-                {
-                    //delete original message
-                    await message.delete();
-                    //yell at author
-                    const template = `<@${message.author.id}>, your ad does not fit in ${ad_channel} because it containes references to or images of underage characters which is not allowed, so the ad has been removed. If you have ageplay as a kink please specify that you are not looking to play with underage characters.`;
-                    channels.lfp_moderation.send(`${template} (confirmed by @${nickname})`)
-                    .then(message => message.edit(`${template} (confirmed by ${user})`));
-                    //log in reports log
-                    util.sendTextMessage(channels.report_log, new DiscordJS.MessageEmbed().setTimestamp(new Date().getTime())
-                    .setDescription(`${reaction} Removed ad by ${message.author} reported by ${reporters} confirmed by ${user} concerning [this report](${messagereaction.message.url}).`));
-                    break;
-                }
+                    {
+                        //delete original message
+                        await message.delete();
+                        //yell at author
+                        const template = `<@${message.author.id}>, your ad does not fit in ${ad_channel} because it containes references to or images of underage characters which is not allowed, so the ad has been removed. If you have ageplay as a kink please specify that you are not looking to play with underage characters.`;
+                        channels.lfp_moderation.send(`${template} (confirmed by @${nickname})`)
+                            .then(message => message.edit(`${template} (confirmed by ${user})`));
+                        //log in reports log
+                        util.sendTextMessage(channels.report_log, new DiscordJS.MessageEmbed().setTimestamp(new Date().getTime())
+                            .setDescription(`${reaction} Removed ad by ${message.author} reported by ${reporters} confirmed by ${user} concerning [this report](${messagereaction.message.url}).`));
+                        break;
+                    }
                 case "❔": //unfounded report
-                {
-                    //yell at reporters
-                    if (reporters !== "") { //not a retracted report
-                        const template = `${reporters}, the ad you reported in ${ad_channel} (<${message.url}>) seems to be on-topic since it's looking ${playtype}. What is wrong with it?`;
-                        channels.lfp_moderation.send(`${template} (marked unfounded by @${nickname})`)
-                        .then(message => message.edit(`${template} (marked unfounded by ${user})`));
-                    }
-                    //remove reactions from ad
-                    for (const [, reaction] of message.reactions.cache) {
-                        if (reaction.emoji.name === "❌") {
-                            await reaction.remove();
-                            break;
+                    {
+                        //yell at reporters
+                        if (reporters !== "") { //not a retracted report
+                            const template = `${reporters}, the ad you reported in ${ad_channel} (<${message.url}>) seems to be on-topic since it's looking ${playtype}. What is wrong with it?`;
+                            channels.lfp_moderation.send(`${template} (marked unfounded by @${nickname})`)
+                                .then(message => message.edit(`${template} (marked unfounded by ${user})`));
                         }
+                        //remove reactions from ad
+                        for (const [, reaction] of message.reactions.cache) {
+                            if (reaction.emoji.name === "❌") {
+                                await reaction.remove();
+                                break;
+                            }
+                        }
+                        //log in reports log
+                        util.sendTextMessage(channels.report_log, new DiscordJS.MessageEmbed().setTimestamp(new Date().getTime())
+                            .setDescription(`${reaction} Ad by ${message.author} ${reporters ? `reported by ${reporters}` : `with retracted report`} marked unfounded by ${user} concerning [this ad](${message.url})/[this report](${messagereaction.message.url}).`));
+                        break;
                     }
-                    //log in reports log
-                    util.sendTextMessage(channels.report_log, new DiscordJS.MessageEmbed().setTimestamp(new Date().getTime())
-                    .setDescription(`${reaction} Ad by ${message.author} ${reporters ? `reported by ${reporters}` : `with retracted report`} marked unfounded by ${user} concerning [this ad](${message.url})/[this report](${messagereaction.message.url}).`));
-                    break;
-                }
                 case "✋":
-                {
-                    //log in reports log
-                    util.sendTextMessage(channels.report_log, new DiscordJS.MessageEmbed().setTimestamp(new Date().getTime())
-                    .setDescription(`${reaction} Ad by ${message.author} ${reporters ? `reported by ${reporters}` : `with retracted report`} handled manually by ${user} concerning [this ad](${message.url})/[this report](${messagereaction.message.url}).`));
-                    break;
-                }
+                    {
+                        //log in reports log
+                        util.sendTextMessage(channels.report_log, new DiscordJS.MessageEmbed().setTimestamp(new Date().getTime())
+                            .setDescription(`${reaction} Ad by ${message.author} ${reporters ? `reported by ${reporters}` : `with retracted report`} handled manually by ${user} concerning [this ad](${message.url})/[this report](${messagereaction.message.url}).`));
+                        break;
+                    }
                 case "🧨":
-                {
-                    //delete original message
-                    await message.delete();
-                    //log in reports log
-                    util.sendTextMessage(channels.report_log, new DiscordJS.MessageEmbed().setTimestamp(new Date().getTime())
-                    .setDescription(`${reaction} Ad by ${message.author} ${reporters ? `reported by ${reporters}` : `with retracted report`} deleted without message by ${user} concerning [this report](${messagereaction.message.url}).`));
-                    break;
-                }
+                    {
+                        //delete original message
+                        await message.delete();
+                        //log in reports log
+                        util.sendTextMessage(channels.report_log, new DiscordJS.MessageEmbed().setTimestamp(new Date().getTime())
+                            .setDescription(`${reaction} Ad by ${message.author} ${reporters ? `reported by ${reporters}` : `with retracted report`} deleted without message by ${user} concerning [this report](${messagereaction.message.url}).`));
+                        break;
+                    }
                 default: //don't react with random emojis reeeeeee
                     return;
             }
         }
         else { //ad has already been deleted
             util.sendTextMessage(channels.report_log, new DiscordJS.MessageEmbed().setTimestamp(new Date().getTime())
-            .setDescription(`${reaction} Deleted ad handled by ${user} concerning [this report](${messagereaction.message.url}).`));
+                .setDescription(`${reaction} Deleted ad handled by ${user} concerning [this report](${messagereaction.message.url}).`));
             remove_own_reactions(messagereaction.message);
         }
         if (messagereaction.emoji.name === "✋" || messagereaction.emoji.name === "❔") {
@@ -1082,7 +1084,7 @@ client.on("messageUpdate", async (old_message, new_message) => {
         new_message = await new_message.fetch();
     }
     if (lfpChannels.reduce((found, lfp_channel) => found || lfp_channel.id === new_message.channel.id, false)) {
-        if (channels.reported_rps.messages.cache.size < 10) await channels.reported_rps.messages.fetch({limit: 100});
+        if (channels.reported_rps.messages.cache.size < 10) await channels.reported_rps.messages.fetch({ limit: 100 });
         const old_report = channels.reported_rps.messages.cache.find((message) => {
             const footer_text = message.embeds[0]?.footer?.text;
             if (!footer_text) return false;
@@ -1103,7 +1105,7 @@ client.on("messageUpdate", async (old_message, new_message) => {
 
 client.on("messageDelete", async (deleted_message) => {
     if (lfpChannels.reduce((found, lfp_channel) => found || lfp_channel.id === deleted_message.channel.id, false)) {
-        if (channels.reported_rps.messages.cache.size < 10) await channels.reported_rps.messages.fetch({limit: 100});
+        if (channels.reported_rps.messages.cache.size < 10) await channels.reported_rps.messages.fetch({ limit: 100 });
         const old_report = channels.reported_rps.messages.cache.find((message) => {
             const footer_text = message.embeds[0]?.footer?.text;
             if (!footer_text) return false;
@@ -1150,7 +1152,7 @@ client.on("message", (message) => {
                 for (const field of embed.fields) {
                     if (field.name === "Reason" && field.value === "Banned words") {
                         channels.bad_words_log.send(new DiscordJS.MessageEmbed(embed))
-                        .catch(console.error);
+                            .catch(console.error);
                     }
                 }
             }
@@ -1202,7 +1204,7 @@ client.on("message", (message) => {
             })())) return;
 
             async function delete_ad_info(message: DiscordJS.Message) {
-                for (const [, followup_message] of await message.channel.messages.fetch({after: message.id})) {
+                for (const [, followup_message] of await message.channel.messages.fetch({ after: message.id })) {
                     if (followup_message.author.id === "561189790180179991" && followup_message.content.includes(message.author.id)) {
                         await followup_message.delete();
                     }
@@ -1220,7 +1222,7 @@ client.on("message", (message) => {
                     }
                 }
                 //Delete ad spam
-                let old_messages : DiscordJS.Message[] = [];
+                let old_messages: DiscordJS.Message[] = [];
                 for (const lfpchannel of lfpChannels) {
                     const channel_messages = lfpchannel.messages.cache;
                     for (const [, old_message] of channel_messages) {
@@ -1301,13 +1303,13 @@ client.on("message", (message) => {
                         }
                         if (missing_words.length > 0) {
                             await channels.lfp_moderation.send(`${message.author} Your ad in ${message.channel} was not following the ${channels.ad_template}, so **it was deleted**. It was missing the field(s) **${missing_words.join(", ")}**. Please include these required field(s) exactly next time you post an ad **or** register your template fields by typing \`_register\` in ${channels.botchannel}.`);
-                            await message.delete({reason: "Missing ad template"});
+                            await message.delete({ reason: "Missing ad template" });
                         }
                         else {
                             remove_jigsaw_reaction(message);
                         }
-                    }, 10*60*1000);
-                }                
+                    }, 10 * 60 * 1000);
+                }
             })();
 
             if (message.deleted) {
@@ -1452,15 +1454,15 @@ client.on("message", (message) => {
                     const playing_with = channel.parent?.id === categories.playing_with.id;
                     const by_type = channel.parent?.id === categories.by_type.id;
                     const rp_type_str =
-                    playing_as ? "Playing As" :
-                    playing_with ? "Playing With" :
-                    by_type ? "RP Type" :
-                    "";
+                        playing_as ? "Playing As" :
+                            playing_with ? "Playing With" :
+                                by_type ? "RP Type" :
+                                    "";
                     const rp_with_as_looking_for =
-                    playing_as ? "want to play as" :
-                    playing_with ? "want to play with" :
-                    by_type ? "are looking for" :
-                    "";
+                        playing_as ? "want to play as" :
+                            playing_with ? "want to play with" :
+                                by_type ? "are looking for" :
+                                    "";
                     const exclusive = [channels.extreme.id, channels.real_life.id].indexOf(message.channel.id) !== -1 ? "⚠️ __**If your ad is on-topic in this channel do not post it in other channels!**__\n\n" : "";
                     if (!(message.channel instanceof DiscordJS.TextChannel)) return;
                     const lfpMsg =
@@ -1475,7 +1477,7 @@ client.on("message", (message) => {
                         `If you see posts which are __not clearly looking for these kinds of RP__ in this channel let the staff know by reacting with :x: (\`:x:\`) or reporting it in ${channels.reports}!\n\n` +
                         `If you want to **contact** someone, **please check their DM Roles** first! If they have **Ask to DM ⚠️** (🇩 🇲 ⚠️) or **DMs Closed ⛔** (🇩 🇲 ⛔) use ${channels.contact}!\n\n` +
                         `*More info in:* ${channels.lfp_info}\n\n`
-                    ;
+                        ;
                     const lfpAllstyleMsg =
                         `>>> ` +
                         `Following the ${channels.ad_template} is not required in this channel.\n\n` +
@@ -1487,7 +1489,7 @@ client.on("message", (message) => {
                         `If you see posts which are looking to play with or as underage characters let the staff know by reacting with :x: (\`:x:\`) or reporting it in ${channels.reports}!\n\n` +
                         `If you want to **contact** someone, **please check their DM Roles** first! If they have **Ask to DM ⚠️** (🇩 🇲 ⚠️) or **DMs Closed ⛔** (🇩 🇲 ⛔) use ${channels.contact}!\n\n` +
                         `*More info in:* ${channels.lfp_info}\n\n`
-                    ;
+                        ;
                     const irlMsg = `>>> ` +
                         `Following the ${channels.ad_template} is not required in this channel.\n\n` +
                         `__**${rp_type_str} ${title} Channel Info**__\n` +
@@ -1498,12 +1500,12 @@ client.on("message", (message) => {
                         `If you see ads not looking for IRL contacts or breaking other rules let the staff know by reacting with :x: (\`:x:\`) or reporting it in ${channels.reports}!\n\n` +
                         `If you want to **contact** someone, **please check their DM Roles** first! If they have **Ask to DM ⚠️** (🇩 🇲 ⚠️) or **DMs Closed ⛔** (🇩 🇲 ⛔) use ${channels.contact}!\n\n` +
                         `*More info in:* ${channels.lfp_info}\n\n`
-                    ;
+                        ;
 
                     const msg = channel.id === channels.all_style.id ? lfpAllstyleMsg : channel.id === channels.real_life.id ? irlMsg : lfpMsg;
 
                     channel.send(msg)
-                    .catch(error => util.log(`Failed updating lfp info in ${channel} because ${error}`, "lfpInfo", "**ERROR**"));
+                        .catch(error => util.log(`Failed updating lfp info in ${channel} because ${error}`, "lfpInfo", "**ERROR**"));
                 }, 2000);
             }
         })();
@@ -1529,10 +1531,10 @@ client.on("message", (message) => {
                     util.log(`Failed to remove ${logBody}\nError: ${e.toString()}`, 'Media Channel Text Filtering', "**ERROR**");
                 });
             message.reply(message.channel.id === channels.nsfw_media.id ?
-            `sorry, no messages without media allowed in this channel. Use ${channels.nsfw_media_discussion}.` :
-            `sorry, messages without media or links are removed in media channels. Please put it in ${channels.nsfw_discussion} instead.`)
+                `sorry, no messages without media allowed in this channel. Use ${channels.nsfw_media_discussion}.` :
+                `sorry, messages without media or links are removed in media channels. Please put it in ${channels.nsfw_discussion} instead.`)
                 .then(msg => {
-                    setTimeout(()=> {
+                    setTimeout(() => {
                         msg.delete();
                     }, 7000);
                 });
@@ -1548,7 +1550,7 @@ client.on("message", (message) => {
         message.embeds.forEach(embed => {
             if ((embed.description?.indexOf("**NEW ACCOUNT**") || 0) > 0) {
                 channels.paranoia_plaza.send(new DiscordJS.MessageEmbed(embed))
-                .catch(console.error);
+                    .catch(console.error);
             }
         });
         return;
@@ -1577,8 +1579,8 @@ client.on("message", (message) => {
         const args = message.content.trim().split(/ +/g).splice(1);
         util.sendTextMessage(channels.accalia_logs,
             new DiscordJS.MessageEmbed()
-            .setDescription(message.content)
-            .addField("Details", `Mentioned by: ${message.author}\n[Link](${message.url})`));
+                .setDescription(message.content)
+                .addField("Details", `Mentioned by: ${message.author}\n[Link](${message.url})`));
 
         if (disableMentions && !util.isStaff(message)) return;
 
@@ -1882,7 +1884,7 @@ const audit_log_search = async (target_string: string, message: DiscordJS.Messag
         message.channel.startTyping();
     }
     try {
-        const audits = await server.fetchAuditLogs(latest_entry ? {limit: 100, before: latest_entry} : {limit: 100});
+        const audits = await server.fetchAuditLogs(latest_entry ? { limit: 100, before: latest_entry } : { limit: 100 });
         result_string = audits_to_string(audits, snowflake) + result_string;
 
         if (result_string.length > character_limit || audits.entries.size < 100 || counter > counter_limit) {
@@ -1900,7 +1902,7 @@ const audit_log_search = async (target_string: string, message: DiscordJS.Messag
 };
 
 const dead_char_search = async (start_message_id: string, message: DiscordJS.Message, archive_channel: DiscordJS.TextChannel) => {
-    const messages = await archive_channel.messages.fetch({limit: 100, before: start_message_id});
+    const messages = await archive_channel.messages.fetch({ limit: 100, before: start_message_id });
     if (messages.size === 0) { //reached the end of messages
         util.sendTextMessage(message.channel, "Didn't find any messages with mentions of users that are not in the server.");
         return;
@@ -2140,7 +2142,7 @@ const cmd: Cmd = {
         try {
             const m = await message.channel.send("Checking!");
             let isStaff = util.isStaff(message);
-            m.edit(`${message.author} is${(!isStaff) ? ' not' : '' } a staff member!`);
+            m.edit(`${message.author} is${(!isStaff) ? ' not' : ''} a staff member!`);
             util.log('used command: staff', "staff", "INFO");
         } catch (e) {
             util.log('Failed to process command (staff)', 'staff', "**ERROR**");
@@ -2163,7 +2165,7 @@ const cmd: Cmd = {
             if (member.roles.cache.has(roles.STAFF.id))
                 return util.sendTextMessage(message.channel, `I cannot warn ${member.user.username}... :thinking:`);
 
-                
+
             const hasWarn1 = member.roles.cache.has(roles.WARN_1.id);
             const hasWarn2 = member.roles.cache.has(roles.WARN_2.id);
             let level = 0;
@@ -2251,7 +2253,7 @@ const cmd: Cmd = {
             index++;
             console.log(`Checking member ${index}/${newcomerMembers.size} ${member.displayName}`);
             try {
-                if ((new Date().getTime() - (member.joinedAt?.getTime() || 0))/1000/60 <= 90) { // joined less than 90 minutes ago
+                if ((new Date().getTime() - (member.joinedAt?.getTime() || 0)) / 1000 / 60 <= 90) { // joined less than 90 minutes ago
                     report += `${index}/${newcomerMembers.size} Skipped ${member} because they only recently joined\n`;
                     continue;
                 }
@@ -2279,12 +2281,12 @@ const cmd: Cmd = {
         console.log(`Done with report`);
         util.log(report.length ? report : `No newcomers found`, 'clearNewcomer', "INFO");
     },
-    ancient: async function(message) {
+    ancient: async function (message) {
         if (!message || util.isStaff(message)) {
             const now = new Date().getTime();
             let ancientMembers = server.members.cache.filter(m => {
                 if (!m.joinedTimestamp) return false;
-                return m.joinedTimestamp + 365*24*60*60*1000 <= now && !m.user.bot && !m.roles.cache.has(roles.ANCIENT.id);
+                return m.joinedTimestamp + 365 * 24 * 60 * 60 * 1000 <= now && !m.user.bot && !m.roles.cache.has(roles.ANCIENT.id);
             });
             for (const [, ancient_member] of ancientMembers) {
                 try {
@@ -2303,7 +2305,7 @@ const cmd: Cmd = {
             }
         }
     },
-    clear: function(message, args) {
+    clear: function (message, args) {
         if (util.isMod(message)) {
             if (!args?.[0]) {
                 return;
@@ -2315,11 +2317,11 @@ const cmd: Cmd = {
                         let count = 0;
                         messages.forEach(m => {
                             m.delete();
-                            if (++count === messages.size-1) {
+                            if (++count === messages.size - 1) {
                                 setTimeout(() => {
-                                    message.channel.send(`\`Cleared ${count-1} message(s)!\``)
+                                    message.channel.send(`\`Cleared ${count - 1} message(s)!\``)
                                         .then(d => setTimeout(() => d.delete(), 5000));
-                                    util.log(`${message.author} cleared ${count-1} meessages in ${message.channel}`, 'clear', "INFO");
+                                    util.log(`${message.author} cleared ${count - 1} meessages in ${message.channel}`, 'clear', "INFO");
                                 }, 1000);
                             }
                         });
@@ -2379,7 +2381,7 @@ const cmd: Cmd = {
             const member_age = member ? (snowflake === "201478077749002240" ? ant_date : member.joinedAt) : null;
             if (member_age) { //add member fields Joined, Member Since and Eligible
                 const now = new Date().getTime();
-                const ancient_date = new Date(member_age.getTime() + 365*24*60*60*1000);
+                const ancient_date = new Date(member_age.getTime() + 365 * 24 * 60 * 60 * 1000);
                 const ancient_string = ancient_date.getTime() <= now ? "Yes" : `on ${ancient_date.toUTCString()} in ${util.time(ancient_date.getTime() - now)}`;
                 embed.addField("Joined", `${member_age.toUTCString()}`);
                 embed.addField("Member Since", `${util.time(new Date().getTime() - member_age.getTime())}`);
@@ -2504,9 +2506,9 @@ const cmd: Cmd = {
         cmd.slowmode(message);
     },
     cultinfo: async function (message) {
-       message.channel.startTyping();
+        message.channel.startTyping();
         try {
-            const messages = await channels.cult_info.messages.fetch({limit: 1});
+            const messages = await channels.cult_info.messages.fetch({ limit: 1 });
             let cultMsg = messages.first();
             if (!cultMsg || !cultMsg.mentions.roles) {
                 message.channel.stopTyping();
@@ -2530,11 +2532,11 @@ const cmd: Cmd = {
                 const leader = client.users.cache.get(matches[3]);
                 if (!leader) continue;
                 const memberCount = role.members.size;
-                cults.push({icon, role, leader,memberCount});
+                cults.push({ icon, role, leader, memberCount });
             }
-            cults = cults.sort((a,b) => b.memberCount - a.memberCount);
+            cults = cults.sort((a, b) => b.memberCount - a.memberCount);
             const description = cults.reduce((curr, cult) =>
-                `${curr}`+
+                `${curr}` +
                 `${cult.icon} ${cult.role}\n` +
                 `Leader: ${cult.leader}\n` +
                 `**${cult.memberCount}** members\n\n`, "");
@@ -2547,7 +2549,7 @@ const cmd: Cmd = {
             message.channel.stopTyping();
         }
     },
-    role: function(message, args) {
+    role: function (message, args) {
         return cmd.roles(message, args);
     },
     roles: function (message, args) {
@@ -2691,18 +2693,18 @@ const cmd: Cmd = {
     stop_typing: function (message) {
         message?.channel.stopTyping(true);
     },
-    raid: async function(message) {
+    raid: async function (message) {
         if (!util.isStaff(message)) {
             util.sendTextMessage(message.channel, `Call the mods!`);
             return;
         }
         await roles.NSFW.setPermissions(roles.NSFW.permissions.bitfield & ~DiscordJS.Permissions.FLAGS.CREATE_INSTANT_INVITE, "Raid");
         server.fetchInvites()
-        .then(invs => {
-            invs.forEach(inv => {
-                inv.delete("Raid");
+            .then(invs => {
+                invs.forEach(inv => {
+                    inv.delete("Raid");
+                });
             });
-        });
         util.react(message, '✅');
         util.log(`Disabled invite creation and deleted invites`, "Raid", "WARN");
     },
@@ -2808,7 +2810,7 @@ const cmd: Cmd = {
             if (!channel) {
                 return `${current} Invalid channel ${snowflake}`
             }
-            channel.updateOverwrite(target, {VIEW_CHANNEL: false}, `${message.author.username}#${message.author.discriminator} banished ${server.members.cache.get(target)?.user.username} from ${channel.name}`);
+            channel.updateOverwrite(target, { VIEW_CHANNEL: false }, `${message.author.username}#${message.author.discriminator} banished ${server.members.cache.get(target)?.user.username} from ${channel.name}`);
             return `${current} <#${snowflake}>`;
         }, "")
         util.sendTextMessage(message.channel, new DiscordJS.MessageEmbed().setDescription(`Banished <@${target}> from ${summary}`));
@@ -2821,7 +2823,7 @@ const cmd: Cmd = {
         const member = server.members.cache.get(message.author.id);
         if (!member) return;
         let applied_channels: DiscordJS.GuildChannel[] = [];
-        let applied_targets: (DiscordJS.GuildMember | DiscordJS.Role) [] = [];
+        let applied_targets: (DiscordJS.GuildMember | DiscordJS.Role)[] = [];
         let granted_permissions = 0;
         let neutral_permissions = 0;
         let denied_permissions = 0;
@@ -2943,7 +2945,7 @@ const cmd: Cmd = {
                     else {
                         await channel.updateOverwrite(member_or_role, getOverwrites(granted_permissions, denied_permissions, neutral_permissions, channel.permissionsFor(member_or_role.id)?.valueOf() || 0), `perms command ${message.channel.id}/${message.id}`);
                     }
-                } catch(error) {
+                } catch (error) {
                     await message.channel.send(new DiscordJS.MessageEmbed().setDescription(`Error setting permissions for ${member_or_role} in ${channel} because ${error}.`));
                     message.channel.stopTyping();
                     return;
@@ -3090,12 +3092,12 @@ const cmd: Cmd = {
                     `**Kinks:** ${entry.kinks || "<none>"}\n` + additional("kinks", entry.channel_kinks) +
                     `**Limits**: ${entry.limits || "<none>"}\n` + additional("limits", entry.channel_limits) +
                     `**Post length**: ${entry.post_length || "<none>"}\n` + additional("post length", entry.channel_post_length) +
-                ``);
+                    ``);
             }
             else {
                 await message.reply(`I don't know what to do with register command ${command} 😦`);
             }
-                
+
         }
         catch (err) {
             message.reply(`Failed processing command: ${err}`);
@@ -3188,7 +3190,8 @@ Hides the playing with/as/type categories from the specified user(s).
 Hides the playing with/as/type categories from the specified user(s).`;
         util.sendTextMessage(message.channel, new DiscordJS.MessageEmbed().setDescription(`I understand the following commands:
 ${public_commands}
-${util.isStaff(message) ? staff_commands : ""}`))},
+${util.isStaff(message) ? staff_commands : ""}`))
+    },
 };
 
 const fnct = {
@@ -3240,7 +3243,7 @@ const fnct = {
             util.log(`Failed to update server stats for ${modes}: ${e}`, 'Server Stats', "**ERROR**");
         }
     },
-    approveChar: function(message: DiscordJS.Message, reaction: DiscordJS.ReactionEmoji, user: DiscordJS.User) {
+    approveChar: function (message: DiscordJS.Message, reaction: DiscordJS.ReactionEmoji, user: DiscordJS.User) {
         try {
             if (!(message.channel instanceof DiscordJS.TextChannel)) return;
             if (message.channel.name === channels.char_sub.name && util.isUserStaff(user)) {
@@ -3279,7 +3282,7 @@ const split_text_message = (message: string) => {
         message_pieces = DiscordJS.Util.splitMessage(message);
     } catch (error) {
         //fall back to splitting after spaces
-        message_pieces = DiscordJS.Util.splitMessage(message, {char: ' '});
+        message_pieces = DiscordJS.Util.splitMessage(message, { char: ' ' });
     }
     return Array.isArray(message_pieces) ? message_pieces : [message_pieces]; //always return an array
 };
@@ -3289,7 +3292,7 @@ const util = {
         try {
             channel.startTyping();
             const message_pieces = split_text_message(typeof message === "string" ? message : message.description || "");
-            setTimeout(function(){
+            setTimeout(function () {
                 message_pieces.forEach(message_piece => {
                     if (message instanceof DiscordJS.MessageEmbed) {
                         channel.send(new DiscordJS.MessageEmbed(message).setDescription(message_piece));
@@ -3301,7 +3304,7 @@ const util = {
                 channel.stopTyping();
             }, 500);
         } catch (e) {
-            const text = typeof message ==="string" ? message : message.description || "";
+            const text = typeof message === "string" ? message : message.description || "";
             this.log('Failed to send message: ' + text.slice(1970), "", "**ERROR**");
             channel.stopTyping();
         }
@@ -3313,7 +3316,7 @@ const util = {
             }
             channel.startTyping();
             const message_pieces = split_text_message(message);
-            setTimeout(function(){
+            setTimeout(function () {
                 message_pieces.forEach(message_piece => {
                     if (embed) {
                         channel.send(new DiscordJS.MessageEmbed(embed).setDescription(message_piece))
@@ -3371,11 +3374,11 @@ const util = {
         let logMessage = level + " | " + currDateTime + " | " + moduleName + ": " + message;
 
         util.sendTextMessage(channels.accalia_logs, new DiscordJS.MessageEmbed()
-        .setAuthor(level)
-        .setColor(embedColor)
-        .setDescription(message)
-        .setFooter(moduleName)
-        .setTimestamp(new Date()));
+            .setAuthor(level)
+            .setColor(embedColor)
+            .setDescription(message)
+            .setFooter(moduleName)
+            .setTimestamp(new Date()));
         console.log(logMessage);
     },
 
@@ -3410,7 +3413,7 @@ const util = {
         return lvl_roles.LVL_100;
     },
 
-    handle_level_up: async function(message: DiscordJS.Message) {
+    handle_level_up: async function (message: DiscordJS.Message) {
         const member = await message.mentions.members?.first()?.fetch();
         if (!member) return;
         const user = member.user;
@@ -3425,7 +3428,7 @@ const util = {
             }
             return false;
         }
-        const updated_roles = member.roles.cache.filter(role =>  !is_lvl_role(role.id)).set(new_role.id, new_role);
+        const updated_roles = member.roles.cache.filter(role => !is_lvl_role(role.id)).set(new_role.id, new_role);
         const added_roles = updated_roles.filter(role => !member.roles.cache.has(role.id));
         const removed_roles = member.roles.cache.filter(role => !updated_roles.has(role.id));
         if (added_roles.size === 0 && removed_roles.size === 0) return;
@@ -3438,9 +3441,8 @@ const util = {
 
         if (role_change_incorrect) {
             const old_role = util.level_to_role(level - 1);
-            util.log(`Expected to find role ${old_role} with ID ${old_role.id} on user ${user}, but didn't. Roles found: ${
-                member.roles.cache.reduce((curr, role) => `${curr} ${role} (${role.id})`, "")
-            }`, level_up_module, "WARN");
+            util.log(`Expected to find role ${old_role} with ID ${old_role.id} on user ${user}, but didn't. Roles found: ${member.roles.cache.reduce((curr, role) => `${curr} ${role} (${role.id})`, "")
+                }`, level_up_module, "WARN");
         }
 
         await member.roles.set(updated_roles);
@@ -3461,7 +3463,7 @@ const util = {
         await util.react(message, '✅');
     },
 
-    time: function(time_ms: number) {
+    time: function (time_ms: number) {
         let time = ~~(time_ms / 1000);
         const s = ~~time % 60;
         time /= 60;
@@ -3487,7 +3489,7 @@ const util = {
         return `${s}s`;
     },
 
-    react: async function(message: DiscordJS.Message, emote: string | DiscordJS.GuildEmoji) {
+    react: async function (message: DiscordJS.Message, emote: string | DiscordJS.GuildEmoji) {
         try {
             await message.react(emote);
         } catch (error) {
