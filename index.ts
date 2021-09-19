@@ -3074,7 +3074,7 @@ const cmd: Cmd = {
                 return;
             }
             else if (command === "show") {
-                let mention = message.mentions.members?.first();
+                const mention = message.mentions.members?.first();
                 if (mention) {
                     const mention_entry = Ad_template_info.of(mention.id);
                     entry = mention_entry;
@@ -3117,7 +3117,7 @@ const cmd: Cmd = {
                 }
             }
             else {
-                entry ||= await Ad_template_info.create_entry(message.author.id);
+                entry = entry || await Ad_template_info.create_entry(message.author.id);
                 if (field_commands.pairing.includes(command)) {
                     await register_pairings(entry, message);
                 }
