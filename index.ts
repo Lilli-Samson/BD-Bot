@@ -274,6 +274,15 @@ class Ad_template_info {
             }
         }
     }
+
+    async delete() {
+        let message = channels.template_data.messages.cache.get(this.data_message);
+        if (message) {
+            await message.delete({ reason: `Ad template deletion by user` });
+        }
+        Ad_template_info.ad_template_infos.delete(this.user);
+    }
+
     static async load_ad_templates() {
         function get_last_message_of(messages: DiscordJS.Collection<DiscordJS.Snowflake, DiscordJS.Message>): DiscordJS.Message {
             return messages.reduce((current, other) => current.createdTimestamp < other.createdTimestamp ? current : other, messages.first());
@@ -300,13 +309,17 @@ class Ad_template_info {
         }
         channels.main.send(`Loaded ${good_count} ad template messages, failed loading ${error_count} ad template messages and skipped ${bad_count} staff messages.\nTotal ad templates loaded: ${this.ad_template_infos.size}`);
     }
+
     static of(user: DiscordJS.Snowflake) {
         return Ad_template_info.ad_template_infos.get(user);
     }
+
     get is_complete() {
         return this.pairing !== "" && this.kinks !== "" && this.limits !== "" && this.post_length !== "";
     }
+
     private static ad_template_infos = new Map<DiscordJS.Snowflake, Ad_template_info>();
+
     static async debug() {
         let log = `Templates loaded: ${this.ad_template_infos.size}\n`;
         for (const [userid, info] of this.ad_template_infos) {
@@ -2328,6 +2341,9 @@ const cmd: Cmd = {
                     });
             }
         }
+        else {
+            message.react(`My conscience is clear.`);
+        }
     },
     age: function (message) {
         if (message.channel === channels.techlab) {
@@ -2545,7 +2561,7 @@ const cmd: Cmd = {
             message.channel.stopTyping();
         }
         catch (err) {
-            util.log(err, 'cultInfo', "**ERROR**");
+            util.log(`${err}`, 'cultInfo', "**ERROR**");
             message.channel.stopTyping();
         }
     },
@@ -3047,39 +3063,30 @@ const cmd: Cmd = {
                 }
                 else {
                     const entry = await Ad_template_info.create_entry(message.author.id);
-                    await continue_registering(entry, message, "Alright, I'll help you fill out your RP info!\n");
+                    await continue_registering(entry, message, `Alright, I'll help you fill out your RP info!\nNote that this does not register your RP ad, only the ad template fields as required by ${channels.ad_template} so you don't need to include them in your ad.\n`);
                 }
                 return;
             }
             const command = message.content.match(/\w*\s(\w*)/)?.[1];
+            let entry = Ad_template_info.of(message.author.id);
             if (!command) {
                 await message.reply(`Error getting register command`);
                 return;
             }
-            let entry = Ad_template_info.of(message.author.id) || await Ad_template_info.create_entry(message.author.id);
-            if (field_commands.pairing.includes(command)) {
-                await register_pairings(entry, message);
-            }
-            else if (field_commands.kinks.includes(command)) {
-                await register_kinks(entry, message);
-            }
-            else if (field_commands.limits.includes(command)) {
-                await register_limits(entry, message);
-            }
-            else if (field_commands.post_length.includes(command)) {
-                await register_postlength(entry, message);
-            }
             else if (command === "show") {
-                const mention = message.mentions.members?.first();
+                let mention = message.mentions.members?.first();
                 if (mention) {
                     const mention_entry = Ad_template_info.of(mention.id);
-                    if (mention_entry) {
-                        entry = mention_entry;
+                    entry = mention_entry;
+                }
+                if (!entry) {
+                    if (mention) {
+                        await message.reply(`No template registered for member ${mention}`);
                     }
                     else {
-                        await message.reply(`No template registered for member ${mention}`);
-                        return;
+                        await message.reply(`You don't have your ad template registered. Do it now by typing \`_register\`!`);
                     }
+                    return;
                 }
                 function additional(type: string, values: Map<string, string>) {
                     if (values.size == 0) {
@@ -3094,10 +3101,39 @@ const cmd: Cmd = {
                     `**Post length**: ${entry.post_length || "<none>"}\n` + additional("post length", entry.channel_post_length) +
                     ``);
             }
-            else {
-                await message.reply(`I don't know what to do with register command ${command} 😦`);
+            else if (command === "clear") {
+                await message.reply(`That doesn't work yet because Lilli broke it.`);
             }
-
+            else if (command === "delete") {
+                const entry = Ad_template_info.of(message.author.id);
+                if (!entry) {
+                    await message.reply(`You don't have any rp template info registered.`);
+                    return;
+                }
+                else {
+                    await entry.delete();
+                    await message.reply(`RP template info has been deleted. You can \`_register\` again later.`);
+                    return;
+                }
+            }
+            else {
+                entry ||= await Ad_template_info.create_entry(message.author.id);
+                if (field_commands.pairing.includes(command)) {
+                    await register_pairings(entry, message);
+                }
+                else if (field_commands.kinks.includes(command)) {
+                    await register_kinks(entry, message);
+                }
+                else if (field_commands.limits.includes(command)) {
+                    await register_limits(entry, message);
+                }
+                else if (field_commands.post_length.includes(command)) {
+                    await register_postlength(entry, message);
+                }
+                else {
+                    await message.reply(`I don't know what to do with register command ${command} 😦`);
+                }
+            }
         }
         catch (err) {
             message.reply(`Failed processing command: ${err}`);
@@ -3132,11 +3168,11 @@ Displays a list of channels that are currently considered inactive and may get d
 **\`_register\`**
 Start the process of registering your ad template.
 
-**\`_register show\`**
-Show your ad template.
+**\`_register show [?@user]\`**
+Show your ad template or the one of the person or bot you mention.
 
-**\`_register clear pairings|kinks|limits|postlength [#channel]\`**
-Clear a per channel field.
+**\`_register delete\`**
+Deletes your RP template. You'll have to type it manually.
 
 **\`_help\`**
 Display this text.
@@ -3270,7 +3306,7 @@ const fnct = {
                     });
             }
         } catch (e) {
-            util.log(e, 'approveCharacter', "**ERROR**");
+            util.log(`${e}`, 'approveCharacter', "**ERROR**");
         }
     }
 };
