@@ -1954,7 +1954,7 @@ async function continue_registering(info: Ad_template_info, message: DiscordJS.M
         await message.reply(`${pretext}What kinks are a complete turn-off for you? Example: \`_register limit vore, gore, scat\``);
     }
     else if (!info.post_length) {
-        await message.reply(`${pretext}How long are your resposes typically? Please answer in characters, not lines. You can also use words and multiply by 7 to get an estimate. If you are unsure because you will adapt to your partner specify what you usually write or feel most comfortable with. Example: \`_register postlength 400-500\``);
+        await message.reply(`${pretext}How long are your responses typically? Please answer in characters, not lines. You can also use words and multiply by 7 to get an estimate. If you are unsure because you will adapt to your partner specify what you usually write or feel most comfortable with. Example: \`_register postlength 400-500\``);
     }
     else {
         await message.reply(`You already registered your ad template. If you want to update a field use \`_register pairing [Pairings like MxF]\`, \`_register kink [your kinks]\`, \`_register limit [your limits]\` or \`register postlength [typical post length in characters]\``);
