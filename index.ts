@@ -219,6 +219,9 @@ class Ad_template_info {
     async save() {
         let message = channels.template_data.messages.cache.get(this.data_message);
         if (!message) {
+            message = await channels.template_data.messages.fetch(this.data_message);
+        }
+        if (!message) {
             throw `Error while trying to save data for user <@${this.user}>: undefined message https://discord.com/channels/${server_id}/${channels.template_data.id}/${this.data_message}`;
         }
         const entry = new DiscordJS.MessageEmbed().setAuthor(this.user).setDescription(`<@${this.user}>`);
@@ -242,6 +245,9 @@ class Ad_template_info {
 
     async load() {
         let message = channels.template_data.messages.cache.get(this.data_message);
+        if (!message) {
+            message = await channels.template_data.messages.fetch(this.data_message);
+        }
         if (!message) {
             throw `Error while trying to load data for user <@${this.user}>: undefined message https://discord.com/channels/${server_id}/${channels.template_data.id}/${this.data_message}`;
         }
