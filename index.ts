@@ -219,7 +219,7 @@ class Ad_template_info {
     async save() {
         let message = channels.template_data.messages.cache.get(this.data_message);
         if (!message) {
-            throw `Error while trying to save data for user <@${this.user}>: undefined message https://discord.com/channels/594871617058897920/826128576222724107/${this.data_message}`;
+            throw `Error while trying to save data for user <@${this.user}>: undefined message https://discord.com/channels/${server_id}/${channels.template_data.id}/${this.data_message}`;
         }
         const entry = new DiscordJS.MessageEmbed().setAuthor(this.user).setDescription(`<@${this.user}>`);
         function to_string(general: string, per_channel: Map<DiscordJS.Snowflake, string>) {
@@ -243,7 +243,7 @@ class Ad_template_info {
     async load() {
         let message = channels.template_data.messages.cache.get(this.data_message);
         if (!message) {
-            throw `Error while trying to load data for user <@${this.user}>: undefined message https://discord.com/channels/594871617058897920/826128576222724107/${this.data_message}`;
+            throw `Error while trying to load data for user <@${this.user}>: undefined message https://discord.com/channels/${server_id}/${channels.template_data.id}/${this.data_message}`;
         }
         function from_string(field: string): [string, Map<DiscordJS.Snowflake, string>] {
             const per_channel = new Map<DiscordJS.Snowflake, string>();
