@@ -32,6 +32,7 @@ const channel_list = [
     ["bad_words_log", "🤬bad-words-log"],
     ["reports_log", "🚨reports-log"],
     ["warnings", "🚨warnings"],
+    ["warnings_data", "warnings-data"],
     ["cult_info", "🗿cult-selection"],
     ["char_sub", "📃character-submission"],
     ["char_archive", "📚character-archive"],
@@ -334,6 +335,100 @@ class Ad_template_info {
     }
 }
 
+class Warning {
+    reason: string;
+    issued: Date;
+    issuer: DiscordJS.Snowflake;
+    level: number;
+
+    get expired(): boolean {
+        return new Date().getTime() > this.issued.getTime() + Warning.get_expiration_time_ms(this.level);
+    }
+
+    private static get_expiration_time_ms(warning_level: number): number {
+        if (warning_level === 1) {
+            return 1000 * 60 * 60 * 24 * 30;
+        }
+        if (warning_level === 2) {
+            return 1000 * 60 * 60 * 24 * 60;
+        }
+        return 1000 * 60 * 60 * 24 * 365;
+    }
+
+    constructor(reason: string, level: number, issuer: DiscordJS.Snowflake, issued: Date = new Date()) {
+        this.reason = reason;
+        this.issued = issued;
+        this.level = level;
+        this.issuer = issuer;
+    }
+}
+
+class User_record {
+    warnings: Warning[];
+    message: DiscordJS.Message;
+    private static user_records = new Map<DiscordJS.Snowflake, User_record>();
+
+    private constructor(warnings: Warning[], message: DiscordJS.Message) {
+        this.warnings = warnings;
+        this.message = message;
+    }
+
+    static async warn(user: DiscordJS.Snowflake, warning: Warning) {
+        const record = this.user_records.get(user) || new User_record([], await channels.warnings_data.send("."));
+        record.warnings.push(warning);
+        await record.save(user);
+    }
+
+    static async load_from_message(message: DiscordJS.Message) {
+        //TODO: fetch message if necessary
+        //TODO: properly load record and set it in user_records
+        //const record = new User_record([], message);
+        //this.user_records.set(user, record);
+    }
+
+    static async load_all_records() {
+        function get_last_message_of(messages: DiscordJS.Collection<DiscordJS.Snowflake, DiscordJS.Message>): DiscordJS.Message {
+            return messages.reduce((current, other) => current.createdTimestamp < other.createdTimestamp ? current : other, messages.first());
+        }
+
+        for (let messages = await channels.warnings_data.messages.fetch(); messages.size > 0; messages = await channels.template_data.messages.fetch({ before: get_last_message_of(messages).id })) {
+            for (const [, message] of messages) {
+                if (message.author.id === "561189790180179991") {
+                    try {
+                        await this.load_from_message(message);
+                    }
+                    catch (e) {
+                        await channels.accalia_logs.send(`Failed loading warning message ${message.url} because ${e}`);
+                    }
+                }
+            }
+        }
+
+    }
+
+    async save(user: DiscordJS.Snowflake) {
+        const embed = new DiscordJS.MessageEmbed();
+        embed.setDescription(`<@${user}>`);
+        for (const index in this.warnings) {
+            const warning = this.warnings[index];
+            embed.fields.push({
+                name: `Warning ${index}${warning.expired ? " (expired)" : ""}`,
+                value:
+                    `Issuer: <@${warning.issuer}>\n` +
+                    `Issued: <t:${(warning.issued.getTime() / 1000).toFixed()}>\n` +
+                    `Level: ${warning.level}\n` +
+                    `Reason: ${warning.reason}`,
+                inline: true
+            });
+        }
+        this.message.edit(embed);
+    }
+
+    get level(): number {
+        return Math.max(...this.warnings.map((warning) => warning.expired ? 0 : warning.level), 1);
+    }
+}
+
 function timeout(ms: number) {
     return new Promise<string>(resolve => setTimeout(resolve, ms));
 }
@@ -616,7 +711,10 @@ client.on("ready", () => {
         .catch(error => {
             util.log(`Failed reading old messages from ${channels.level} because of ${error}`, level_up_module, "**ERROR**");
         });
-    Ad_template_info.load_ad_templates();
+    (async () => {
+        await Ad_template_info.load_ad_templates();
+        await User_record.load_all_records();
+    })();
 });
 
 const process_member_join = async (member: DiscordJS.GuildMember | DiscordJS.PartialGuildMember, invs: Invites) => {
@@ -2168,6 +2266,39 @@ const cmd: Cmd = {
         }
     },
     warn: async function (message, args) {
+        if (!util.isMod(message)) {
+            message.reply("Shoo! You don't have the permissions for that!");
+            return;
+        }
+
+        console.log(args);
+        if (!args || !args.length) {
+            message.reply("You need to specify who to warn!");
+            return;
+        }
+
+        const match = args[0].match(/\d+/g);
+        if (!match || !match[0]) {
+            console.log(match);
+            message.reply("You need to specify who to warn!");
+            return;
+        }
+
+        const user = (async () => {
+            try {
+                return await client.users.fetch(match[0]);
+            } catch (err) {
+                message.reply(`Error: User <@${match[0]}> not found because ${err}`);
+                return;
+            }
+        })();
+        if (!user) {
+            return;
+        }
+
+
+
+        /*
         if (message.channel.id === "737043345913675786") return;
         try {
             if (!util.isMod(message)) {
@@ -2244,6 +2375,7 @@ const cmd: Cmd = {
         } catch (e) {
             util.log('Failed to process command (warn)', 'warn', "**ERROR**");
         }
+        */
     },
     stopmention: function (message) {
         if (util.isStaff(message)) {
