@@ -2494,7 +2494,7 @@ message.delete();
 
         const record = User_record.get_warnings_for(user_id);
         if (!record) {
-            await message.reply(`No warnings recorded for <@$(user_id)>`);
+            await message.reply(`No warnings recorded for <@${user_id}>`);
             return;
         }
         if (!record.warnings[index - 1]) {
