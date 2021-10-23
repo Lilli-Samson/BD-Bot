@@ -108,6 +108,8 @@ const role_list = [
     ["WARN_1", "Warned 1x"],
     ["WARN_2", "Warned 2x"],
     ["INNOCENT", "Innocent"],
+    ["Currently_not_warned", "Currently not warned"],
+    //["Should_really_be_banned", ""],
     ["ANCIENT", "💠Ancient Member"],
     ["STAFF", "Staff"],
     ["TRIALMOD", "Trial-Moderator"],
@@ -345,14 +347,14 @@ class Warning {
         return new Date().getTime() > this.issued.getTime() + Warning.get_expiration_time_ms(this.level);
     }
 
-    private static get_expiration_time_ms(warning_level: number): number {
+    static get_expiration_time_ms(warning_level: number): number {
         if (warning_level === 1) {
-            return 1000 * 60 * 60 * 24 * 30;
+            return 1000 * 60 * 60 * 24 * 14;
         }
         if (warning_level === 2) {
-            return 1000 * 60 * 60 * 24 * 60;
+            return 1000 * 60 * 60 * 24 * 30;
         }
-        return 1000 * 60 * 60 * 24 * 365;
+        return 1000 * 60 * 60 * 24 * 30;
     }
 
     constructor(reason: string, level: number, issuer: DiscordJS.Snowflake, issued: Date = new Date()) {
@@ -363,27 +365,44 @@ class Warning {
     }
 }
 
+type Warning_roles = { add: DiscordJS.Role, remove: DiscordJS.Role[] };
+
 class User_record {
     warnings: Warning[];
     message: DiscordJS.Message;
-    private static user_records = new Map<DiscordJS.Snowflake, User_record>();
 
-    private constructor(warnings: Warning[], message: DiscordJS.Message) {
-        this.warnings = warnings;
-        this.message = message;
-    }
-
-    static async warn(user: DiscordJS.Snowflake, warning: Warning) {
+    static async warn(user: DiscordJS.Snowflake, reason: string, issuer: DiscordJS.Snowflake) {
         const record = this.user_records.get(user) || new User_record([], await channels.warnings_data.send("."));
+        const warning = new Warning(reason, record.level + 1, issuer);
         record.warnings.push(warning);
         await record.save(user);
+        return record;
     }
 
     static async load_from_message(message: DiscordJS.Message) {
-        //TODO: fetch message if necessary
-        //TODO: properly load record and set it in user_records
-        //const record = new User_record([], message);
-        //this.user_records.set(user, record);
+        const embed = message.embeds[0];
+        if (!embed || !embed.description || !embed.fields.length) {
+            console.log(`Ill-formed warning message: ${message.url}`);
+            return;
+        }
+        const userid_match = embed.description.match(/<@&?(\d{18})/);
+        if (!userid_match || userid_match.length <= 1) {
+            console.log(`Failed finding user in message: ${message.url}`);
+            return;
+        }
+        const userid = userid_match[1];
+        const record = new User_record([], message);
+        for (const field of embed.fields) {
+            const match = field.value.match(/Issuer: <@(\d{18})>\nIssued: <t:(\d+)>\nLevel: (\d+)\nReason: ?([\s\S]*)/);
+            if (!match || match.length < 4) {
+                continue;
+            }
+            const [, issuer, issued, level, reason] = match;
+            const issue_date = new Date();
+            issue_date.setTime(parseInt(issued) * 1000);
+            record.warnings.push(new Warning(reason, parseInt(level), issuer, issue_date))
+        }
+        this.user_records.set(userid, record);
     }
 
     static async load_all_records() {
@@ -391,7 +410,7 @@ class User_record {
             return messages.reduce((current, other) => current.createdTimestamp < other.createdTimestamp ? current : other, messages.first());
         }
 
-        for (let messages = await channels.warnings_data.messages.fetch(); messages.size > 0; messages = await channels.template_data.messages.fetch({ before: get_last_message_of(messages).id })) {
+        for (let messages = await channels.warnings_data.messages.fetch(); messages.size > 0; messages = await channels.warnings_data.messages.fetch({ before: get_last_message_of(messages).id })) {
             for (const [, message] of messages) {
                 if (message.author.id === "561189790180179991") {
                     try {
@@ -406,26 +425,85 @@ class User_record {
 
     }
 
-    async save(user: DiscordJS.Snowflake) {
+    get_embed(user: DiscordJS.Snowflake) {
         const embed = new DiscordJS.MessageEmbed();
         embed.setDescription(`<@${user}>`);
         for (const index in this.warnings) {
             const warning = this.warnings[index];
             embed.fields.push({
-                name: `Warning ${index}${warning.expired ? " (expired)" : ""}`,
+                name: `Warning ${parseInt(index) + 1}${warning.expired ? " (expired)" : ""}`,
                 value:
                     `Issuer: <@${warning.issuer}>\n` +
                     `Issued: <t:${(warning.issued.getTime() / 1000).toFixed()}>\n` +
                     `Level: ${warning.level}\n` +
                     `Reason: ${warning.reason}`,
-                inline: true
+                inline: false
             });
         }
-        this.message.edit(embed);
+        return embed;
+    }
+
+    async save(user: DiscordJS.Snowflake) {
+        await this.message.edit(this.get_embed(user));
     }
 
     get level(): number {
-        return Math.max(...this.warnings.map((warning) => warning.expired ? 0 : warning.level), 1);
+        return Math.max(...this.warnings.map((warning) => warning.expired ? 0 : warning.level), 0);
+    }
+
+    static get_warnings_for(userid: DiscordJS.Snowflake) {
+        return this.user_records.get(userid);
+    }
+
+    get_warning_roles(): Warning_roles {
+        switch (this.level) {
+            case 0:
+                return { add: roles.Currently_not_warned, remove: [roles.INNOCENT, roles.WARN_1, roles.WARN_2] };
+            case 1:
+                return { add: roles.WARN_1, remove: [roles.INNOCENT, roles.WARN_2, roles.Currently_not_warned] };
+            case 2:
+                return { add: roles.WARN_2, remove: [roles.INNOCENT, roles.WARN_1, roles.Currently_not_warned] };
+            default:
+                return { add: roles.WARN_2, remove: [roles.INNOCENT, roles.WARN_1, roles.Currently_not_warned] };
+        }
+    }
+
+    async fix_warning_roles(user: DiscordJS.Snowflake) {
+        const member = await (async () => {
+            try {
+                return await server.members.fetch(user);
+            }
+            catch (error) {
+                channels.logs.send(`Failed finding user with ID ${user} from ${this.message.url}`);
+                return;
+            }
+        })();
+        if (!member) {
+            return;
+        }
+        const warning_roles = this.get_warning_roles();
+        if (!member.roles.cache.has(warning_roles.add.id)) {
+            await member.roles.add(warning_roles.add.id);
+            await this.save(user);
+        }
+        for (const remove_role of warning_roles.remove) {
+            if (member.roles.cache.has(remove_role.id)) {
+                await member.roles.remove(remove_role.id);
+            }
+        }
+    }
+
+    static async fix_warning_roles() {
+        for (const [user, record] of this.user_records) {
+            await record.fix_warning_roles(user);
+        }
+    }
+
+    private static user_records = new Map<DiscordJS.Snowflake, User_record>();
+
+    private constructor(warnings: Warning[], message: DiscordJS.Message) {
+        this.warnings = warnings;
+        this.message = message;
     }
 }
 
@@ -680,9 +758,10 @@ const startUpMod = {
     },
     startSchedules: function () {
         // Cron-format: second 0-59 optional; minute 0-59; hour 0-23; day of month 1-31; month 1-12; day of week 0-7
-        let j = schedule.scheduleJob('*/60 * * * *', function (fireDate) {
+        schedule.scheduleJob('*/60 * * * *', function (fireDate) {
             cmd.cn(null as unknown as DiscordJS.Message);
             cmd.ancient(null as unknown as DiscordJS.Message);
+            cmd.fixwarnings(null as unknown as DiscordJS.Message);
         });
     }
 };
@@ -2265,117 +2344,176 @@ const cmd: Cmd = {
             util.log('Failed to process command (staff)', 'staff', "**ERROR**");
         }
     },
-    warn: async function (message, args) {
+    showwarnings: async function (message) {
+        if (!util.isMod(message) || !message.mentions.members) {
+            await message.reply("⚠️⚠️⚠️");
+            return;
+        }
+        for (const [id,] of message.mentions.members) {
+            const warnings = User_record.get_warnings_for(id);
+            if (!warnings) {
+                await message.reply(`No warnings for <@${id}> recorded`);
+                continue;
+            }
+            await message.channel.send(warnings.get_embed(id));
+        }
+    },
+    warn: async function (message) {
         if (!util.isMod(message)) {
-            message.reply("Shoo! You don't have the permissions for that!");
+            await message.reply("Shoo! You don't have the permissions for that!");
             return;
         }
 
-        console.log(args);
-        if (!args || !args.length) {
-            message.reply("You need to specify who to warn!");
+        const match = message.content.match(/_warn\s*<@!?(\d{18})>\s*([\s\S]*)/m);
+
+        if (!match || match.length < 3) {
+            await message.reply("You need to specify who to warn!");
             return;
         }
 
-        const match = args[0].match(/\d+/g);
-        if (!match || !match[0]) {
-            console.log(match);
-            message.reply("You need to specify who to warn!");
-            return;
-        }
+        const user_id = match[1];
+        const reason = match[2];
 
-        const user = (async () => {
+        const user = await (async () => {
             try {
-                return await client.users.fetch(match[0]);
+                return await client.users.fetch(user_id);
             } catch (err) {
-                message.reply(`Error: User <@${match[0]}> not found because ${err}`);
+                await message.reply(`Error: User <@${user_id}> not found because ${err}`);
                 return;
             }
         })();
+
         if (!user) {
+            await message.reply(`Failed finding user <@${user_id}>`)
             return;
         }
 
-
+        const record = await User_record.warn(user.id, reason, message.author.id);
+        try {
+            await user.send(`You have been given a Level ${record.level} warning in the server **${server.name}** with reason: '${reason}'\n` +
+                `This warning expires on <t:${((record.warnings[record.warnings.length - 1].issued.getTime() + Warning.get_expiration_time_ms(record.level)) / 1000).toFixed()}>.`);
+            await message.react("✅");
+        } catch (error) {
+            message.reply(`I failed DMing ${user} the warning because ${error}. They may have left or blocked me or it's a Discord error. The warning is still recorded and roles will be applied.`);
+        }
 
         /*
         if (message.channel.id === "737043345913675786") return;
         try {
             if (!util.isMod(message)) {
-                //util.sendTextMessage(message.channel, `${message.author} Shoo! You don't have the permissions for that!`);
+                //util.sendTextMessage(message.channel, `${ message.author } Shoo! You don't have the permissions for that!`);
+return;
+            }
+if (!args) {
+    console.error("Somehow we got a warn call without args.");
+    return;
+}
+let member = message.mentions.members?.first() || message.guild?.members.cache.get(args[0]);
+if (!member)
+    return util.sendTextMessage(message.channel, `Please mention a valid member of this server! REEEEEEE`);
+if (member.roles.cache.has(roles.STAFF.id))
+    return util.sendTextMessage(message.channel, `I cannot warn ${member.user.username}... :thinking:`);
+
+
+const hasWarn1 = member.roles.cache.has(roles.WARN_1.id);
+const hasWarn2 = member.roles.cache.has(roles.WARN_2.id);
+let level = 0;
+let reason = message.content.substring(message.content.indexOf(args[0]) + args[0].length + 1);
+let err = false;
+
+// Warn functionality
+if (hasWarn2) {
+    level = 3;
+} else if (hasWarn1) {
+    await member.roles.add(roles.WARN_2)
+        .then(() => {
+            if (!member) {
+                console.log("Error in warnings: Member not found!");
                 return;
             }
-            if (!args) {
-                console.error("Somehow we got a warn call without args.");
+            member.roles.remove(roles.WARN_1)
+                .catch(() => {
+                    util.log(`Failed to remove Warning level 1 from ${member}.`, 'Warn: remove level 1', "**ERROR**");
+                    err = true;
+                });
+            level = 2;
+        })
+        .catch(() => {
+            err = true;
+            util.log(`Failed to add Warning level 2 to ${member}.`, 'Warn: 1->2', "**ERROR**");
+        });
+} else {
+    await member.roles.add(roles.WARN_1)
+        .then(() => {
+            if (!member) {
+                console.log("Error in warnings: Member not found!");
                 return;
             }
-            let member = message.mentions.members?.first() || message.guild?.members.cache.get(args[0]);
-            if (!member)
-                return util.sendTextMessage(message.channel, `Please mention a valid member of this server! REEEEEEE`);
-            if (member.roles.cache.has(roles.STAFF.id))
-                return util.sendTextMessage(message.channel, `I cannot warn ${member.user.username}... :thinking:`);
+            member.roles.remove(roles.INNOCENT)
+                .catch(() => {
+                    util.log(`Failed to remove Innocent role from ${member}.`, 'Warn: remove Innocent role', "**ERROR**");
+                    err = true;
+                });
+            level = 1;
+        })
+        .catch(() => {
+            err = true;
+            util.log(`Failed to add Warning level 1 to ${member}.`, 'Warn: 0->1', "**ERROR**");
+        });
+}
 
+if (err) return;
 
-            const hasWarn1 = member.roles.cache.has(roles.WARN_1.id);
-            const hasWarn2 = member.roles.cache.has(roles.WARN_2.id);
-            let level = 0;
-            let reason = message.content.substring(message.content.indexOf(args[0]) + args[0].length + 1);
-            let err = false;
-
-            // Warn functionality
-            if (hasWarn2) {
-                level = 3;
-            } else if (hasWarn1) {
-                await member.roles.add(roles.WARN_2)
-                    .then(() => {
-                        if (!member) {
-                            console.log("Error in warnings: Member not found!");
-                            return;
-                        }
-                        member.roles.remove(roles.WARN_1)
-                            .catch(() => {
-                                util.log(`Failed to remove Warning level 1 from ${member}.`, 'Warn: remove level 1', "**ERROR**");
-                                err = true;
-                            });
-                        level = 2;
-                    })
-                    .catch(() => {
-                        err = true;
-                        util.log(`Failed to add Warning level 2 to ${member}.`, 'Warn: 1->2', "**ERROR**");
-                    });
-            } else {
-                await member.roles.add(roles.WARN_1)
-                    .then(() => {
-                        if (!member) {
-                            console.log("Error in warnings: Member not found!");
-                            return;
-                        }
-                        member.roles.remove(roles.INNOCENT)
-                            .catch(() => {
-                                util.log(`Failed to remove Innocent role from ${member}.`, 'Warn: remove Innocent role', "**ERROR**");
-                                err = true;
-                            });
-                        level = 1;
-                    })
-                    .catch(() => {
-                        err = true;
-                        util.log(`Failed to add Warning level 1 to ${member}.`, 'Warn: 0->1', "**ERROR**");
-                    });
-            }
-
-            if (err) return;
-
-            const author = server.members.cache.get(message.author.id);
-            if (!author) {
-                console.log(message.channel, `Error: ${message.author} tried to warn ${member} but is not in the server ... what?`);
-                return;
-            }
-            dbMod.warnUser(member.user, level, author, reason);
-            message.delete();
+const author = server.members.cache.get(message.author.id);
+if (!author) {
+    console.log(message.channel, `Error: ${message.author} tried to warn ${member} but is not in the server ... what?`);
+    return;
+}
+dbMod.warnUser(member.user, level, author, reason);
+message.delete();
         } catch (e) {
-            util.log('Failed to process command (warn)', 'warn', "**ERROR**");
-        }
+    util.log('Failed to process command (warn)', 'warn', "**ERROR**");
+}
         */
+    },
+    deletewarning: async function (message) {
+        if (!util.isMod(message)) {
+            await message.reply("Nuh!");
+            return;
+        }
+
+        const match = message.content.match(/_deletewarning\s*<@!?(\d{18})>\s*(\d+)/m);
+
+        if (!match || match.length < 3) {
+            await message.reply("Usage: `_deletewarning @member warningnumber`\nExample: `_deletewarning @Lilli 1`");
+            return;
+        }
+
+        const user_id = match[1];
+        const index = parseInt(match[2]);
+
+        const record = User_record.get_warnings_for(user_id);
+        if (!record) {
+            await message.reply(`No warnings recorded for <@$(user_id)>`);
+            return;
+        }
+        if (!record.warnings[index - 1]) {
+            await message.reply(`Invalid warning index for <@${user_id}>. Check warning numbers at ${record.message.url}`);
+            return;
+        }
+        record.warnings.splice(index - 1, 1);
+        await record.save(user_id);
+        await record.fix_warning_roles(user_id);
+        await message.react("✅");
+    },
+    fixwarnings: async function (message) {
+        if (message) {
+            if (!util.isStaff) {
+                return;
+            }
+            await message.react("✅");
+        }
+        await User_record.fix_warning_roles();
     },
     stopmention: function (message) {
         if (util.isStaff(message)) {
@@ -3301,7 +3439,7 @@ Displays a list of the current cults and their symbol, cult role, leader and num
 Displays a list of channels and the number of messages, chatters and readers for the specified channel(s) for the last 28 days. Try \`_stats #💬ooc-general #🧚rp-general\` to compare the general chats or \`_stats 🐎\` to see how active the Ram Ranch cult is. Note that the stats only update once a week around Sunday to Monday.
 
 **\`_inactive\`**
-Displays a list of channels that are currently considered inactive and may get deleted next weekend. Note that this only updates every couple of days and that new channels get a grace period.
+Displays a list of channels that are currently considered inactive and may get deleted next weekend. Note that this only updates every Sunday and that new channels get a grace period.
 
 **\`_register\`**
 Start the process of registering your ad template.
@@ -3318,6 +3456,15 @@ Display this text.
         const staff_commands = `
 ***\`_warn\`*** \`[@user] [?reason]\`
 Applies appropriate warning role (Warned 1x or Warned 2x), sends a DM about the warning and enters it into database.
+
+***\`_showwarnings\`*** \`[@user]\`
+Shows the current warnings of a user.
+
+***\`_deletewarning\`*** \`[@user] [number]\`
+Deletes the warning with the given number (check \`_show_warnings\` or ${channels.warnings_data} for which warning has which number).
+
+***\`_fixwarnings\`***
+Updates roles according to ${channels.warnings_data}, runs automatically every hour.
 
 ***\`_stopmention\`***
 Makes me no longer listen to non-staff.
