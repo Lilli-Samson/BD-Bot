@@ -3455,7 +3455,7 @@ Display this text.
 `
         const staff_commands = `
 ***\`_warn\`*** \`[@user] [?reason]\`
-Applies appropriate warning role (Warned 1x or Warned 2x), sends a DM about the warning and enters it into database.
+Applies appropriate warning role (Warned 1x, Warned 2x or Should be banned), sends a DM about the warning and enters it into database.
 
 ***\`_showwarnings\`*** \`[@user]\`
 Shows the current warnings of a user.
@@ -3508,7 +3508,7 @@ Example: \`_perms @Lilli -ADD_REACTIONS #tinkering\`
 Hides the playing with/as/type categories from the specified user(s).
 
 ***\`_adunban\`*** \`[userID]+\`
-Hides the playing with/as/type categories from the specified user(s).`;
+Undoes hiding the playing with/as/type categories from the specified user(s).`;
         util.sendTextMessage(message.channel, new DiscordJS.MessageEmbed().setDescription(`I understand the following commands:
 ${public_commands}
 ${util.isStaff(message) ? staff_commands : ""}`))
