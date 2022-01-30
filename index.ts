@@ -109,7 +109,7 @@ const role_list = [
     ["WARN_2", "Warned 2x"],
     ["INNOCENT", "Innocent"],
     ["Currently_not_warned", "Currently not warned"],
-    //["Should_really_be_banned", ""],
+    ["Should_really_get_banned", "Should really get banned"],
     ["ANCIENT", "💠Ancient Member"],
     ["STAFF", "Staff"],
     ["TRIALMOD", "Trial-Moderator"],
@@ -458,13 +458,13 @@ class User_record {
     get_warning_roles(): Warning_roles {
         switch (this.level) {
             case 0:
-                return { add: roles.Currently_not_warned, remove: [roles.INNOCENT, roles.WARN_1, roles.WARN_2] };
+                return { add: roles.Currently_not_warned, remove: [roles.INNOCENT, roles.WARN_1, roles.WARN_2, roles.Should_really_get_banned] };
             case 1:
-                return { add: roles.WARN_1, remove: [roles.INNOCENT, roles.WARN_2, roles.Currently_not_warned] };
+                return { add: roles.WARN_1, remove: [roles.INNOCENT, roles.WARN_2, roles.Currently_not_warned, roles.Should_really_get_banned] };
             case 2:
-                return { add: roles.WARN_2, remove: [roles.INNOCENT, roles.WARN_1, roles.Currently_not_warned] };
+                return { add: roles.WARN_2, remove: [roles.INNOCENT, roles.WARN_1, roles.Currently_not_warned, roles.Should_really_get_banned] };
             default:
-                return { add: roles.WARN_2, remove: [roles.INNOCENT, roles.WARN_1, roles.Currently_not_warned] };
+                return { add: roles.Should_really_get_banned, remove: [roles.INNOCENT, roles.WARN_1, roles.WARN_2, roles.Currently_not_warned] };
         }
     }
 
@@ -474,7 +474,6 @@ class User_record {
                 return await server.members.fetch(user);
             }
             catch (error) {
-                channels.logs.send(`Failed finding user with ID ${user} from ${this.message.url}`);
                 return;
             }
         })();
