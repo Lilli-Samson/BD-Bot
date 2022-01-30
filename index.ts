@@ -2664,18 +2664,19 @@ message.delete();
             }
             //add generic fields Created and Age
             let embed = new DiscordJS.MessageEmbed().setDescription(`Age of ${target_string}`);
-            embed.addField("Created", `${deconstructed_snowflake.date.toUTCString()}`);
-            embed.addField("Age", `${util.time((new Date).getTime() - deconstructed_snowflake.timestamp)}`);
+            embed.addField("Created", `<t:${Math.trunc(deconstructed_snowflake.timestamp / 1000)}>`);
+            embed.addField("Age", `<t:${Math.trunc(deconstructed_snowflake.timestamp / 1000)}:R>`);
+            embed.addField("Timestamp", `${deconstructed_snowflake.timestamp}`);
             const member = server.members.cache.get(snowflake);
             let ant_date = new Date();
             ant_date.setFullYear(2019, 7, 5);
-            const member_age = member ? (snowflake === "201478077749002240" ? ant_date : member.joinedAt) : null;
-            if (member_age) { //add member fields Joined, Member Since and Eligible
-                const now = new Date().getTime();
-                const ancient_date = new Date(member_age.getTime() + 365 * 24 * 60 * 60 * 1000);
-                const ancient_string = ancient_date.getTime() <= now ? "Yes" : `on ${ancient_date.toUTCString()} in ${util.time(ancient_date.getTime() - now)}`;
-                embed.addField("Joined", `${member_age.toUTCString()}`);
-                embed.addField("Member Since", `${util.time(new Date().getTime() - member_age.getTime())}`);
+            if (member && member.joinedTimestamp) { //add member fields Joined, Member Since and Eligible
+                const member_timestamp = Math.trunc(member.joinedTimestamp / 1000);
+                const ancient_timestamp = member_timestamp + 365 * 24 * 60 * 60;
+                const now = Math.trunc(new Date().getTime() / 1000);
+                const ancient_string = ancient_timestamp <= now ? "Yes" : `on <t:${ancient_timestamp}> <t:${ancient_timestamp}:R>`;
+                embed.addField("Joined", `<t:${member_timestamp}>`);
+                embed.addField("Member Since", `<t:${member_timestamp}:R>`);
                 embed.addField(`Eligible For Ancient Role`, `${ancient_string}`);
             }
             util.sendTextMessage(message.channel, embed);
