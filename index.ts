@@ -3451,8 +3451,7 @@ Show your ad template or the one of the person or bot you mention.
 Deletes your RP template. You'll have to type it manually.
 
 **\`_help\`**
-Display this text.
-`
+Display this text.`
         const staff_commands = `
 ***\`_warn\`*** \`[@user] [?reason]\`
 Applies appropriate warning role (Warned 1x, Warned 2x or Should be banned), sends a DM about the warning and enters it into database.
