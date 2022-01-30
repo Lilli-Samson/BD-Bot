@@ -376,6 +376,7 @@ class User_record {
         const warning = new Warning(reason, record.level + 1, issuer);
         record.warnings.push(warning);
         await record.save(user);
+        await record.fix_warning_roles(user);
         return record;
     }
 
