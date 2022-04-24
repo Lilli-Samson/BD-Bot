@@ -76,6 +76,7 @@ const channel_list = [
     ["report_log", "reported-lfp-warning-logs"],
     ["lfp_moderation", "🏷ad-moderation"],
     ["ad_template", "🧩ad-template"],
+    ["ad_template_bot", "🧩ad-template-bot"],
     ["lfp_info", "📌posting-rules"],
     ["rp_ad_feedback", "🔖ad-feedback"],
     ["extreme_definition", "💀extreme-definition"],
@@ -3332,6 +3333,10 @@ message.delete();
         //TODO
     },
     register: async function (message) {
+        if (message.channel === channels.botchannel) {
+            message.reply(`Please use channel ${channels.ad_template_bot} for \`_register\` commands.`);
+            return;
+        }
         try {
             if (message.content === "_register") {
                 const entry = Ad_template_info.of(message.author.id);
