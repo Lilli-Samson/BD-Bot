@@ -76,7 +76,7 @@ const channel_list = [
     ["report_log", "reported-lfp-warning-logs"],
     ["lfp_moderation", "🏷ad-moderation"],
     ["ad_template", "🧩ad-template"],
-    ["ad_template_bot", "🧩ad-template-bot"],
+    ["ad_template_bot", "🧩template-registration"],
     ["lfp_info", "📌posting-rules"],
     ["rp_ad_feedback", "🔖ad-feedback"],
     ["extreme_definition", "💀extreme-definition"],
