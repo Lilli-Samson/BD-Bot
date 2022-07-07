@@ -3333,7 +3333,7 @@ message.delete();
         //TODO
     },
     register: async function (message) {
-        if (message.channel === channels.botchannel) {
+        if (message.channel === channels.botchannel || message.channel === channels.rp_ad_feedback) {
             message.reply(`Please use channel ${channels.ad_template_bot} for \`_register\` commands.`);
             return;
         }
