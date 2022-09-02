@@ -787,8 +787,6 @@ client.on("ready", () => {
                     seen_users.set(id, message);
                 }
             });
-            //Handle level ups that we may have missed
-            seen_users.forEach(util.handle_level_up);
         })
         .catch(error => {
             util.log(`Failed reading old messages from ${channels.level} because of ${error}`, level_up_module, "**ERROR**");
