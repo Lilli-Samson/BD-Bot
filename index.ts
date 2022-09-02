@@ -3321,14 +3321,14 @@ message.delete();
         message.reply("Sure, whatever you say.");
     },
     say: function (message) {
-        if (message.author.id !== "591241625737494538") {
+        if (message.author.id !== "591241625737494538" || util.isStaff(message)) {
             return;
         }
         message.channel.send(message.content.substr(5));
         message.delete();
     },
     ssay: function (message) {
-        if (message.author.id !== "591241625737494538") return;
+        if (message.author.id !== "591241625737494538" || util.isStaff(message)) return;
         message.delete();
         message.channel.send(message.content.substr(6).replace(/:.{1,20}:/g, (text) => {
             const name = text.slice(1, -1);
@@ -3341,7 +3341,7 @@ message.delete();
         }));
     },
     sayeb: function (message) {
-        if (message.author.id === "591241625737494538") {
+        if (message.author.id === "591241625737494538" || util.isStaff(message)) {
             message.delete();
             util.sendTextMessage(message.channel, new DiscordJS.MessageEmbed().setDescription(message.content.substr(6)));
         }
