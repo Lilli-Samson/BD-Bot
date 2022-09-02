@@ -3760,56 +3760,6 @@ const util = {
         return lvl_roles.LVL_100;
     },
 
-    handle_level_up: async function (message: DiscordJS.Message) {
-        const member = await message.mentions.members?.first()?.fetch();
-        if (!member) return;
-        const user = member.user;
-        const level_string = message.content.match(/level \d+/g)?.[0];
-        if (!level_string) return;
-        const level = parseInt(level_string.match(/\d+/g)?.[0] || "");
-
-        const new_role = util.level_to_role(level);
-        const is_lvl_role = (role_id: DiscordJS.Snowflake) => {
-            for (const name in lvl_roles) {
-                if (role_id === (<DiscordJS.Role>(lvl_roles as any)[name]).id) return true;
-            }
-            return false;
-        }
-        const updated_roles = member.roles.cache.filter(role => !is_lvl_role(role.id)).set(new_role.id, new_role);
-        const added_roles = updated_roles.filter(role => !member.roles.cache.has(role.id));
-        const removed_roles = member.roles.cache.filter(role => !updated_roles.has(role.id));
-        if (added_roles.size === 0 && removed_roles.size === 0) return;
-        const role_gain_string = added_roles.reduce((curr, role) => curr + `${role}`, "");
-        const role_lose_string = removed_roles.reduce((curr, role) => curr + `${role}`, "");
-
-        const role_change_incorrect = (added_roles.size !== 1 || removed_roles.size !== 1) && level !== 1;
-
-        util.log(`${role_change_incorrect ? "⚠ Incorrect role change: " : ""}${user} gained level ${level}, so added [${role_gain_string}] and removed [${role_lose_string}]`, level_up_module, "INFO");
-
-        if (role_change_incorrect) {
-            const old_role = util.level_to_role(level - 1);
-            util.log(`Expected to find role ${old_role} with ID ${old_role.id} on user ${user}, but didn't. Roles found: ${member.roles.cache.reduce((curr, role) => `${curr} ${role} (${role.id})`, "")
-                }`, level_up_module, "WARN");
-        }
-
-        await member.roles.set(updated_roles);
-        if (!["646500861505437716"].includes(user.id)) {
-            if (level === 5) {
-                await user.send("__**Congratulations!**__ :tada:\n\nYou have reached `Level 5` in the Breeding Den Server! You're now able to submit characters and join Voice Channels if you want to!" +
-                    "\n\n(_P.S. I'm a bot, so please don't reply!_)");
-            } else if (level === 20) {
-                await user.send("__**Congratulations!**__ :tada:\n\nYou have reached `Level 20` in the Breeding Den Server! You can now create your own cult, as long as certain criterias are met too!" +
-                    "For more detailed information, please check out the very top message in <#538901164897337347>" +
-                    "\nIf you're interested, simply ask a Staff member and they will guide you through the process!\n\n(_P.S. I'm a bot, so please don't reply!_)");
-            }
-            //else if (level === 30) {
-            //    await user.send("__**Congratulations!**__ :tada:\n\nYou have reached `Level 30` in the Breeding Den Server! You're now able to get yourself a __Custom Role__ if you want to!" +
-            //        "\nSimply ask a Staff member and tell them the __Name__ and __Color__ (ideally in Hexcode) of the Custom role!\n\n(_P.S. I'm a bot, so please don't reply!_)");
-            //}
-        }
-        await util.react(message, '✅');
-    },
-
     time: function (time_ms: number) {
         let time = ~~(time_ms / 1000);
         const s = ~~time % 60;
