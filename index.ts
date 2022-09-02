@@ -65,7 +65,7 @@ const channel_list = [
     ["rp_general", "🧚rp-general"],
     ["extreme_chat", "☠extreme-chat"],
     ["nsfw_media", "👅nsfw-media"],
-    ["nsfw_media_discussion", "👄nsfw-media-discussion"],
+    ["nsfw_media_discussion", "💭sharing-discussion"],
     ["nsfw_discussion", "nsfw-discussion"],
     ["tinkering", "tinkering"],
     ["authentication_logs", "🎫authentication-logs"],
