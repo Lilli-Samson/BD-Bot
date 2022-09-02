@@ -65,7 +65,7 @@ const channel_list = [
     ["rp_general", "🧚rp-general"],
     ["extreme_chat", "☠extreme-chat"],
     ["nsfw_media", "👅nsfw-media"],
-    ["nsfw_media_discussion", "💭sharing-discussion"],
+    ["nsfw_media_discussion", "👅media-discussion"],
     ["nsfw_discussion", "nsfw-discussion"],
     ["tinkering", "tinkering"],
     ["authentication_logs", "🎫authentication-logs"],
@@ -116,6 +116,7 @@ const role_list = [
     ["STAFF", "Staff"],
     ["TRIALMOD", "Trial-Moderator"],
     ["Moderator", "Moderator"],
+    ["NotABot", "Not a Bot"],
 ] as const;
 //@ts-ignore
 let roles: { [C in typeof role_list[number][0]]: DiscordJS.Role } = {};
@@ -1063,7 +1064,8 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
         if (!member) {
             return;
         }
-        //member.roles.add(roles.)
+        member.roles.add(roles.NotABot);
+        return;
     }
 
     //check if it's in an LFP channel
@@ -1787,10 +1789,6 @@ client.on("message", (message) => {
                 util.react(message, ping_violation_reaction_emoji);
             }
         }
-    }
-
-    if (message.channel.name === "📈level-up-log") {
-        util.handle_level_up(message);
     }
 
     if (message.mentions.members?.has(client.user.id)) {
