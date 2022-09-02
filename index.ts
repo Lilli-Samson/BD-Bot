@@ -1381,7 +1381,7 @@ client.on("message", (message) => {
         };
         server.members.ban(message.author.id, options).then(() => {
             util.log(`Banned <@${message.author.id} because of sending a message in ${channels.autoban}`, "Autoban channel", "INFO");
-        }).catch((e) => util.log(`Failed banning <@${message.author.id} because ${e}`, "Autoban channel", '**ERROR**'));
+        }).catch((e) => util.log(`Failed banning <@${message.author.id}> because ${e}`, "Autoban channel", '**ERROR**'));
         return;
     }
     if (!message.channel.guild) return; // Ignore DMs
