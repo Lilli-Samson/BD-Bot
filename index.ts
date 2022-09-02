@@ -1048,13 +1048,6 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
             return;
         }
     }
-    if (messagereaction.message.guild?.id !== server.id) return;
-    const reaction = messagereaction.emoji.name;
-    if (messagereaction.emoji instanceof DiscordJS.GuildEmoji) return;
-    if (reaction === "⭐" || reaction === "✅") {
-        fnct.approveChar(messagereaction.message, messagereaction.emoji, user);
-    }
-    if (user.id === client.user?.id) return; //don't react to our own reactions
 
     //Hide autoban channel
     if (messagereaction.message.channel === channels.autoban) {
@@ -1065,6 +1058,14 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
         member.roles.add(roles.NotABot);
         return;
     }
+
+    if (messagereaction.message.guild?.id !== server.id) return;
+    const reaction = messagereaction.emoji.name;
+    if (messagereaction.emoji instanceof DiscordJS.GuildEmoji) return;
+    if (reaction === "⭐" || reaction === "✅") {
+        fnct.approveChar(messagereaction.message, messagereaction.emoji, user);
+    }
+    if (user.id === client.user?.id) return; //don't react to our own reactions
 
     //check if it's in an LFP channel
     const channel = messagereaction.message.channel;
