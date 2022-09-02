@@ -85,6 +85,7 @@ const channel_list = [
     ["techlab", "📡tech-lab"],
     ["botchannel", "🤖bot-channel"],
     ["template_data", "rp-template-data"],
+    ["autoban", "🔨ban-me"],
 ] as const;
 //@ts-ignore
 let channels: { [C in typeof channel_list[number][0]]: DiscordJS.TextChannel } = {};
@@ -1056,6 +1057,15 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
     }
     if (user.id === client.user?.id) return; //don't react to our own reactions
 
+    //Hide autoban channel
+    if (messagereaction.message.channel === channels.autoban) {
+        const member = server.members.cache.get(user.id);
+        if (!member) {
+            return;
+        }
+        //member.roles.add(roles.)
+    }
+
     //check if it's in an LFP channel
     const channel = messagereaction.message.channel;
     if (!(channel instanceof DiscordJS.TextChannel)) {
@@ -1361,6 +1371,17 @@ client.on("message", (message) => {
         ) {
             return;
         }
+    }
+    if (message.channel === channels.autoban && message.author.id !== "591241625737494538") {
+        let options = {
+            reason: `Posted message in ${channels.autoban}`,
+            days: 7,
+
+        };
+        server.members.ban(message.author.id, options).then(() => {
+            util.log(`Banned <@${message.author.id} because of sending a message in ${channels.autoban}`, "Autoban channel", "INFO");
+        }).catch((e) => util.log(`Failed banning <@${message.author.id} because ${e}`, "Autoban channel", '**ERROR**'));
+        return;
     }
     if (!message.channel.guild) return; // Ignore DMs
     if (message.channel.guild.id !== server.id) return; // Ignore non-main servers
