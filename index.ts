@@ -1507,7 +1507,7 @@ client.on("message", (message) => {
                 const lower_content = message.content.toLowerCase();
                 const missing_words = ad_template_words.filter(word => !lower_content.includes(word));
                 if (missing_words.length > 0) {
-                    channels.lfp_moderation.send(`${message.author} Your ad in ${message.channel} is not following the ${channels.ad_template}. It is missing the field(s) **${missing_words.join(", ")}**. Please edit your ad to include these required fields **within the next 10 minutes**. Alternatively register your template fields by typing \`_register\` in ${channels.botchannel}.`);
+                    channels.lfp_moderation.send(`${message.author} Your ad in ${message.channel} is not following the ${channels.ad_template}. It is missing the field(s) **${missing_words.join(", ")}**. Please edit your ad to include these required fields **within the next 10 minutes**. Alternatively register your template fields by typing \`_register\` in ${channels.ad_template_bot}.`);
                     await util.react(message, "🧩");
                     setTimeout(async () => {
                         if (message.deleted) {
@@ -1521,7 +1521,7 @@ client.on("message", (message) => {
                             return;
                         }
                         if (missing_words.length > 0) {
-                            await channels.lfp_moderation.send(`${message.author} Your ad in ${message.channel} was not following the ${channels.ad_template}, so **it was deleted**. It was missing the field(s) **${missing_words.join(", ")}**. Please include these required field(s) exactly next time you post an ad **or** register your template fields by typing \`_register\` in ${channels.botchannel}.`);
+                            await channels.lfp_moderation.send(`${message.author} Your ad in ${message.channel} was not following the ${channels.ad_template}, so **it was deleted**. It was missing the field(s) **${missing_words.join(", ")}**. Please include these required field(s) exactly next time you post an ad **or** register your template fields by typing \`_register\` in ${channels.ad_template_bot}.`);
                             await message.delete({ reason: "Missing ad template" });
                         }
                         else {
