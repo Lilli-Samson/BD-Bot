@@ -3766,6 +3766,7 @@ const util = {
     },
 
     handle_level_up: async function (message: DiscordJS.Message) {
+        console.log(`Handling level up message ${message.url}`);
         const member = await message.mentions.members?.first()?.fetch();
         if (!member) return;
         const user = member.user;
