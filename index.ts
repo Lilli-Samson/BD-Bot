@@ -1367,14 +1367,10 @@ client.on("message", (message) => {
                 }
             }
         }
-        if (message.channel === channels.level) {
-            util.handle_level_up(message);
-            return;
-        }
         if (
-            (message.author.id !== "159985870458322944" || message.channel.name !== "📈level-up-log") &&
-            (message.author.id !== "155149108183695360" || message.channel.name !== "🚨reports-log") &&
-            (message.author.username !== "Carl-bot Logging" || message.channel.name !== "🎫authentication-logs")
+            (message.channel !== channels.level) &&
+            (message.author.id !== "155149108183695360" || message.channel !== channels.report_log) &&
+            (message.author.username !== "Carl-bot Logging" || message.channel !== channels.authentication_logs)
         ) {
             return;
         }
@@ -1393,6 +1389,12 @@ client.on("message", (message) => {
     if (!message.channel.guild) return; // Ignore DMs
     if (message.channel.guild.id !== server.id) return; // Ignore non-main servers
     if (lockdown) return;
+
+
+    if (message.channel === channels.level) {
+        util.handle_level_up(message);
+        return;
+    }
 
     // Prefix as first character -> command
     if (message.content.indexOf(prefix) === 0) {
@@ -3791,8 +3793,8 @@ const util = {
         const added_roles = updated_roles.filter(role => !member.roles.cache.has(role.id));
         const removed_roles = member.roles.cache.filter(role => !updated_roles.has(role.id));
         if (added_roles.size === 0 && removed_roles.size === 0) {
-            console.log(`No role change necessary for level up message ${message.url}`);
-            await util.react(message, '⏺️');
+            //console.log(`No role change necessary for level up message ${message.url}`);
+            //await util.react(message, '⏺️');
             return;
         }
         const role_gain_string = added_roles.reduce((curr, role) => curr + `${role}`, "");
