@@ -1391,8 +1391,9 @@ client.on("message", (message) => {
     if (lockdown) return;
 
 
-    if (message.channel.name === "📈level-up-log") {
+    if (message.channel === channels.level) {
         util.handle_level_up(message);
+        return;
     }
 
     // Prefix as first character -> command
