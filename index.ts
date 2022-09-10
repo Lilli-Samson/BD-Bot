@@ -1367,6 +1367,10 @@ client.on("message", (message) => {
                 }
             }
         }
+        if (message.channel === channels.level) {
+            util.handle_level_up(message);
+            return;
+        }
         if (
             (message.author.id !== "159985870458322944" || message.channel.name !== "📈level-up-log") &&
             (message.author.id !== "155149108183695360" || message.channel.name !== "🚨reports-log") &&
@@ -1389,12 +1393,6 @@ client.on("message", (message) => {
     if (!message.channel.guild) return; // Ignore DMs
     if (message.channel.guild.id !== server.id) return; // Ignore non-main servers
     if (lockdown) return;
-
-
-    if (message.channel === channels.level) {
-        util.handle_level_up(message);
-        return;
-    }
 
     // Prefix as first character -> command
     if (message.content.indexOf(prefix) === 0) {
