@@ -3768,10 +3768,18 @@ const util = {
     handle_level_up: async function (message: DiscordJS.Message) {
         console.log(`Handling level up message ${message.url}`);
         const member = await message.mentions.members?.first()?.fetch();
-        if (!member) return;
+        if (!member) {
+            console.log(`Failed finding pinged member in level up message ${message.url}`);
+            await util.react(message, '❌');
+            return;
+        }
         const user = member.user;
         const level_string = message.content.match(/level \d+/g)?.[0];
-        if (!level_string) return;
+        if (!level_string) {
+            console.log(`Failed finding level string in level up message ${message.url}`);
+            await util.react(message, '❌');
+            return;
+        }
         const level = parseInt(level_string.match(/\d+/g)?.[0] || "");
 
         const new_role = util.level_to_role(level);
@@ -3784,7 +3792,11 @@ const util = {
         const updated_roles = member.roles.cache.filter(role => !is_lvl_role(role.id)).set(new_role.id, new_role);
         const added_roles = updated_roles.filter(role => !member.roles.cache.has(role.id));
         const removed_roles = member.roles.cache.filter(role => !updated_roles.has(role.id));
-        if (added_roles.size === 0 && removed_roles.size === 0) return;
+        if (added_roles.size === 0 && removed_roles.size === 0) {
+            console.log(`No role change necessary for level up message ${message.url}`);
+            await util.react(message, '⏺️');
+            return;
+        }
         const role_gain_string = added_roles.reduce((curr, role) => curr + `${role}`, "");
         const role_lose_string = removed_roles.reduce((curr, role) => curr + `${role}`, "");
 
