@@ -259,7 +259,7 @@ class Ad_template_info {
         }
         function from_string(field: string): [string, Map<DiscordJS.Snowflake, string>] {
             const per_channel = new Map<DiscordJS.Snowflake, string>();
-            const parts = field.split(/<#(\d{18})>/);
+            const parts = field.split(/<#(\d{18,19})>/);
             const general_piece = parts[0];
             for (let i = 1; parts.length > i * 2; i++) {
                 per_channel.set(parts[i * 2 - 1], parts[i * 2]);
@@ -389,7 +389,7 @@ class User_record {
             console.log(`Ill-formed warning message: ${message.url}`);
             return;
         }
-        const userid_match = embed.description.match(/<@&?(\d{18})/);
+        const userid_match = embed.description.match(/<@&?(\d{18,19})/);
         if (!userid_match || userid_match.length <= 1) {
             console.log(`Failed finding user in message: ${message.url}`);
             return;
@@ -397,7 +397,7 @@ class User_record {
         const userid = userid_match[1];
         const record = new User_record([], message);
         for (const field of embed.fields) {
-            const match = field.value.match(/Issuer: <@(\d{18})>\nIssued: <t:(\d+)>\nLevel: (\d+)\nReason: ?([\s\S]*)/);
+            const match = field.value.match(/Issuer: <@(\d{18,19})>\nIssued: <t:(\d+)>\nLevel: (\d+)\nReason: ?([\s\S]*)/);
             if (!match || match.length < 4) {
                 continue;
             }
@@ -1304,7 +1304,7 @@ client.on("messageUpdate", async (old_message, new_message) => {
         if (!old_report) return;
         const details = old_report.embeds[0]?.fields[0];
         if (!details) return;
-        const reporter_id = details.value.match(/Reported by: <@!?(\d{18})>\n/)?.[1];
+        const reporter_id = details.value.match(/Reported by: <@!?(\d{18,19})>\n/)?.[1];
         if (!reporter_id) return;
         const reporter = client.users.cache.get(reporter_id);
         if (!reporter) return;
@@ -1325,7 +1325,7 @@ client.on("messageDelete", async (deleted_message) => {
         if (!old_report) return;
         const details = old_report.embeds[0]?.fields[0];
         if (!details) return;
-        const reporter_id = details.value.match(/Reported by: <@!?(\d{18})>\n/)?.[1];
+        const reporter_id = details.value.match(/Reported by: <@!?(\d{18,19})>\n/)?.[1];
         if (!reporter_id) return;
         const reporter = client.users.cache.get(reporter_id);
         if (!reporter) return;
@@ -2186,7 +2186,7 @@ async function post_next_missing(info: Ad_template_info, message: DiscordJS.Mess
 }
 
 function parse_register_data(data: string, message: DiscordJS.Message): [string, string[]] | undefined {
-    const parts = data.match(/<#\d{18}>/);
+    const parts = data.match(/<#\d{18,19}>/);
     if (!parts) {
         return [data, []];
     }
@@ -2200,7 +2200,7 @@ function parse_register_data(data: string, message: DiscordJS.Message): [string,
         }
         channel_ids.push(id);
     }
-    return [data.split(/<#\d{18}>/).join("").trim(), channel_ids];
+    return [data.split(/<#\d{18,19}>/).join("").trim(), channel_ids];
 }
 
 async function register_pairings(info: Ad_template_info, message: DiscordJS.Message) {
@@ -2391,7 +2391,7 @@ const cmd: Cmd = {
             return;
         }
 
-        const match = message.content.match(/_warn\s*<@!?(\d{18})>\s*([\s\S]*)/m);
+        const match = message.content.match(/_warn\s*<@!?(\d{18,19})>\s*([\s\S]*)/m);
 
         if (!match || match.length < 3) {
             await message.reply("You need to specify who to warn!");
@@ -2509,7 +2509,7 @@ message.delete();
             return;
         }
 
-        const match = message.content.match(/_deletewarning\s*<@!?(\d{18})>\s*(\d+)/m);
+        const match = message.content.match(/_deletewarning\s*<@!?(\d{18,19})>\s*(\d+)/m);
 
         if (!match || match.length < 3) {
             await message.reply("Usage: `_deletewarning @member warningnumber`\nExample: `_deletewarning @Lilli 1`");
@@ -3149,7 +3149,7 @@ message.delete();
         let denied_permissions = 0;
         let clearing = false;
         for (const part of message.content.split(/\s+/).splice(1)) {
-            const snowflake_match = part.match(/(?:<(?:@|#)!?(\d{18})>)|(\d{18})/) || [];
+            const snowflake_match = part.match(/(?:<(?:@|#)!?(\d{18,19})>)|(\d{18,19})/) || [];
             const snowflake = snowflake_match[1] || snowflake_match[2];
             if (snowflake) {
                 const member = server.members.cache.get(snowflake);
