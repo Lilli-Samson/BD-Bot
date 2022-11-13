@@ -122,13 +122,13 @@ const role_list = [
 let roles: { [C in typeof role_list[number][0]]: DiscordJS.Role } = {};
 
 const emoji_list = [
-    ["bancat", "bancat"],
+    ["bancat", "BD_bancat"],
     ["pingmad", "pingmad"],
-    ["pingangry", "pingangry"],
-    ["pepegun", "Pepegun"],
-    ["monkas", "monkas"],
+    ["pingangry", "BD_pingangry"],
+    ["pepegun", "BD_Pepegun"],
+    ["monkas", "BD_monkas"],
     ["elmoburn", "elmoburn"],
-    ["pog", "pog"],
+    ["pog", "BD_pog"],
 ] as const;
 //@ts-ignore
 let emojis: { [C in typeof emoji_list[number][0]]: DiscordJS.GuildEmoji } = {};
