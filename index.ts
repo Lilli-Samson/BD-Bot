@@ -1444,6 +1444,7 @@ client.on("message", (message) => {
                 const messages = message.channel.messages.cache;
                 for (const [, old_message] of messages) {
                     if (old_message.author?.id === message.author.id && old_message.id !== message.id) {
+                        util.log(`Deleted ad by ${message.author} posted at ${util.timestamp(old_message.createdTimestamp)}> in ${message.channel} because a new ad ${message.url} was posted there.`, "Ad Moderation", "INFO");
                         await delete_ad_info(old_message);
                         await old_message.delete();
                     }
@@ -1451,6 +1452,7 @@ client.on("message", (message) => {
                 //Delete ad spam
                 let old_messages: DiscordJS.Message[] = [];
                 for (const lfpchannel of lfpChannels) {
+                    await lfpchannel.fetch();
                     const channel_messages = lfpchannel.messages.cache;
                     for (const [, old_message] of channel_messages) {
                         if (!old_message.author) {
@@ -1468,14 +1470,15 @@ client.on("message", (message) => {
                 }
                 if (old_messages.length > ad_limit) {
                     const sorted_messages = old_messages.sort((m1, m2) => m2.createdTimestamp - m1.createdTimestamp);
+                    const old_message_list = sorted_messages.reduce((prev, msg) => `${prev}\n${msg.channel} ${util.timestamp(msg.createdTimestamp)} ${msg.url}`, "");
                     for (const old_message of sorted_messages.splice(ad_limit)) {
                         if (old_message.createdTimestamp > new Date().getTime() - 10 * 60 * 1000) {
-                            await channels.lfp_moderation.send(`${old_message.author} Please note that you can only post 4 ads in total across all the LFP channels. If you post a 5th, the oldest gets automatically deleted, which applied to your ad in ${old_message.channel}.`);
+                            await channels.lfp_moderation.send(`${old_message.author} Please note that you can only post 4 ads in total across all the LFP channels. If you post a 5th, the oldest gets automatically deleted, which applied to your ad in ${old_message.channel}. List of previous ads:\n${old_message_list}`);
                         }
                         try {
                             await delete_ad_info(old_message);
                             await old_message.delete();
-                            util.log(`Deleted ad by ${old_message.author} in ${old_message.channel} because of breaking ${ad_limit} ad limit`, `Ad moderation`, "INFO");
+                            util.log(`Deleted ad by ${old_message.author} in ${old_message.channel} because of breaking ${ad_limit} ad limit. Old ads:\n${old_message_list}`, `Ad moderation`, "INFO");
                         }
                         catch (err) {
                             util.log(`Failed deleting ad by ${old_message.author} in ${old_message.channel} because ${err}`, `Ad moderation`, "INFO");
@@ -3860,6 +3863,14 @@ const util = {
         } catch (error) {
             util.log(`Failed reacting with emote ${emote} to [this message](${message.url}) by ${message.author} because ${error}`, "Adding reaction", "**ERROR**");
         }
+    },
+
+    timestamp: function (time: number) {
+        return `<t:${Math.round(time / 1000)}>`;
+    },
+
+    reltimestamp: function (time: number) {
+        return `<t:${Math.round(time / 1000)}:R>`;
     }
 };
 
