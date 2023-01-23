@@ -2862,7 +2862,8 @@ message.delete();
                 `${curr}` +
                 `${cult.icon} ${cult.role}\n` +
                 `Leader: ${cult.leader}\n` +
-                `**${cult.memberCount}** members\n\n`, "");
+                `**${cult.memberCount}** members\n` +
+                `Founded: <t:${Math.round(cult.role.createdTimestamp / 1000)}>\n\n`, "");
             embed.setDescription(description);
             await message.channel.send(embed);
             message.channel.stopTyping();
