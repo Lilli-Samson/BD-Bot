@@ -1745,7 +1745,7 @@ client.on("message", (message) => {
     delete_links_in_general_chats(message);
 
     // delete non-media in Hentai Corner and Pornhub categories and nsfw-media
-    if (["SOURCE", "NSFW-DISCUSSION", "EXTREME-FETISHES-BOT", "NSFW-BOT-IMAGES"].indexOf(message.channel.name.toUpperCase()) === -1 &&
+    if (["SOURCE", "HENTAI-DISCUSSION", "NSFW-DISCUSSION", "EXTREME-FETISHES-BOT", "NSFW-BOT-IMAGES"].indexOf(message.channel.name.toUpperCase()) === -1 &&
         message.channel.parent &&
         ["HENTAI CORNER", "PORNHUB"].indexOf(message.channel.parent.name.toUpperCase()) !== -1 ||
         message.channel.id === channels.nsfw_media.id
