@@ -114,7 +114,7 @@ const role_list = [
     ["Should_really_get_banned", "Should really get banned"],
     ["ANCIENT", "💠Ancient Member"],
     ["STAFF", "Staff"],
-    ["TRIALMOD", "Trial-Moderator"],
+    ["TRIALMOD", "Trial-Staff"],
     ["Moderator", "Moderator"],
     ["NotABot", "Not a Bot"],
 ] as const;
