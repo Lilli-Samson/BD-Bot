@@ -80,7 +80,6 @@ const channel_list = [
     ["lfp_info", "📌posting-rules"],
     ["rp_ad_feedback", "🔖ad-feedback"],
     ["extreme_definition", "💀extreme-definition"],
-    ["promotion", "🎈promotion"],
     ["achievements", "🏆achievements"],
     ["techlab", "📡tech-lab"],
     ["botchannel", "🤖bot-channel"],
@@ -1399,17 +1398,6 @@ client.on("message", (message) => {
     // Prefix as first character -> command
     if (message.content.indexOf(prefix) === 0) {
         cmd.call(message);
-    }
-
-    //delete previous promotion
-    if (message.channel === channels.promotion) {
-        //Delete previous message
-        (async () => {
-            const messages = await message.channel.messages.fetch({ "before": message.id, "limit": 100 });
-            for (const [message_id, old_message] of messages) {
-                if (old_message.author.id === message.author.id && old_message.id !== message.id) await old_message.delete();
-            }
-        })();
     }
 
     //LFP rule enforcement
