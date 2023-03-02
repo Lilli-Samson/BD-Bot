@@ -1637,7 +1637,7 @@ client.on("message", (message) => {
                             break;
                         case "lesbian":
                             title = "LESBIAN RPs";
-                            target = "People looking for RPs involving sexual relationships between females.";
+                            target = `People looking for RPs involving sexual relationships between females, excluding futas (those should use ${channels.as_futa_herm}/${channels.with_futa_herm}).`;
                             break;
                         case "xtreme":
                             title = "EXTREME RPs";
