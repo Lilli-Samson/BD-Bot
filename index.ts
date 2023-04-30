@@ -61,8 +61,8 @@ const channel_list = [
     ["all_style", "✥all-style"],
     ["breeding", "🐇breeding"],
     ["contact", "💬ask-to-dm"],
-    ["ooc_general", "💬ooc-general"],
-    ["rp_general", "🧚rp-general"],
+    ["ooc_general", "💬general-chat"],
+    ["rp_general", "🧚rp-n-chat"],
     ["extreme_chat", "☠extreme-chat"],
     ["nsfw_media", "👅nsfw-media"],
     ["nsfw_media_discussion", "👅media-discussion"],
@@ -1838,11 +1838,33 @@ client.on("message", (message) => {
     }
 });
 
+async function updateWarningRoles(old_member: DiscordJS.GuildMember | DiscordJS.PartialGuildMember, new_member: DiscordJS.GuildMember) {
+    const warning_roles = [roles.INNOCENT.id, roles.WARN_1.id, roles.WARN_2.id, roles.Currently_not_warned.id] as const;
+    const old_roles = old_member.roles.cache.filter(role => warning_roles.indexOf(role.id) !== -1).sort();
+    const new_roles = new_member.roles.cache.filter(role => warning_roles.indexOf(role.id) !== -1).sort();
+    console.log(`Updating roles for ${new_member.user.username}`);
+    console.log(`Old roles: ${old_roles.reduce((curr, role) => `${curr}, ${role.name}`, "")}`);
+    console.log(`New roles: ${new_roles.reduce((curr, role) => `${curr}, ${role.name}`, "")}`);
+
+    if (new_roles.size === 1) {
+        return;
+    }
+    for (const [id] of old_roles) {
+        new_roles.delete(id);
+    }
+    if (new_roles.size === 1) {
+        for (const [id] of old_roles) {
+            await new_member.roles.remove(id);
+        }
+    }
+}
+
 client.on("guildMemberUpdate", (old_member, new_member) => {
     if (new_member.guild?.id !== server.id) { //ignore non-main servers
         return;
     }
     member_check(new_member);
+    updateWarningRoles(old_member, new_member);
 });
 
 const permissions_map = new Map([
