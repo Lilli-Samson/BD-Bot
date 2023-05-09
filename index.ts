@@ -62,7 +62,7 @@ const channel_list = [
     ["breeding", "🐇breeding"],
     ["contact", "💬ask-to-dm"],
     ["ooc_general", "💬general-chat"],
-    ["rp_general", "🧚rp-n-chat"],
+    ["rp_general", "🧚rp-n-shit"],
     ["extreme_chat", "☠extreme-chat"],
     ["nsfw_media", "👅nsfw-media"],
     ["nsfw_media_discussion", "👅media-discussion"],
@@ -755,6 +755,9 @@ const startUpMod = {
 
         } catch (e) {
             console.log(`(${moment().format('MMM DD YYYY - HH:mm:ss.SSS')}) Failed to start up because ${e}.`);
+            const logchannel = server_id === "534775766693576705" ? "" : "";
+
+
             process.exit();
         }
     },
