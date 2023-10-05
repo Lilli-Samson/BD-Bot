@@ -124,7 +124,7 @@ let roles: { [C in typeof role_list[number][0]]: DiscordJS.Role } = {};
 
 const emoji_list = [
     ["bancat", "BD_bancat"],
-    ["pingmad", "pingmad"],
+    ["pingmad", "BD_pingmad"],
     ["pingangry", "BD_pingangry"],
     ["pepegun", "BD_Pepegun"],
     ["monkas", "BD_monkas"],
