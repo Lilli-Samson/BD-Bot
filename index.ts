@@ -87,6 +87,7 @@ const channel_list = [
     ["autoban", "bot-ban"],
     ["venting", "💣venting"],
     ["ask_dm", "💬ask-to-dm"],
+    ["verified", "✅verified-users"],
 ] as const;
 //@ts-ignore
 let channels: { [C in typeof channel_list[number][0]]: DiscordJS.TextChannel } = {};
@@ -118,6 +119,7 @@ const role_list = [
     ["TRIALMOD", "Trial-Staff"],
     ["Moderator", "Moderator"],
     ["NotABot", "Not a Bot"],
+    ["verified", "✔️Verified 18+"],
 ] as const;
 //@ts-ignore
 let roles: { [C in typeof role_list[number][0]]: DiscordJS.Role } = {};
@@ -197,6 +199,8 @@ class Ad_template_info {
     channel_limits = new Map<DiscordJS.Snowflake, string>();
     post_length: string = "";
     channel_post_length = new Map<DiscordJS.Snowflake, string>();
+    posted_ads = 0;
+    moderated_ads = 0;
 
     static async create_entry(user: DiscordJS.Snowflake) {
         const entry = new Ad_template_info(user, (await channels.template_data.send(new DiscordJS.MessageEmbed().setAuthor(user).setDescription(`<@${user}>`))).id);
@@ -247,6 +251,7 @@ class Ad_template_info {
         if (this.post_length) {
             entry.addField(field_names.post_length, to_string(this.post_length, this.channel_post_length));
         }
+        entry.addField("Moderated", `${this.moderated_ads}/${this.posted_ads}`);
         await message.edit(entry);
     }
 
@@ -283,17 +288,33 @@ class Ad_template_info {
                     case field_names.post_length:
                         [this.post_length, this.channel_post_length] = from_string(field.value);
                         break;
+                    case "Moderated":
+                        const match = field.value.match(/(\d+)\/(\d+)/);
+                        let [, moderated, total] = match || [0, "0", "0"];
+                        if (typeof (moderated) !== "string") {
+                            moderated = "0";
+                        }
+                        if (typeof (total) !== "string") {
+                            total = "0";
+                        }
+                        this.moderated_ads = parseInt(moderated);
+                        this.posted_ads = parseInt(total);
+                        break;
                 }
             }
         }
     }
 
     async delete() {
-        let message = channels.template_data.messages.cache.get(this.data_message);
-        if (message) {
-            await message.delete({ reason: `Ad template deletion by user` });
-        }
-        Ad_template_info.ad_template_infos.delete(this.user);
+        this.pairing = "";
+        this.channel_pairings = new Map<DiscordJS.Snowflake, string>();
+        this.kinks = "";
+        this.channel_kinks = new Map<DiscordJS.Snowflake, string>();
+        this.limits = "";
+        this.channel_limits = new Map<DiscordJS.Snowflake, string>();
+        this.post_length = "";
+        this.channel_post_length = new Map<DiscordJS.Snowflake, string>();
+        return this.save();
     }
 
     static async load_ad_templates() {
@@ -3484,6 +3505,28 @@ message.delete();
     rampage: function (message) {
         message.reply(`${emojis.elmoburn}`);
     },
+    verify: async function (message) {
+        if (!util.isStaff(message)) {
+            return;
+        }
+        const member = await message.mentions.members?.first()?.fetch();
+        if (!member) {
+            message.reply("Must name a member");
+            return;
+        }
+        member.roles.add(roles.verified, `Verified by ${message.author}`).then(
+            async () => {
+                await channels.verified
+                    .send(new DiscordJS.MessageEmbed()
+                        .addField("User", `${member}`)
+                        .addField("Verifier", `${message.author}`)
+                        .addField("Date", `${util.timestamp(message.createdTimestamp)}`));
+                await message.react("✅");
+            }
+        ).catch(err => {
+            message.reply(`Failed adding verification role because ${err}`);
+        });
+    },
     help: function (message) {
         const public_commands = `
 **\`_ping\`**
@@ -3573,7 +3616,11 @@ Example: \`_perms @Lilli -ADD_REACTIONS #tinkering\`
 Hides the playing with/as/type categories from the specified user(s).
 
 ***\`_adunban\`*** \`[userID]+\`
-Undoes hiding the playing with/as/type categories from the specified user(s).`;
+Undoes hiding the playing with/as/type categories from the specified user(s).
+
+***\`_verify\`*** \`[userID]\`
+Adds the verified role and makes a note in the verified channel.
+`;
         util.sendTextMessage(message.channel, new DiscordJS.MessageEmbed().setDescription(`I understand the following commands:
 ${public_commands}
 ${util.isStaff(message) ? staff_commands : ""}`))
