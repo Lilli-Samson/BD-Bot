@@ -166,6 +166,7 @@ const link_regex = /((https?|ftp):\/\/|www\.)(\w.+\w\W?)/g; //source: https://su
 type Invite_code = string;
 class Invites extends DiscordJS.Collection<Invite_code, { uses: number | null, maxUses?: number | null, inviter?: DiscordJS.User | null }>{ };
 let invites: Invites;
+let blockWarningTimes = new Map<DiscordJS.Snowflake, number>();
 
 function reduce<Key_type, Value_type, Accumulator_type>(map: Map<Key_type, Value_type>, reducer: { (current_value: Accumulator_type, key_value: [Key_type, Value_type]): Accumulator_type }, accumulator: Accumulator_type) {
     for (const key_value of map) {
@@ -3721,7 +3722,7 @@ const split_text_message = (message: string) => {
 };
 
 const util = {
-    sendTextMessage: function (channel: DiscordJS.TextChannel | DiscordJS.DMChannel | DiscordJS.NewsChannel, message: DiscordJS.MessageEmbed | string) {
+    sendTextMessage: async function (channel: DiscordJS.TextChannel | DiscordJS.DMChannel | DiscordJS.NewsChannel, message: DiscordJS.MessageEmbed | string) {
         try {
             channel.startTyping();
             const message_pieces = split_text_message(typeof message === "string" ? message : message.description || "");
@@ -3939,7 +3940,8 @@ const util = {
         try {
             await message.react(emote);
         } catch (error) {
-            util.log(`Failed reacting with emote ${emote} to [this message](${message.url}) by ${message.author} because ${error}`, "Adding reaction", "**ERROR**");
+            await util.log(`Failed reacting with emote ${emote} to [this message](${message.url}) by ${message.author} because ${error}`, "Adding reaction", "**ERROR**");
+            await util.block_check(error, message.author);
         }
     },
 
@@ -3949,7 +3951,20 @@ const util = {
 
     reltimestamp: function (time: number) {
         return `<t:${Math.round(time / 1000)}:R>`;
-    }
+    },
+
+    block_check: async function (error: unknown, user: DiscordJS.User) {
+        const warning_cooldown_time_ms = 1000 * 60 * 60;
+        if (error == "DiscordAPIError: Reaction blocked") {
+            const old_time = blockWarningTimes.get(user.id);
+            const time = new Date().getTime();
+            if (typeof old_time === "number" && old_time > time - warning_cooldown_time_ms) {
+                return;
+            }
+            blockWarningTimes.set(user.id, time);
+            await channels.warnings.send(`${user} (${user.username}) blocked me, please ${emojis.bancat}`);
+        }
+    },
 };
 
 client.login(localConfig.TOKEN);
