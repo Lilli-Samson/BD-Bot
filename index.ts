@@ -2419,8 +2419,9 @@ const cmd: Cmd = {
     staff: async function (message) {
         try {
             const m = await message.channel.send("Checking!");
-            let isStaff = util.isStaff(message);
-            m.edit(`${message.author} is${(!isStaff) ? ' not' : ''} a staff member!`);
+            const user_to_check = message.mentions.members?.first()?.user || message.author;
+            const isStaff = util.isUserStaff(user_to_check);
+            m.edit(`${user_to_check} is${(!isStaff) ? ' not' : ''} a staff member!`);
             util.log('used command: staff', "staff", "INFO");
         } catch (e) {
             util.log('Failed to process command (staff)', 'staff', "**ERROR**");
