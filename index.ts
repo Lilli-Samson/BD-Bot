@@ -34,7 +34,6 @@ const channel_list = [
     ["warnings", "🚨warnings"],
     ["warnings_data", "warnings-data"],
     ["cult_info", "🗿cult-selection"],
-    ["char_sub", "📃character-submission"],
     ["char_archive", "📚character-archive"],
     ["char_index", "📕character-index"],
     ["reports", "📮reports-and-issues"],
@@ -1090,9 +1089,6 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
     if (messagereaction.message.guild?.id !== server.id) return;
     const reaction = messagereaction.emoji.name;
     if (messagereaction.emoji instanceof DiscordJS.GuildEmoji) return;
-    if (reaction === "⭐" || reaction === "✅") {
-        fnct.approveChar(messagereaction.message, messagereaction.emoji, user);
-    }
     if (user.id === client.user?.id) return; //don't react to our own reactions
 
     //check if it's in an LFP channel
@@ -3678,36 +3674,6 @@ const fnct = {
             util.log(`Failed to update server stats for ${modes}: ${e}`, 'Server Stats', "**ERROR**");
         }
     },
-    approveChar: function (message: DiscordJS.Message, reaction: DiscordJS.ReactionEmoji, user: DiscordJS.User) {
-        try {
-            if (!(message.channel instanceof DiscordJS.TextChannel)) return;
-            if (message.channel.name === channels.char_sub.name && util.isUserStaff(user)) {
-                const msgType = reaction.name === "⭐" ? 1 : reaction.name === "✅" ? 2 : 0;
-                if (msgType === 0) {
-                    return;
-                }
-                let msgAttachments = message.attachments.map(a => a.url);
-                let msgImagesString = "";
-                msgAttachments.forEach(imgUrl => msgImagesString += imgUrl + "\n");
-                util.log(`${user} approved character message:\n ${message.content}\n ${msgImagesString}`, "approveCharacter", "INFO");
-                let msgContent = `User: ${message.author}\n${message.content}`;
-                channels.char_archive.send(msgType === 1 ? msgContent : message.content, { files: msgAttachments })
-                    .then(msg => {
-                        if (msgType === 1) {
-                            channels.char_index.send(`\`${message.author} Your character has been approved and can be found in the index under \"\".\``);
-                        }
-                        let msgImages = msg.attachments.map(a => `<${a.url}>`);
-                        let msgImagesString = "";
-                        msgImages.forEach(imgUrl => msgImagesString += imgUrl + "\n");
-                        channels.char_index.send(`\`r!addchar \"charName\"\n\``);
-                        channels.char_index.send(`\`${message.content}\``);
-                        channels.char_index.send(`${msgImagesString}`);
-                    });
-            }
-        } catch (e) {
-            util.log(`${e}`, 'approveCharacter', "**ERROR**");
-        }
-    }
 };
 
 const split_text_message = (message: string) => {
