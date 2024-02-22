@@ -34,8 +34,6 @@ const channel_list = [
     ["warnings", "🚨warnings"],
     ["warnings_data", "warnings-data"],
     ["cult_info", "🗿cult-selection"],
-    ["char_archive", "📚character-archive"],
-    ["char_index", "📕character-index"],
     ["reports", "📮reports-and-issues"],
     ["with_male", "🍆with-male"],
     ["with_female", "🍑with-female"],
