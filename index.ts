@@ -975,7 +975,7 @@ async function log_action(action: "MEMBER_BAN_ADD" | "MEMBER_BAN_REMOVE" | "MEMB
         if (audit.executor === client.user && action === "MEMBER_KICK") {
             return;
         }
-        (await channels.warnings.send(".")).edit(`${user} ${user.id} was ${action_description || action} by ${audit.executor}${audit.reason ? ` with reason "${audit.reason}"` : ""}.`);
+        (await (audit.executor.bot ? channels.paranoia_plaza : channels.warnings).send(".")).edit(`${user} ${user.id} was ${action_description || action} by ${audit.executor}${audit.reason ? ` with reason "${audit.reason}"` : ""}.`);
         return;
     }
     if (attempt < 10) {
@@ -1452,16 +1452,17 @@ client.on("message", (message) => {
     //LFP rule enforcement
     if (lfpChannels.includes(message.channel)) {
         const ad_limit = 4;
+        const image_limit = 6;
         (async () => {
             if ((await (async () => {
                 //Check for 3+ images
-                if (util.image_link_count(message) > 3) {
+                if (util.image_link_count(message) > image_limit) {
                     message.delete();
                     util.sendTextMessage(channels.lfp_moderation,
-                        `${message.author}, your roleplaying ad in ${message.channel} has been removed because it had more than 3 images.\n` +
+                        `${message.author}, your roleplaying ad in ${message.channel} has been removed because it had more than ${image_limit} images.\n` +
                         `Please follow the rules as described in ${channels.lfp_info}.`);
                     util.sendTextMessage(channels.report_log, new DiscordJS.MessageEmbed()
-                        .setDescription(`✅ Deleted RP ad by ${message.author} in ${message.channel} because it contained more than 3 images.`)
+                        .setDescription(`✅ Deleted RP ad by ${message.author} in ${message.channel} because it contained more than ${image_limit} images.`)
                         .setTimestamp(new Date().getTime()));
                     return true;
                 }
