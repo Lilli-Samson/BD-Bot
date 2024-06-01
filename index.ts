@@ -117,6 +117,7 @@ const role_list = [
     ["Moderator", "Moderator"],
     ["NotABot", "Not a Bot"],
     ["verified", "✔️Verified 18+"],
+    ["adreviewer", "Ad Reviewer"],
 ] as const;
 //@ts-ignore
 let roles: { [C in typeof role_list[number][0]]: DiscordJS.Role } = {};
@@ -161,7 +162,7 @@ let ping_violation_reaction_emoji = emojis.pingangry;
 const level_up_module = "Level roles";
 const link_regex = /((https?|ftp):\/\/|www\.)(\w.+\w\W?)/g; //source: https://support.discordapp.com/hc/en-us/community/posts/360036244152-Change-in-text-link-detection-RegEx
 type Invite_code = string;
-class Invites extends DiscordJS.Collection<Invite_code, { uses: number | null, maxUses?: number | null, inviter?: DiscordJS.User | null }>{ };
+class Invites extends DiscordJS.Collection<Invite_code, { uses: number | null, maxUses?: number | null, inviter?: DiscordJS.User | null }> { };
 let invites: Invites;
 let blockWarningTimes = new Map<DiscordJS.Snowflake, number>();
 
@@ -3188,7 +3189,7 @@ message.delete();
         util.sendTextMessage(message.channel, new DiscordJS.MessageEmbed().setDescription(`Banished <@${target}> from ${summary}`));
     },
     perms: async function (message) {
-        if (!util.isMod(message)) {
+        if (!(util.isMod(message) || util.isAdReviewer(message.author))) {
             util.sendTextMessage(message.channel, `${message.author} had their horny license revoked!`);
             return;
         }
@@ -3342,7 +3343,7 @@ message.delete();
         message.channel.stopTyping();
     },
     adban: function (message) {
-        if (!util.isStaff(message)) {
+        if (!(util.isStaff(message) || util.isAdReviewer(message.author))) {
             util.sendTextMessage(message.channel, `${message.author}, consider yourself ad banned!`);
             return;
         }
@@ -3350,8 +3351,8 @@ message.delete();
         cmd.perms(message);
     },
     adunban: function (message) {
-        if (!util.isStaff(message)) {
-            util.sendTextMessage(message.channel, `${message.author} hmpf`);
+        if (!(util.isStaff(message) || util.isAdReviewer(message.author))) {
+            util.sendTextMessage(message.channel, `${message.author} no`);
             return;
         }
         message.content = `${message.content} clear ${categories.playing_with} ${categories.playing_as} ${categories.by_type}`;
@@ -3747,6 +3748,10 @@ const util = {
         }
         const user_roles = user.roles;
         return user_roles.cache.has(roles.Moderator.id);
+    },
+    isAdReviewer: function (user: DiscordJS.User) {
+        const member = server.members.cache.get(user.id);
+        return member && member.roles.cache.has(roles.adreviewer.id);
     },
     isUserStaff: function (user: DiscordJS.User) {
         const member = server.members.cache.get(user.id);
