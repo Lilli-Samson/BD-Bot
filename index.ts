@@ -85,6 +85,10 @@ const channel_list = [
     ["venting", "💣venting"],
     ["ask_dm", "💬ask-to-dm"],
     ["verified", "✅verified-users"],
+    ["image_reporting", "snitching"],
+    ["image_moderation", "🖼image-moderation"],
+    ["image_moderation_notifications", "image-police"],
+    ["image_rules", "image-posting-rules"],
 ] as const;
 //@ts-ignore
 let channels: { [C in typeof channel_list[number][0]]: DiscordJS.TextChannel } = {};
@@ -93,6 +97,8 @@ const category_list = [
     ["playing_with", "LFP Playing With"],
     ["playing_as", "LFP Playing As"],
     ["by_type", "LFP By Type"],
+    ["pornhub", "Pornhub"],
+    ["hentaicorner", "Hentai Corner"],
 ] as const;
 //@ts-ignore
 let categories: { [C in typeof category_list[number][0]]: DiscordJS.CategoryChannel } = {};
@@ -113,7 +119,7 @@ const role_list = [
     ["Should_really_get_banned", "Should really get banned"],
     ["ANCIENT", "💠Ancient Member"],
     ["STAFF", "Staff"],
-    ["TRIALMOD", "Trial-Staff"],
+    //["TRIALMOD", "Trial-Staff"],
     ["Moderator", "Moderator"],
     ["NotABot", "Not a Bot"],
     ["verified", "✔️Verified 18+"],
@@ -1150,6 +1156,61 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
         await util.react(report_message, "✋");
         await util.react(report_message, "🧨");
     }
+    if (messagereaction.message.channel.id === channels.image_moderation.id) {
+        if (!messagereaction.me) {
+            return;
+        }
+        if (messagereaction.message.editedAt) {
+            return;
+        }
+        const data = messagereaction.message.embeds.reduce((data, embed) => {
+            return embed.fields.reduce((data, field) => {
+                data.set(field.name, field.value);
+                return data;
+            }, data);
+        }, new Map<string, string>());
+        let text = "";
+        switch (messagereaction.emoji.name) {
+            case "#️⃣":
+                text = text || `${data.get("Offender")}, the image you posted in ${data.get("Message link")} has been removed because it has been posted in the wrong channel.`;
+            case "🇺🇸":
+                text = text || `${data.get("Offender")}, the image you posted in ${data.get("Message link")} has been removed because it is too political. Please refer to ${channels.image_rules} about what content is not allowed in this server.`;
+            case "👶":
+                text = text || `${data.get("Offender")}, the image you posted in ${data.get("Message link")} has been removed because it contains underage content. Please refer to ${channels.image_rules} about what content is not allowed in this server.`;
+                const link = data.get("Message link") || "";
+                link.split("/");
+                const match = link.match(/https:\/\/discord.com\/channels\/([0-9]+)\/([0-9]+)\/([0-9]+)/);
+                if (!match) {
+                    return;
+                }
+                const server_id = match[1];
+                const channel_id = match[2];
+                const message_id = match[3];
+                let channel = server.channels.cache.get(channel_id);
+                if (!channel || !(channel instanceof DiscordJS.TextChannel)) {
+                    return messagereaction.message.channel.send(`Invalid message link`);
+                }
+                const reported_message = await channel.messages.fetch(message_id);
+                if (!reported_message) {
+                    return messagereaction.message.channel.send(`Invalid message link`);
+                }
+                await reported_message.delete({ reason: `Image moderation by ${user}` });
+                await (await channels.image_moderation_notifications.send(text)).edit(text + ` (Moderator: ${user})`);
+                await messagereaction.message.edit(new DiscordJS.MessageEmbed()
+                    .addFields(messagereaction.message.embeds.reduce((data, embed) => {
+                        return data.concat(embed.fields)
+                    }, [] as DiscordJS.EmbedField[]))
+                    .addField("Moderated by", user)
+                );
+                break;
+            case "❓":
+                text = `${data.get("Reporter")}, [the image](${data.get("Message link")}) seems to be following the ${channels.image_rules}. Please clarify what is wrong with it.`;
+                await (await channels.image_reporting.send(text)).edit(text + ` (Moderator: ${user})`);
+                break;
+            default:
+                return;
+        }
+    }
     if (messagereaction.message.channel.id === channels.reported_rps.id) {
         //console.log(`...and it's a reaction on a reported ad...`);
         if (!messagereaction.me) {
@@ -1251,7 +1312,7 @@ client.on('messageReactionAdd', async (messagereaction, user) => {
                         //delete original message
                         await message.delete();
                         //yell at author
-                        const template = `<@${message.author.id}>, your ad does not fit in ${ad_channel} because it containes references to or images of underage characters which is not allowed, so the ad has been removed. If you have ageplay as a kink please specify that you are not looking to play with underage characters.`;
+                        const template = `<@${message.author.id}>, your ad does not fit in ${ad_channel} because it contains references to or images of underage characters which is not allowed, so the ad has been removed. If you have ageplay as a kink please specify that you are not looking to play with underage characters.`;
                         channels.lfp_moderation.send(`${template} (confirmed by @${nickname})`)
                             .then(message => message.edit(`${template} (confirmed by ${user})`));
                         //log in reports log
@@ -3525,6 +3586,57 @@ message.delete();
             message.reply(`Failed adding verification role because ${err}`);
         });
     },
+    report: async function (message, args) {
+        if (message.channel !== channels.image_reporting) {
+            return message.reply(`Please use ${channels.image_reporting}`);
+        }
+        if (!args || args.length < 2) {
+            return message.reply(`Usage: \`_report [Image Link] [reason]\``);
+        }
+        const link = args[0];
+        link.split("/");
+        const match = link.match(/https:\/\/discord.com\/channels\/([0-9]+)\/([0-9]+)\/([0-9]+)/);
+        if (!match) {
+            return message.reply(`Invalid message link`);
+        }
+        const server_id = match[1];
+        const channel_id = match[2];
+        const message_id = match[3];
+        args.shift();
+        const reason = args.join(" ");
+
+        if (!categories.hentaicorner.children.has(channel_id) && !categories.pornhub.children.has(channel_id)) {
+            return message.reply(`You can only report images from ${categories.hentaicorner} and ${categories.pornhub}`);
+        }
+        let channel = server.channels.cache.get(channel_id);
+        if (!channel || !(channel instanceof DiscordJS.TextChannel)) {
+            return message.reply(`Invalid message link`);
+        }
+        const reported_message = await channel.messages.fetch(message_id);
+        if (!reported_message) {
+            return message.reply(`Invalid message link`);
+        }
+        const reported_author = reported_message.author;
+
+        const content = [
+            reported_message.content,
+            ...reported_message.embeds.map(embed => embed.url),
+            ...reported_message.attachments.map(attachment => attachment.url),
+        ].join("\n");
+        const report_message = await channels.image_moderation.send(
+            new DiscordJS.MessageEmbed()
+                .addField("Offender", reported_message.author)
+                .addField("Message link", link)
+                .addField("Reporter", message.author)
+                .addField("Report link", message.url)
+                .addField("Reason", reason)
+        );
+        await channels.image_moderation.send(content);
+        await message.react("✅");
+        for (const emote of ["#️⃣", "🇺🇸", "👶", "❓"]) {
+            await report_message.react(emote);
+        }
+    },
     help: function (message) {
         const public_commands = `
 **\`_ping\`**
@@ -3757,7 +3869,7 @@ const util = {
         const member = server.members.cache.get(user.id);
         if (!member) return;
         if (member.permissions.has(DiscordJS.Permissions.FLAGS.ADMINISTRATOR)) return true;
-        return member.roles.cache.has(roles.STAFF.id) || member.roles.cache.has(roles.TRIALMOD.id);
+        return member.roles.cache.has(roles.STAFF.id); // || member.roles.cache.has(roles.TRIALMOD.id);
     },
 
     log: function (message: string, moduleName: string, level: "INFO" | "WARN" | "**ERROR**" | "__**FATAL**__") {
