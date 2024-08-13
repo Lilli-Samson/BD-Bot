@@ -85,10 +85,14 @@ const channel_list = [
     ["venting", "💣venting"],
     ["ask_dm", "💬ask-to-dm"],
     ["verified", "✅verified-users"],
-    ["image_reporting", "snitching"],
-    ["image_moderation", "🖼image-moderation"],
-    ["image_moderation_notifications", "image-police"],
-    ["image_rules", "image-posting-rules"],
+    //["image_reporting", "snitching"],
+    //["image_moderation", "🖼image-moderation"],
+    //["image_moderation_notifications", "image-police"],
+    //["image_rules", "image-posting-rules"],
+    ["image_reporting", "tinkering"],
+    ["image_moderation", "tinkering"],
+    ["image_moderation_notifications", "tinkering"],
+    ["image_rules", "tinkering"],
 ] as const;
 //@ts-ignore
 let channels: { [C in typeof channel_list[number][0]]: DiscordJS.TextChannel } = {};
