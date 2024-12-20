@@ -1791,14 +1791,14 @@ client.on("message", (message) => {
                 if (!(message.channel instanceof DiscordJS.TextChannel)) return;
                 const lfpMsg =
                     `>>> ` +
-                    `⚠️ **NEW**: __**Please follow the ${channels.ad_template}!**__\n\n` +
+                    `__**Please follow the ${channels.ad_template}!**__\n\n` +
                     `__**${rp_type_str} ${title} Channel Info**__\n` +
                     `🔹 __What posts are to be expected and to be posted in this channel?__\n` +
                     `LFP ads which explicitly state that they **${rp_with_as_looking_for} ${title}**.\n\n` +
                     `🔹 __Target Audience for LFP posts in this channel:__\n` +
                     `**${playing_as ? "Anyone wanting to play with " : ""}${target}**\n\n` +
                     `${exclusive}` +
-                    `If you see posts which are __not clearly looking for these kinds of RP__ in this channel let the staff know by reacting with :x: (\`:x:\`) or reporting it in ${channels.reports}!\n\n` +
+                    `If you see posts which are __not clearly looking for these kinds of RP__ or __if they violate our rules__ in this channel let the staff know by reacting with :x: (\`:x:\`)\n\n` +
                     `If you want to **contact** someone, **please check their DM Roles** first! If they have **Ask to DM ⚠️** (🇩 🇲 ⚠️) or **DMs Closed ⛔** (🇩 🇲 ⛔) use ${channels.contact}!\n\n` +
                     `*More info in:* ${channels.lfp_info}\n\n`
                     ;
@@ -1810,7 +1810,7 @@ client.on("message", (message) => {
                     `Any LFP ad that doesn't contain disallowed content such as underage characters.\n\n` +
                     `🔹 __Target Audience for LFP posts in this channel:__\n` +
                     `**Anyone looking to browse diverse ads**\n\n` +
-                    `If you see posts which are looking to play with or as underage characters let the staff know by reacting with :x: (\`:x:\`) or reporting it in ${channels.reports}!\n\n` +
+                    `If you see posts which are looking to play with or as underage characters or breaking other rules let the staff know by reacting with :x: (\`:x:\`)\n\n` +
                     `If you want to **contact** someone, **please check their DM Roles** first! If they have **Ask to DM ⚠️** (🇩 🇲 ⚠️) or **DMs Closed ⛔** (🇩 🇲 ⛔) use ${channels.contact}!\n\n` +
                     `*More info in:* ${channels.lfp_info}\n\n`
                     ;
@@ -1821,7 +1821,7 @@ client.on("message", (message) => {
                     `Any ad that is looking for non-roleplay contacts such as friends, dates and playing games.\n\n` +
                     `🔹 __Target Audience for posts in this channel:__\n` +
                     `**Anyone looking for friends or partners.**\n\n` +
-                    `If you see ads not looking for IRL contacts or breaking other rules let the staff know by reacting with :x: (\`:x:\`) or reporting it in ${channels.reports}!\n\n` +
+                    `If you see ads not looking for IRL contacts or breaking other rules let the staff know by reacting with :x: (\`:x:\`)\n\n` +
                     `If you want to **contact** someone, **please check their DM Roles** first! If they have **Ask to DM ⚠️** (🇩 🇲 ⚠️) or **DMs Closed ⛔** (🇩 🇲 ⛔) use ${channels.contact}!\n\n` +
                     `*More info in:* ${channels.lfp_info}\n\n`
                     ;
