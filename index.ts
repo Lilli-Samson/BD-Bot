@@ -78,7 +78,6 @@ const channel_list = [
     ["rp_ad_feedback", "🔖ad-feedback"],
     ["extreme_definition", "💀extreme-definition"],
     ["achievements", "🏆achievements"],
-    ["techlab", "📡tech-lab"],
     ["botchannel", "🤖bot-channel"],
     ["template_data", "rp-template-data"],
     ["autoban", "bot-ban"],
@@ -2766,10 +2765,6 @@ message.delete();
         }
     },
     age: function (message) {
-        if (message.channel === channels.techlab) {
-            util.sendTextMessage(message.channel, `Please use ${channels.botchannel} for that.`);
-            return;
-        }
         const snowflakes = (message.content.match(/\d+/g) || [message.author.id]).filter(match => match.length > 15);
         snowflakes.forEach(async snowflake => {
             const deconstructed_snowflake = DiscordJS.SnowflakeUtil.deconstruct(snowflake);
