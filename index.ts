@@ -91,6 +91,7 @@ const channel_list = [
     ["image_moderation", "tinkering"],
     ["image_moderation_notifications", "tinkering"],
     ["image_rules", "tinkering"],
+    ["gaming_media", "🎮gaming-media"],
 ] as const;
 //@ts-ignore
 let channels: { [C in typeof channel_list[number][0]]: DiscordJS.TextChannel } = {};
@@ -1837,7 +1838,8 @@ client.on("message", (message) => {
     if (["SOURCE", "HENTAI-DISCUSSION", "NSFW-DISCUSSION", "EXTREME-FETISHES-BOT", "NSFW-BOT-IMAGES"].indexOf(message.channel.name.toUpperCase()) === -1 &&
         message.channel.parent &&
         ["HENTAI CORNER", "PORNHUB"].indexOf(message.channel.parent.name.toUpperCase()) !== -1 ||
-        message.channel.id === channels.nsfw_media.id
+        message.channel.id === channels.nsfw_media.id ||
+        message.channel.id === channels.gaming_media.id
     ) {
         if (util.isUserStaff(message.author)) return;
         if (!message.content.match(link_regex) && message.attachments.size < 1) {
