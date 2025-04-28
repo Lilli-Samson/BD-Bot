@@ -91,6 +91,7 @@ const channel_list = [
     ["image_moderation", "tinkering"],
     ["image_moderation_notifications", "tinkering"],
     ["image_rules", "tinkering"],
+    ["gaming", "🎮gaming"],
     ["gaming_media", "🎮gaming-media"],
 ] as const;
 //@ts-ignore
@@ -1851,15 +1852,25 @@ client.on("message", (message) => {
                 .catch((e) => {
                     util.log(`Failed to remove ${logBody}\nError: ${e.toString()}`, 'Media Channel Text Filtering', "**ERROR**");
                 });
-            message.reply(message.channel.id === channels.nsfw_media.id ?
-                `sorry, no messages without media allowed in this channel. Use ${channels.nsfw_media_discussion}.` :
-                `sorry, messages without media or links are removed in media channels. Please put it in ${channels.nsfw_discussion} instead.`)
-                .then(msg => {
-                    setTimeout(() => {
-                        msg.delete();
-                    }, 7000);
-                });
-            return;
+            if (message.channel.id === channels.gaming_media.id) {
+                message.reply(`sorry, no messages without media allowed in this channel. Use ${channels.gaming}.`)
+                    .then(msg => {
+                        setTimeout(() => {
+                            msg.delete();
+                        }, 7000);
+                    });
+            }
+            else {
+                message.reply(message.channel.id === channels.nsfw_media.id ?
+                    `sorry, no messages without media allowed in this channel. Use ${channels.nsfw_media_discussion}.` :
+                    `sorry, messages without media or links are removed in media channels. Please put it in ${channels.nsfw_discussion} instead.`)
+                    .then(msg => {
+                        setTimeout(() => {
+                            msg.delete();
+                        }, 7000);
+                    });
+                return;
+            }
         }
     }
 
