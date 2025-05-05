@@ -656,7 +656,7 @@ const dbMod = {
 };
 
 function delete_links_in_general_chats(message: DiscordJS.Message) {
-    if ([channels.ooc_general.id, channels.rp_general.id].includes(message.channel.id)) {
+    if ([channels.ooc_general.id, channels.rp_general.id, channels.gaming.id].includes(message.channel.id)) {
         if (message.content.match(link_regex)) {
             if (message.content.match(/https:\/\/discord.gift\/\w+/)) {
                 util.react(message, emojis.pog);
@@ -674,7 +674,7 @@ function delete_links_in_general_chats(message: DiscordJS.Message) {
                 .catch((e) => {
                     util.log(`Failed to remove ${logBody}\nError: ${e.toString()}`, 'Automatic Link Removal', "**ERROR**");
                 });
-            util.sendTextMessage(message.channel, `${message.author} Sorry, no media or links of any kind in this channel. Put it in ${channels.nsfw_media} or another media channel please.`);
+            util.sendTextMessage(message.channel, `${message.author} Sorry, no media or links of any kind in this channel. Put it in ${message.channel.id === channels.gaming.id ? channels.gaming_media : channels.nsfw_media} or another media channel please.`);
             return;
         }
     }
