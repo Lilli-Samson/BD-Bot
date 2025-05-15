@@ -662,6 +662,9 @@ function delete_links_in_general_chats(message: DiscordJS.Message) {
                 util.react(message, emojis.pog);
                 return;
             }
+            if (message.content.includes(`https://discord.com/channels/${server_id}/`)) { //allow message links
+                return;
+            }
             if (util.isStaff(message)) { //have mercy on staff and don't delete messages
                 util.react(message, emojis.bancat);
                 return;
