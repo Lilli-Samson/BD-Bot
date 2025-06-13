@@ -128,6 +128,7 @@ const role_list = [
     ["NotABot", "Not a Bot"],
     ["verified", "✔️Verified 18+"],
     ["adreviewer", "Ad Reviewer"],
+    ["Muted", "Muted"],
 ] as const;
 //@ts-ignore
 let roles: { [C in typeof role_list[number][0]]: DiscordJS.Role } = {};
@@ -2692,7 +2693,7 @@ message.delete();
             return;
         }
         const timeout_ms = 10000;
-        const newcomerMembers = server.members.cache.filter(member => !member.user.bot && (member.roles.cache.has(roles.Newcomer.id) || !member.roles.cache.has(roles.NSFW.id)));
+        const newcomerMembers = server.members.cache.filter(member => !member.user.bot && (member.roles.cache.has(roles.Newcomer.id) || !member.roles.cache.has(roles.NSFW.id) && !member.roles.cache.has(roles.Muted.id)));
         console.log(`Found ${newcomerMembers.size} newcomers`);
         let index = 0;
         let report = "";
