@@ -2706,6 +2706,10 @@ message.delete();
                     continue;
                 }
                 if (!member.roles.cache.has(roles.NSFW.id)) {
+                    if ((new Date().getTime() - (member.joinedAt?.getTime() || 0)) / 1000 > 24 * 7) { // joined more than a week ago
+                        report += `${index}/${newcomerMembers.size} Skipped ${member} because they have been a member for a while\n`;
+                        continue;
+                    }
                     if (await trywait(member.kick(`Not having NSFW role for 90+ minutes`), timeout_ms)) {
                         report += `${index}/${newcomerMembers.size} Kicked ${member} for not clicking the ✅\n`;
                     }
