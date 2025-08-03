@@ -62,7 +62,7 @@ const channel_list = [
     ["rp_general", "🧚rp-n-shit"],
     ["nsfw_media", "👅nsfw-media"],
     ["nsfw_media_discussion", "👅media-discussion"],
-    ["nsfw_discussion", "nsfw-discussion"],
+    ["nsfw_discussion", "👅nsfw-media"],
     ["tinkering", "tinkering"],
     ["authentication_logs", "🎫authentication-logs"],
     ["paranoia_plaza", "🙈ashs-paranoia-plaza"],
